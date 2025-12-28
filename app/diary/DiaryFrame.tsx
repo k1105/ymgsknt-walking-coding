@@ -408,7 +408,7 @@ export default function DiaryFrame({children}: {children: ReactNode}) {
         }`}
       >
         <div
-          className="relative border border-orange-500"
+          className="relative"
           style={
             isMobile && windowWidth > 0
               ? {
