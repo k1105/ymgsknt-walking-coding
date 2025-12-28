@@ -68,6 +68,9 @@ function useDiaryLayout(entries: typeof dummyDiaryEntries) {
     calendarHeight: 0,
   });
 
+  // 初回計算済みのノード位置を保存（再計算を防ぐため）
+  const fixedNodesRef = useRef<DateNode[] | null>(null);
+
   const sortedEntries = useMemo(() => {
     return [...entries].sort(
       (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
@@ -88,6 +91,37 @@ function useDiaryLayout(entries: typeof dummyDiaryEntries) {
   }, [sortedEntries]);
 
   useEffect(() => {
+    // 既に計算済みの場合は位置を再計算せず、高さのみ更新
+    if (fixedNodesRef.current !== null) {
+      const calculateHeights = () => {
+        if (typeof window === "undefined") return;
+        const {innerHeight} = window;
+        const {paddingBottom} = LAYOUT_CONFIG;
+
+        const totalMonths = entriesByMonth.size;
+        const networkTotalHeight = totalMonths * innerHeight;
+
+        // Calendar heightの計算（既存のノードから最大Yを取得）
+        let maxCalendarY = 0;
+        fixedNodesRef.current!.forEach((node) => {
+          if (node.calendarY > maxCalendarY) {
+            maxCalendarY = node.calendarY;
+          }
+        });
+
+        setLayout({
+          nodes: fixedNodesRef.current!,
+          networkHeight: networkTotalHeight,
+          calendarHeight: maxCalendarY + paddingBottom,
+        });
+      };
+
+      calculateHeights();
+      window.addEventListener("resize", calculateHeights);
+      return () => window.removeEventListener("resize", calculateHeights);
+    }
+
+    // 初回計算のみ実行
     const calculateLayout = () => {
       if (typeof window === "undefined") return;
 
@@ -170,6 +204,9 @@ function useDiaryLayout(entries: typeof dummyDiaryEntries) {
         }
       );
 
+      // 初回計算結果を保存
+      fixedNodesRef.current = newNodes;
+
       setLayout({
         nodes: newNodes,
         networkHeight: networkTotalHeight,
@@ -178,8 +215,7 @@ function useDiaryLayout(entries: typeof dummyDiaryEntries) {
     };
 
     calculateLayout();
-    window.addEventListener("resize", calculateLayout);
-    return () => window.removeEventListener("resize", calculateLayout);
+    // 初回計算後はリサイズイベントを登録しない（位置は固定）
   }, [entriesByMonth]);
 
   return {entriesByMonth, ...layout};
