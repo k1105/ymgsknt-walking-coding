@@ -374,24 +374,10 @@ function ConnectingLines({
 export default function Home() {
   const [viewMode, setViewMode] = useState<"network" | "calendar">("network");
   const [showDateTexts, setShowDateTexts] = useState(false);
-  const [navPosition, setNavPosition] = useState({x: 32, y: 32});
 
   // Use Custom Hook logic
   const {entriesByMonth, nodes, networkHeight, calendarHeight} =
     useDiaryLayout(dummyDiaryEntries);
-
-  useEffect(() => {
-    const handle = requestAnimationFrame(() => {
-      const navWidth = 100;
-      const navHeight = 50;
-      setNavPosition({
-        x: Math.random() * Math.max(0, window.innerWidth - navWidth - 64) + 32,
-        y:
-          Math.random() * Math.max(0, window.innerHeight - navHeight - 64) + 32,
-      });
-    });
-    return () => cancelAnimationFrame(handle);
-  }, []);
 
   const handleAnimationComplete = useCallback(() => {
     setShowDateTexts(true);
@@ -409,41 +395,28 @@ export default function Home() {
       }}
     >
       {/* Navigation */}
-      <nav
-        className="fixed z-50 flex items-center gap-4 mix-blend-difference"
-        style={{left: navPosition.x, top: navPosition.y}}
-      >
+      <nav className="fixed top-8 left-8 md:top-auto md:bottom-8 z-50 flex flex-col items-start gap-4 mix-blend-difference">
         <button
           onClick={() =>
             setViewMode((prev) => (prev === "network" ? "calendar" : "network"))
           }
-          className="group relative flex items-center justify-center text-zinc-400 hover:text-blue-300 transition-colors"
+          className="group relative flex items-center gap-2 text-zinc-400 hover:text-blue-300 transition-colors"
         >
-          <div className="w-8 h-8 rounded-full border border-current flex items-center justify-center">
+          <div className="w-8 h-8 rounded-full border border-current flex items-center justify-center flex-shrink-0">
             <span className="text-sm">
               {viewMode === "network" ? "狭" : "広"}
             </span>
           </div>
-          <span
-            className="absolute top-full mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-xs whitespace-nowrap"
-            style={{writingMode: "vertical-rl"}}
-          >
-            {viewMode === "network" ? "広く並べる" : "狭く並べる"}
-          </span>
+          <span className="text-xs whitespace-nowrap">く並べる</span>
         </button>
         <Link
           href="/statement"
-          className="group relative flex items-center justify-center text-zinc-400 hover:text-blue-300 transition-colors"
+          className="group relative flex items-center gap-2 text-zinc-400 hover:text-blue-300 transition-colors"
         >
-          <div className="w-8 h-8 rounded-full border border-current flex items-center justify-center">
+          <div className="w-8 h-8 rounded-full border border-current flex items-center justify-center flex-shrink-0">
             <span className="text-sm">ス</span>
           </div>
-          <span
-            className="absolute top-full mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-xs whitespace-nowrap"
-            style={{writingMode: "vertical-rl"}}
-          >
-            テートメント
-          </span>
+          <span className="text-xs whitespace-nowrap">テートメント</span>
         </Link>
       </nav>
 

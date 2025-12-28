@@ -48,6 +48,7 @@ export default function DiaryFrame({children}: {children: ReactNode}) {
   const router = useRouter();
   const pathname = usePathname();
   const isRootPage = pathname === "/";
+  const isStatementPage = pathname === "/statement";
   const titleCanvasRef = useRef<HTMLCanvasElement>(null);
 
   // Title characters positions
@@ -129,59 +130,62 @@ export default function DiaryFrame({children}: {children: ReactNode}) {
       const centerY = height / 2;
 
       if (isMobile) {
-        // スマホ版: 横方向に順序を守って並べる
-        const minSpacing = (width / titleChars.length) * 0.3;
-        const maxSpacing = (width / titleChars.length) * 0.5;
-        const spacings: number[] = [];
-        for (let i = 0; i < titleChars.length; i++) {
-          spacings.push(minSpacing + Math.random() * (maxSpacing - minSpacing));
-        }
+        // スマホ版: 横方向に順序を守って、widthに対するパーセンテージで配置
+        // 左端と右端の余白をパーセンテージで定義（文字が画面外に出ないように）
+        const leftPaddingPercent = 0.05; // 5%
+        const rightPaddingPercent = 0.05; // 5%
 
-        const positions = titleChars.map((char, index) => {
-          // 最初の文字（W）は左上
+        // 各文字について、順序を保ちながら利用可能な範囲でランダムに配置
+        const positions: Array<{char: string; x: number; y: number}> = [];
+
+        // 各文字について、順序を保ちながら利用可能な範囲全体でランダムに配置
+        for (let index = 0; index < titleChars.length; index++) {
+          const char = titleChars[index];
+
+          let x: number;
+
+          // 最初の文字（W）は左端に固定
           if (index === 0) {
-            return {
-              char,
-              x: padding,
-              y: padding + Math.random() * (rangeY * 0.3),
-            };
+            x = width * leftPaddingPercent;
           }
-          // C（index 8）は中央横位置、縦はランダム
-          if (index === 8) {
-            return {char, x: width / 2, y: padding + Math.random() * rangeY};
+          // 最後の文字（g）は右端に固定
+          else if (index === titleChars.length - 1) {
+            x = width * (1 - rightPaddingPercent);
           }
-          // 最後の文字（g）は右下
-          if (index === titleChars.length - 1) {
-            return {
-              char,
-              x: width - padding,
-              y: height - padding - Math.random() * (rangeY * 0.3),
-            };
-          }
+          // その他の文字はランダム配置
+          else {
+            // 前の文字より右に配置する必要がある（最小位置をパーセンテージで計算）
+            let minPercent = leftPaddingPercent;
+            if (positions[index - 1]) {
+              // 前の文字の位置（パーセンテージ）+ 少しの間隔
+              const prevPercent = positions[index - 1].x / width;
+              minPercent = prevPercent + 0.02; // 前の文字より2%右
+            }
 
-          // 横方向: 前の文字から順に右へ進む（ランダムな間隔）
-          let currentX = padding;
-          for (let i = 1; i <= index; i++) {
-            currentX += spacings[i];
-          }
-          // 中央を超えないように調整
-          if (index < 8) {
-            currentX = Math.min(currentX, width / 2 - padding);
-          } else {
-            // C以降はCの位置から開始
-            currentX = width / 2 + (currentX - width / 2);
-            currentX = Math.min(currentX, width - padding);
+            // 後の文字のための余白を確保しつつ最大位置をパーセンテージで計算
+            const remainingChars = titleChars.length - index - 1;
+            const minSpacingPercent = 0.03; // 各文字間の最小間隔3%
+            let maxPercent =
+              1 - rightPaddingPercent - remainingChars * minSpacingPercent;
+
+            // 最小位置と最大位置が逆転しないように調整
+            maxPercent = Math.max(minPercent + 0.02, maxPercent);
+
+            // パーセンテージでランダムな位置を決定
+            const xPercent =
+              minPercent + Math.random() * (maxPercent - minPercent);
+            x = width * xPercent;
           }
 
           // 縦方向: ランダム（ただし範囲内）
           const y = padding + Math.random() * rangeY;
 
-          return {
+          positions.push({
             char,
-            x: Math.max(padding, Math.min(width - padding, currentX)),
+            x,
             y: Math.max(padding, Math.min(height - padding, y)),
-          };
-        });
+          });
+        }
         setTitleCharPositions(positions);
       } else {
         // PC版: 縦方向に順序を守って並べる（既存のロジック）
@@ -247,6 +251,10 @@ export default function DiaryFrame({children}: {children: ReactNode}) {
     for (let i = 0; i < titleCharPositions.length - 1; i++) {
       const current = titleCharPositions[i];
       const next = titleCharPositions[i + 1];
+      // pos.yは上から下の座標系（0が上端）
+      // Canvasも上から下の座標系なので、pos.yをそのまま使う
+      // 文字はbottom基準で配置されているが、transform: translate(-50%, -50%)により
+      // 文字の中心がpos.yの位置になるので、Canvasの描画でもpos.yをそのまま使えば一致する
       if (i === 0) ctx.moveTo(current.x, current.y);
       const seed = i * 0.1;
       drawRoughCurve(ctx, current.x, current.y, next.x, next.y, seed, 1);
@@ -258,11 +266,15 @@ export default function DiaryFrame({children}: {children: ReactNode}) {
   // BC_LEFT / BC_RIGHT は使用せず、BL/BR/BCをターゲットにします
   const POSITIONS = {
     TL: "translate3d(2rem, 2rem, 0)",
+    TR: "translate3d(calc(100vw - 100% - 2rem), 2rem, 0)",
+    TC: "translate3d(calc(50vw - 50%), 2rem, 0)",
     BL: "translate3d(2rem, calc(100dvh - 100% - 2rem), 0)",
     BR: "translate3d(calc(100vw - 100% - 2rem), calc(100dvh - 100% - 2rem), 0)",
     BC: "translate3d(calc(50vw - 50%), calc(100dvh - 100% - 2rem), 0)",
     OFF_LEFT: "translate3d(-100%, calc(100dvh - 100% - 2rem), 0)",
     OFF_RIGHT: "translate3d(100vw, calc(100dvh - 100% - 2rem), 0)",
+    OFF_LEFT_TOP: "translate3d(-100%, 2rem, 0)",
+    OFF_RIGHT_TOP: "translate3d(100vw, 2rem, 0)",
   };
 
   const getDateStyles = (
@@ -276,28 +288,46 @@ export default function DiaryFrame({children}: {children: ReactNode}) {
     let cursor = "default";
     let pointerEvents: "auto" | "none" = "auto";
 
+    // sp版では上部に配置、PC版では下部に配置
+    const getPosition = (
+      bottomPos: keyof typeof POSITIONS
+    ): keyof typeof POSITIONS => {
+      if (isMobile) {
+        // sp版: 下部位置を上部位置にマッピング
+        const mapping: Record<string, keyof typeof POSITIONS> = {
+          BL: "TL",
+          BR: "TR",
+          BC: "TC",
+          OFF_LEFT: "OFF_LEFT_TOP",
+          OFF_RIGHT: "OFF_RIGHT_TOP",
+        };
+        return mapping[bottomPos] || bottomPos;
+      }
+      return bottomPos;
+    };
+
     // --- ロジック修正: 移動先を「遷移後の役割の定位置」に厳密に合わせる ---
 
     if (animatingDir === "next") {
       // 次へ進む: 全体が左へシフト
       switch (role) {
         case "prev":
-          targetPosition = "OFF_LEFT"; // 画面外へ
+          targetPosition = getPosition("OFF_LEFT"); // 画面外へ
           opacity = 0;
           break;
         case "current":
-          targetPosition = "BL"; // Current -> 次の Prev 位置へ
+          targetPosition = getPosition("BL"); // Current -> 次の Prev 位置へ
           opacity = 0.7;
           fontSize = "1.5rem";
           break;
         case "next":
-          targetPosition = "BC"; // Next -> 次の Current 位置へ
+          targetPosition = getPosition("BC"); // Next -> 次の Current 位置へ
           opacity = 1;
           fontSize = "2rem";
           color = activeColor;
           break;
         case "nextnext":
-          targetPosition = "BR"; // NextNext -> 次の Next 位置へ
+          targetPosition = getPosition("BR"); // NextNext -> 次の Next 位置へ
           opacity = 0.7;
           fontSize = "1.5rem";
           break;
@@ -308,23 +338,23 @@ export default function DiaryFrame({children}: {children: ReactNode}) {
       // 前へ戻る: 全体が右へシフト
       switch (role) {
         case "prevprev":
-          targetPosition = "BL"; // PrevPrev -> 次の Prev 位置へ
+          targetPosition = getPosition("BL"); // PrevPrev -> 次の Prev 位置へ
           opacity = 0.7;
           fontSize = "1.5rem";
           break;
         case "prev":
-          targetPosition = "BC"; // Prev -> 次の Current 位置へ
+          targetPosition = getPosition("BC"); // Prev -> 次の Current 位置へ
           opacity = 1;
           fontSize = "2rem";
           color = activeColor;
           break;
         case "current":
-          targetPosition = "BR"; // Current -> 次の Next 位置へ
+          targetPosition = getPosition("BR"); // Current -> 次の Next 位置へ
           opacity = 0.7;
           fontSize = "1.5rem";
           break;
         case "next":
-          targetPosition = "OFF_RIGHT"; // 画面外へ
+          targetPosition = getPosition("OFF_RIGHT"); // 画面外へ
           opacity = 0;
           break;
         default:
@@ -334,28 +364,28 @@ export default function DiaryFrame({children}: {children: ReactNode}) {
       // アイドル状態 (通常配置)
       switch (role) {
         case "prevprev":
-          targetPosition = "OFF_LEFT";
+          targetPosition = getPosition("OFF_LEFT");
           opacity = 0;
           pointerEvents = "none";
           break;
         case "prev":
-          targetPosition = "BL";
+          targetPosition = getPosition("BL");
           opacity = 0.7;
           cursor = "pointer";
           break;
         case "current":
-          targetPosition = "BC";
+          targetPosition = getPosition("BC");
           opacity = 1;
           fontSize = "2rem";
           color = activeColor;
           break;
         case "next":
-          targetPosition = "BR";
+          targetPosition = getPosition("BR");
           opacity = 0.7;
           cursor = "pointer";
           break;
         case "nextnext":
-          targetPosition = "OFF_RIGHT";
+          targetPosition = getPosition("OFF_RIGHT");
           opacity = 0;
           pointerEvents = "none";
           break;
@@ -367,7 +397,7 @@ export default function DiaryFrame({children}: {children: ReactNode}) {
     // ターゲットが中央かどうかでスタイル起点を変える（モーフィングを自然にするため）
     // transition-allにより、text-alignの変更は即時適用されるが、
     // transform移動とoriginの変更で視覚的なズレを最小限にする
-    const isTargetCenter = targetPosition === "BC";
+    const isTargetCenter = targetPosition === "BC" || targetPosition === "TC";
 
     const baseClassName = `fixed top-0 left-0 font-bold whitespace-pre-line transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] z-50 select-none border-0 bg-transparent p-0 m-0 ${
       isTargetCenter
@@ -400,6 +430,7 @@ export default function DiaryFrame({children}: {children: ReactNode}) {
   return (
     <DiaryContext.Provider value={{setEntryData, triggerTransition}}>
       {/* Title Block */}
+      {/* Title Block */}
       <header
         className={`fixed z-50 ${
           isMobile
@@ -430,20 +461,23 @@ export default function DiaryFrame({children}: {children: ReactNode}) {
                 : {width: "100px", height: "400px"}
             }
           />
-          {titleCharPositions.map((pos, index) => (
-            <span
-              key={index}
-              className="absolute text-orange-500"
-              style={{
-                fontSize: isMobile ? "2rem" : "1.75rem",
-                left: `${pos.x}px`,
-                top: `${pos.y}px`,
-                transform: "translate(-50%, -50%)",
-              }}
-            >
-              {pos.char === " " ? "\u00A0" : pos.char}
-            </span>
-          ))}
+          {titleCharPositions.map((pos, index) => {
+            // 修正箇所: pos.y は上からの距離なので、bottom計算を削除し、直接 top で指定します
+            return (
+              <span
+                key={index}
+                className="absolute text-orange-500"
+                style={{
+                  fontSize: isMobile ? "2rem" : "1.75rem",
+                  left: `${pos.x}px`,
+                  top: `${pos.y}px`, // ここを bottom から top に変更
+                  transform: "translate(-50%, -50%)",
+                }}
+              >
+                {pos.char === " " ? "\u00A0" : pos.char}
+              </span>
+            );
+          })}
         </div>
       </header>
 
@@ -470,30 +504,34 @@ export default function DiaryFrame({children}: {children: ReactNode}) {
           </Link>
 
           {/* Date Elements */}
-          {entries.prevPrev && (
-            <div key={entries.prevPrev.id} {...getDateStyles("prevprev")}>
-              {formatDateDisplay(entries.prevPrev.date)}
-            </div>
-          )}
-          {entries.prev && (
-            <div key={entries.prev.id} {...getDateStyles("prev")}>
-              {formatDateDisplay(entries.prev.date)}
-            </div>
-          )}
-          {entries.current && (
-            <div key={entries.current.id} {...getDateStyles("current")}>
-              {formatDateDisplay(entries.current.date)}
-            </div>
-          )}
-          {entries.next && (
-            <div key={entries.next.id} {...getDateStyles("next")}>
-              {formatDateDisplay(entries.next.date)}
-            </div>
-          )}
-          {entries.nextNext && (
-            <div key={entries.nextNext.id} {...getDateStyles("nextnext")}>
-              {formatDateDisplay(entries.nextNext.date)}
-            </div>
+          {!isStatementPage && (
+            <>
+              {entries.prevPrev && (
+                <div key={entries.prevPrev.id} {...getDateStyles("prevprev")}>
+                  {formatDateDisplay(entries.prevPrev.date)}
+                </div>
+              )}
+              {entries.prev && (
+                <div key={entries.prev.id} {...getDateStyles("prev")}>
+                  {formatDateDisplay(entries.prev.date)}
+                </div>
+              )}
+              {entries.current && (
+                <div key={entries.current.id} {...getDateStyles("current")}>
+                  {formatDateDisplay(entries.current.date)}
+                </div>
+              )}
+              {entries.next && (
+                <div key={entries.next.id} {...getDateStyles("next")}>
+                  {formatDateDisplay(entries.next.date)}
+                </div>
+              )}
+              {entries.nextNext && (
+                <div key={entries.nextNext.id} {...getDateStyles("nextnext")}>
+                  {formatDateDisplay(entries.nextNext.date)}
+                </div>
+              )}
+            </>
           )}
         </>
       )}
