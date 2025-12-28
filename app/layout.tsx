@@ -34,7 +34,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${doto.variable} antialiased`}
       >
-        <DiaryFrame>{children}</DiaryFrame>
+        <div className="md:pb-0 pb-[20vh]">
+          <DiaryFrame>{children}</DiaryFrame>
+        </div>
       </body>
     </html>
   );

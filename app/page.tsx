@@ -381,6 +381,10 @@ export default function Home() {
 
   const handleAnimationComplete = useCallback(() => {
     setShowDateTexts(true);
+    // Dispatch custom event for DiaryFrame title fade-in
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("diaryTitleFadeIn"));
+    }
   }, []);
 
   const currentPageHeight =
@@ -395,12 +399,12 @@ export default function Home() {
       }}
     >
       {/* Navigation */}
-      <nav className="fixed top-8 left-8 md:top-auto md:bottom-8 z-50 flex flex-col items-start gap-4 mix-blend-difference">
+      <nav className="fixed top-8 left-8 md:top-auto md:bottom-8 z-50 flex flex-col items-start gap-3 mix-blend-difference">
         <button
           onClick={() =>
             setViewMode((prev) => (prev === "network" ? "calendar" : "network"))
           }
-          className="group relative flex items-center gap-2 text-zinc-400 hover:text-blue-300 transition-colors"
+          className="group relative flex items-center gap-1 text-zinc-400 hover:text-blue-300 transition-colors"
         >
           <div className="w-8 h-8 rounded-full border border-current flex items-center justify-center flex-shrink-0">
             <span className="text-sm">
@@ -411,7 +415,7 @@ export default function Home() {
         </button>
         <Link
           href="/statement"
-          className="group relative flex items-center gap-2 text-zinc-400 hover:text-blue-300 transition-colors"
+          className="group relative flex items-center gap-1 text-zinc-400 hover:text-blue-300 transition-colors"
         >
           <div className="w-8 h-8 rounded-full border border-current flex items-center justify-center flex-shrink-0">
             <span className="text-sm">ス</span>

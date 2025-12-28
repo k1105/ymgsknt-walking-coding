@@ -26,6 +26,10 @@ export default function DiaryClient({
   // Split content into lines for line numbering
   const contentLines = entry.content.split("\n");
 
+  // Add comment line at the beginning
+  const commentLine = `/* ${entry.date}_diary.md */`;
+  const allLines = [commentLine, ...contentLines];
+
   useEffect(() => {
     // 1. Frameにデータをセット (これによりFrame側のopacityは100に戻る)
     setEntryData({
@@ -56,7 +60,7 @@ export default function DiaryClient({
         <div className="w-full md:w-1/2 h-auto md:h-full flex flex-col">
           <article className="flex-1 overflow-y-auto py-64">
             <div className="font-mono text-sm md:text-base">
-              {contentLines.map((line, index) => (
+              {allLines.map((line, index) => (
                 <div key={index} className="flex">
                   {/* Line number with 5rem left margin */}
                   <div className="flex-shrink-0 w-12 md:w-16 px-3 py-2 text-right text-gray-600 select-none">

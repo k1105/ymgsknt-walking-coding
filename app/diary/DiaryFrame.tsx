@@ -59,6 +59,7 @@ export default function DiaryFrame({children}: {children: ReactNode}) {
   >([]);
   const [isMobile, setIsMobile] = useState(false);
   const [windowWidth, setWindowWidth] = useState(0);
+  const [showTitle, setShowTitle] = useState(!isRootPage); // Show immediately if not root page
 
   const [entries, setEntries] = useState<{
     current: DiaryEntry | null;
@@ -104,6 +105,25 @@ export default function DiaryFrame({children}: {children: ReactNode}) {
     window.addEventListener("resize", checkMobile);
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
+
+  // Listen for title fade-in event on root page
+  useEffect(() => {
+    if (!isRootPage) return;
+
+    const handleTitleFadeIn = () => {
+      setShowTitle(true);
+    };
+
+    window.addEventListener(
+      "diaryTitleFadeIn",
+      handleTitleFadeIn as EventListener
+    );
+    return () =>
+      window.removeEventListener(
+        "diaryTitleFadeIn",
+        handleTitleFadeIn as EventListener
+      );
+  }, [isRootPage]);
 
   // Generate title character positions
   useEffect(() => {
@@ -246,7 +266,7 @@ export default function DiaryFrame({children}: {children: ReactNode}) {
     const ctx = setupCanvas(canvas, width, height);
     if (!ctx) return;
     ctx.beginPath();
-    ctx.strokeStyle = "#f97316"; // orange-500
+    ctx.strokeStyle = "#8EC5FF";
     ctx.lineWidth = 1;
     for (let i = 0; i < titleCharPositions.length - 1; i++) {
       const current = titleCharPositions[i];
@@ -264,7 +284,8 @@ export default function DiaryFrame({children}: {children: ReactNode}) {
 
   // 定位置の定義
   // BC_LEFT / BC_RIGHT は使用せず、BL/BR/BCをターゲットにします
-  const POSITIONS = {
+  // PC版では30vwの幅の中で配置（中央から左右に15vwずつ）
+  const POSITIONS_BASE = {
     TL: "translate3d(2rem, 2rem, 0)",
     TR: "translate3d(calc(100vw - 100% - 2rem), 2rem, 0)",
     TC: "translate3d(calc(50vw - 50%), 2rem, 0)",
@@ -277,24 +298,47 @@ export default function DiaryFrame({children}: {children: ReactNode}) {
     OFF_RIGHT_TOP: "translate3d(100vw, 2rem, 0)",
   };
 
+  const getPositionTransform = (
+    position: keyof typeof POSITIONS_BASE
+  ): string => {
+    const base = POSITIONS_BASE[position];
+    if (isMobile) {
+      // sp版: そのまま使用
+      return base;
+    }
+    // PC版: 30vw幅内に配置
+    switch (position) {
+      case "BL":
+        return "translate3d(calc(35vw - 50%), calc(100dvh - 100% - 2rem), 0)";
+      case "BR":
+        return "translate3d(calc(65vw - 50%), calc(100dvh - 100% - 2rem), 0)";
+      case "OFF_LEFT":
+        return "translate3d(calc(35vw - 50% - 10vw), calc(100dvh - 100% - 2rem), 0)";
+      case "OFF_RIGHT":
+        return "translate3d(calc(65vw - 50% + 10vw), calc(100dvh - 100% - 2rem), 0)";
+      default:
+        return base;
+    }
+  };
+
   const getDateStyles = (
     role: "prevprev" | "prev" | "current" | "next" | "nextnext"
   ) => {
-    let targetPosition: keyof typeof POSITIONS = "OFF_LEFT";
+    let targetPosition: keyof typeof POSITIONS_BASE = "OFF_LEFT";
     let opacity = 1;
     let fontSize = "1.5rem";
     let color = "rgb(161 161 170)"; // zinc-400
-    const activeColor = "rgb(37 99 235)"; // blue-600
+    const activeColor = "rgb(255 255 255)"; // blue-600
     let cursor = "default";
     let pointerEvents: "auto" | "none" = "auto";
 
     // sp版では上部に配置、PC版では下部に配置
     const getPosition = (
-      bottomPos: keyof typeof POSITIONS
-    ): keyof typeof POSITIONS => {
+      bottomPos: keyof typeof POSITIONS_BASE
+    ): keyof typeof POSITIONS_BASE => {
       if (isMobile) {
         // sp版: 下部位置を上部位置にマッピング
-        const mapping: Record<string, keyof typeof POSITIONS> = {
+        const mapping: Record<string, keyof typeof POSITIONS_BASE> = {
           BL: "TL",
           BR: "TR",
           BC: "TC",
@@ -408,7 +452,7 @@ export default function DiaryFrame({children}: {children: ReactNode}) {
     return {
       className: baseClassName,
       style: {
-        transform: POSITIONS[targetPosition],
+        transform: getPositionTransform(targetPosition),
         opacity,
         fontSize,
         lineHeight: fontSize,
@@ -432,11 +476,11 @@ export default function DiaryFrame({children}: {children: ReactNode}) {
       {/* Title Block */}
       {/* Title Block */}
       <header
-        className={`fixed z-50 ${
+        className={`fixed z-50 transition-opacity duration-300 ease-in-out ${
           isMobile
             ? "bottom-0 left-0 w-full"
             : "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
-        }`}
+        } ${showTitle ? "opacity-100" : "opacity-0"}`}
       >
         <div
           className="relative"
@@ -466,7 +510,7 @@ export default function DiaryFrame({children}: {children: ReactNode}) {
             return (
               <span
                 key={index}
-                className="absolute text-orange-500"
+                className="absolute text-blue-300"
                 style={{
                   fontSize: isMobile ? "2rem" : "1.75rem",
                   left: `${pos.x}px`,
