@@ -49,6 +49,7 @@ export default function DiaryFrame({children}: {children: ReactNode}) {
   const pathname = usePathname();
   const isRootPage = pathname === "/";
   const isStatementPage = pathname === "/statement";
+  const isDiaryPage = pathname.startsWith("/diary/") && pathname !== "/diary";
   const titleCanvasRef = useRef<HTMLCanvasElement>(null);
 
   // Title characters positions
@@ -60,6 +61,7 @@ export default function DiaryFrame({children}: {children: ReactNode}) {
   const [isMobile, setIsMobile] = useState(false);
   const [windowWidth, setWindowWidth] = useState(0);
   const [showTitle, setShowTitle] = useState(!isRootPage); // Show immediately if not root page
+  const [viewMode, setViewMode] = useState<"network" | "calendar">("network");
 
   const [entries, setEntries] = useState<{
     current: DiaryEntry | null;
@@ -124,6 +126,23 @@ export default function DiaryFrame({children}: {children: ReactNode}) {
         handleTitleFadeIn as EventListener
       );
   }, [isRootPage]);
+
+  // Listen for viewMode changes from page.tsx
+  useEffect(() => {
+    const handleViewModeChange = (e: CustomEvent<"network" | "calendar">) => {
+      setViewMode(e.detail);
+    };
+
+    window.addEventListener(
+      "viewModeChange",
+      handleViewModeChange as EventListener
+    );
+    return () =>
+      window.removeEventListener(
+        "viewModeChange",
+        handleViewModeChange as EventListener
+      );
+  }, []);
 
   // Generate title character positions
   useEffect(() => {
@@ -286,16 +305,16 @@ export default function DiaryFrame({children}: {children: ReactNode}) {
   // BC_LEFT / BC_RIGHT は使用せず、BL/BR/BCをターゲットにします
   // PC版では30vwの幅の中で配置（中央から左右に15vwずつ）
   const POSITIONS_BASE = {
-    TL: "translate3d(2rem, 2rem, 0)",
-    TR: "translate3d(calc(100vw - 100% - 2rem), 2rem, 0)",
-    TC: "translate3d(calc(50vw - 50%), 2rem, 0)",
+    TL: "translate3d(2rem, 5rem, 0)", // closeボタンと重ならないように上から5remに変更
+    TR: "translate3d(calc(100vw - 100% - 2rem), 5rem, 0)", // closeボタンと重ならないように上から5remに変更
+    TC: "translate3d(calc(50vw - 50%), 5rem, 0)", // closeボタンと重ならないように上から5remに変更
     BL: "translate3d(2rem, calc(100dvh - 100% - 2rem), 0)",
     BR: "translate3d(calc(100vw - 100% - 2rem), calc(100dvh - 100% - 2rem), 0)",
     BC: "translate3d(calc(50vw - 50%), calc(100dvh - 100% - 2rem), 0)",
     OFF_LEFT: "translate3d(-100%, calc(100dvh - 100% - 2rem), 0)",
     OFF_RIGHT: "translate3d(100vw, calc(100dvh - 100% - 2rem), 0)",
-    OFF_LEFT_TOP: "translate3d(-100%, 2rem, 0)",
-    OFF_RIGHT_TOP: "translate3d(100vw, 2rem, 0)",
+    OFF_LEFT_TOP: "translate3d(-100%, 5rem, 0)", // closeボタンと重ならないように上から5remに変更
+    OFF_RIGHT_TOP: "translate3d(100vw, 5rem, 0)", // closeボタンと重ならないように上から5remに変更
   };
 
   const getPositionTransform = (
@@ -477,9 +496,7 @@ export default function DiaryFrame({children}: {children: ReactNode}) {
       {/* Title Block */}
       <header
         className={`fixed z-50 transition-opacity duration-300 ease-in-out ${
-          isMobile
-            ? "bottom-0 left-0 w-full"
-            : "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+          isMobile ? "bottom-0 left-0 w-full" : "top-8 left-8"
         } ${showTitle ? "opacity-100" : "opacity-0"}`}
       >
         <div
@@ -525,57 +542,106 @@ export default function DiaryFrame({children}: {children: ReactNode}) {
         </div>
       </header>
 
-      {!isRootPage && (
-        <>
+      {/* Navigation buttons: "ス" button always visible, "狭" button on top page, close button on other pages */}
+      <nav className="fixed top-8 right-8 z-[70] flex items-center gap-3">
+        {/* "ス" button - always visible */}
+        <Link
+          href="/statement"
+          className="group relative flex flex-col items-center justify-center text-zinc-400 hover:text-blue-300 transition-colors"
+        >
+          <div className="w-8 h-8 rounded-full border border-current flex items-center justify-center">
+            <span className="text-sm">ス</span>
+          </div>
+          <span
+            className={`absolute top-full mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-xs whitespace-nowrap ${
+              isMobile && isDiaryPage ? "hidden" : ""
+            }`}
+            style={{writingMode: "vertical-rl"}}
+          >
+            テートメント
+          </span>
+        </Link>
+        {/* "狭" button on top page, close button on other pages */}
+        {isRootPage ? (
+          <button
+            onClick={() => {
+              const newMode = viewMode === "network" ? "calendar" : "network";
+              setViewMode(newMode);
+              // Dispatch event to page.tsx
+              if (typeof window !== "undefined") {
+                window.dispatchEvent(
+                  new CustomEvent("viewModeChange", {detail: newMode})
+                );
+              }
+            }}
+            className="group relative flex flex-col items-center justify-center text-zinc-400 hover:text-blue-300 transition-colors"
+          >
+            <div className="w-8 h-8 rounded-full border border-current flex items-center justify-center">
+              <span className="text-sm">
+                {viewMode === "network" ? "狭" : "広"}
+              </span>
+            </div>
+            <span
+              className={`absolute top-full mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-xs whitespace-nowrap ${
+                isMobile && isDiaryPage ? "hidden" : ""
+              }`}
+              style={{writingMode: "vertical-rl"}}
+            >
+              {viewMode === "network" ? "広く並べる" : "狭く並べる"}
+            </span>
+          </button>
+        ) : (
           <Link
             href="/"
-            className={`fixed top-8 right-8 z-[60] w-10 h-10 flex items-center justify-center text-zinc-400 hover:text-white transition-all duration-700 delay-300`}
+            className="group relative flex flex-col items-center justify-center text-zinc-400 hover:text-white transition-all duration-700 delay-300"
             aria-label="Back to index"
           >
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
+            <div className="w-8 h-8 rounded-full border border-current flex items-center justify-center">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </div>
           </Link>
+        )}
+      </nav>
 
-          {/* Date Elements */}
-          {!isStatementPage && (
-            <>
-              {entries.prevPrev && (
-                <div key={entries.prevPrev.id} {...getDateStyles("prevprev")}>
-                  {formatDateDisplay(entries.prevPrev.date)}
-                </div>
-              )}
-              {entries.prev && (
-                <div key={entries.prev.id} {...getDateStyles("prev")}>
-                  {formatDateDisplay(entries.prev.date)}
-                </div>
-              )}
-              {entries.current && (
-                <div key={entries.current.id} {...getDateStyles("current")}>
-                  {formatDateDisplay(entries.current.date)}
-                </div>
-              )}
-              {entries.next && (
-                <div key={entries.next.id} {...getDateStyles("next")}>
-                  {formatDateDisplay(entries.next.date)}
-                </div>
-              )}
-              {entries.nextNext && (
-                <div key={entries.nextNext.id} {...getDateStyles("nextnext")}>
-                  {formatDateDisplay(entries.nextNext.date)}
-                </div>
-              )}
-            </>
+      {/* Date Elements */}
+      {!isRootPage && !isStatementPage && (
+        <>
+          {entries.prevPrev && (
+            <div key={entries.prevPrev.id} {...getDateStyles("prevprev")}>
+              {formatDateDisplay(entries.prevPrev.date)}
+            </div>
+          )}
+          {entries.prev && (
+            <div key={entries.prev.id} {...getDateStyles("prev")}>
+              {formatDateDisplay(entries.prev.date)}
+            </div>
+          )}
+          {entries.current && (
+            <div key={entries.current.id} {...getDateStyles("current")}>
+              {formatDateDisplay(entries.current.date)}
+            </div>
+          )}
+          {entries.next && (
+            <div key={entries.next.id} {...getDateStyles("next")}>
+              {formatDateDisplay(entries.next.date)}
+            </div>
+          )}
+          {entries.nextNext && (
+            <div key={entries.nextNext.id} {...getDateStyles("nextnext")}>
+              {formatDateDisplay(entries.nextNext.date)}
+            </div>
           )}
         </>
       )}

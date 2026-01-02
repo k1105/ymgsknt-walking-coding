@@ -423,6 +423,38 @@ export default function Home() {
     }
   }, []);
 
+  // Sync viewMode with DiaryFrame
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(
+        new CustomEvent("viewModeChange", {detail: viewMode})
+      );
+    }
+  }, [viewMode]);
+
+  // Listen for viewMode changes from DiaryFrame
+  useEffect(() => {
+    const handleViewModeChange = (e: CustomEvent<"network" | "calendar">) => {
+      setViewMode(e.detail);
+    };
+
+    window.addEventListener(
+      "viewModeChange",
+      handleViewModeChange as EventListener
+    );
+    // Initial sync
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(
+        new CustomEvent("viewModeChange", {detail: viewMode})
+      );
+    }
+    return () =>
+      window.removeEventListener(
+        "viewModeChange",
+        handleViewModeChange as EventListener
+      );
+  }, [viewMode]);
+
   const currentPageHeight =
     viewMode === "network" ? networkHeight : calendarHeight;
 
@@ -434,32 +466,6 @@ export default function Home() {
         transitionDuration: `${TRANSITION_DURATION}ms`,
       }}
     >
-      {/* Navigation */}
-      <nav className="fixed top-8 left-8 md:top-auto md:bottom-8 z-50 flex flex-col items-start gap-3 mix-blend-difference">
-        <button
-          onClick={() =>
-            setViewMode((prev) => (prev === "network" ? "calendar" : "network"))
-          }
-          className="group relative flex items-center gap-1 text-zinc-400 hover:text-blue-300 transition-colors"
-        >
-          <div className="w-8 h-8 rounded-full border border-current flex items-center justify-center flex-shrink-0">
-            <span className="text-sm">
-              {viewMode === "network" ? "狭" : "広"}
-            </span>
-          </div>
-          <span className="text-xs whitespace-nowrap">く並べる</span>
-        </button>
-        <Link
-          href="/statement"
-          className="group relative flex items-center gap-1 text-zinc-400 hover:text-blue-300 transition-colors"
-        >
-          <div className="w-8 h-8 rounded-full border border-current flex items-center justify-center flex-shrink-0">
-            <span className="text-sm">ス</span>
-          </div>
-          <span className="text-xs whitespace-nowrap">テートメント</span>
-        </Link>
-      </nav>
-
       {/* Canvas Layer */}
       <ConnectingLines
         nodes={nodes}
@@ -487,7 +493,7 @@ export default function Home() {
                 }}
               >
                 <div
-                  className="text-white text-sm"
+                  className="text-blue-200 text-sm"
                   style={{fontFamily: "var(--font-doto)"}}
                 >
                   {year}/{month}
@@ -525,7 +531,7 @@ export default function Home() {
         {nodes.map((node) => {
           const x = viewMode === "network" ? node.networkX : node.calendarX;
           const y = viewMode === "network" ? node.networkY : node.calendarY;
-          const fontSize = viewMode === "network" ? "2rem" : "1.5rem";
+          const fontSize = viewMode === "network" ? "4rem" : "1.5rem";
 
           return (
             <Link
