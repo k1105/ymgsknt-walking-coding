@@ -285,7 +285,7 @@ export default function DiaryFrame({children}: {children: ReactNode}) {
     const ctx = setupCanvas(canvas, width, height);
     if (!ctx) return;
     ctx.beginPath();
-    ctx.strokeStyle = "#8EC5FF";
+    ctx.strokeStyle = "#000000";
     ctx.lineWidth = 1;
     for (let i = 0; i < titleCharPositions.length - 1; i++) {
       const current = titleCharPositions[i];
@@ -346,8 +346,8 @@ export default function DiaryFrame({children}: {children: ReactNode}) {
     let targetPosition: keyof typeof POSITIONS_BASE = "OFF_LEFT";
     let opacity = 1;
     let fontSize = "1.5rem";
-    let color = "rgb(161 161 170)"; // zinc-400
-    const activeColor = "rgb(255 255 255)"; // blue-600
+    let color = "rgb(107 114 128)"; // gray-500
+    const activeColor = "rgb(0 0 0)"; // black
     let cursor = "default";
     let pointerEvents: "auto" | "none" = "auto";
 
@@ -527,7 +527,7 @@ export default function DiaryFrame({children}: {children: ReactNode}) {
             return (
               <span
                 key={index}
-                className="absolute text-blue-300"
+                className="absolute text-black"
                 style={{
                   fontSize: isMobile ? "2rem" : "1.75rem",
                   left: `${pos.x}px`,
@@ -542,26 +542,30 @@ export default function DiaryFrame({children}: {children: ReactNode}) {
         </div>
       </header>
 
-      {/* Navigation buttons: "ス" button always visible, "狭" button on top page, close button on other pages */}
-      <nav className="fixed top-8 right-8 z-[70] flex items-center gap-3">
-        {/* "ス" button - always visible */}
-        <Link
-          href="/statement"
-          className="group relative flex flex-col items-center justify-center text-zinc-400 hover:text-blue-300 transition-colors"
-        >
-          <div className="w-8 h-8 rounded-full border border-current flex items-center justify-center">
-            <span className="text-sm">ス</span>
-          </div>
-          <span
-            className={`absolute top-full mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-xs whitespace-nowrap ${
-              isMobile && isDiaryPage ? "hidden" : ""
-            }`}
-            style={{writingMode: "vertical-rl"}}
+      <nav className="fixed top-0 right-0 z-[70] flex items-center">
+        {/* "ス" button - hidden on statement page */}
+        {!isStatementPage && (
+          <Link
+            href="/statement"
+            className="group relative flex flex-col items-center justify-center text-gray-500 hover:text-black transition-colors"
           >
-            テートメント
-          </span>
-        </Link>
-        {/* "狭" button on top page, close button on other pages */}
+            <div
+              className={`border border-current flex items-center justify-center ${
+                isMobile ? "w-10 h-10" : "w-10 h-10"
+              }`}
+            >
+              <span className={isMobile ? "text-base" : "text-s"}>ス</span>
+            </div>
+            <span
+              className={`absolute top-full mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-xs whitespace-nowrap ${
+                isMobile && isDiaryPage ? "hidden" : ""
+              }`}
+              style={{writingMode: "vertical-rl"}}
+            >
+              テートメント
+            </span>
+          </Link>
+        )}
         {isRootPage ? (
           <button
             onClick={() => {
@@ -574,10 +578,14 @@ export default function DiaryFrame({children}: {children: ReactNode}) {
                 );
               }
             }}
-            className="group relative flex flex-col items-center justify-center text-zinc-400 hover:text-blue-300 transition-colors"
+            className="group relative flex flex-col items-center justify-center text-gray-500 hover:text-black transition-colors"
           >
-            <div className="w-8 h-8 rounded-full border border-current flex items-center justify-center">
-              <span className="text-sm">
+            <div
+              className={`rounded-full border border-current flex items-center justify-center ${
+                isMobile ? "w-10 h-10" : "w-10 h-10"
+              }`}
+            >
+              <span className={isMobile ? "text-base" : "text-s"}>
                 {viewMode === "network" ? "狭" : "広"}
               </span>
             </div>
@@ -587,19 +595,23 @@ export default function DiaryFrame({children}: {children: ReactNode}) {
               }`}
               style={{writingMode: "vertical-rl"}}
             >
-              {viewMode === "network" ? "広く並べる" : "狭く並べる"}
+              く並べる
             </span>
           </button>
         ) : (
           <Link
             href="/"
-            className="group relative flex flex-col items-center justify-center text-zinc-400 hover:text-white transition-all duration-700 delay-300"
+            className="group relative flex flex-col items-center justify-center text-gray-500 hover:text-black transition-all duration-700 delay-300"
             aria-label="Back to index"
           >
-            <div className="w-8 h-8 rounded-full border border-current flex items-center justify-center">
+            <div
+              className={`rounded-full border border-current flex items-center justify-center ${
+                isMobile ? "w-10 h-10" : "w-10 h-10"
+              }`}
+            >
               <svg
-                width="16"
-                height="16"
+                width={isMobile ? "18" : "16"}
+                height={isMobile ? "18" : "16"}
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"

@@ -58,16 +58,16 @@ export default function DiaryClient({
       >
         {/* Left side (desktop) / Top (mobile) - diary content */}
         <div className="w-full md:w-1/2 h-auto md:h-full flex flex-col">
-          <article className="flex-1 overflow-y-auto py-64">
+          <article className="flex-1 overflow-y-auto py-64 md:pl-32">
             <div className="font-mono text-sm md:text-base">
               {allLines.map((line, index) => (
                 <div key={index} className="flex">
                   {/* Line number with 5rem left margin */}
-                  <div className="flex-shrink-0 w-12 md:w-16 px-3 py-2 text-right text-gray-600 select-none">
+                  <div className="flex-shrink-0 w-12 md:w-16 px-3 py-2 text-right text-gray-500 select-none">
                     {index + 1}
                   </div>
                   {/* Line content */}
-                  <div className="flex-1 px-4 py-2 text-zinc-300">
+                  <div className="flex-1 px-4 py-2 text-black">
                     {line || "\u00A0"}
                   </div>
                 </div>
@@ -92,7 +92,7 @@ export default function DiaryClient({
               href={getP5jsEditorUrl(entry)}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-zinc-400 hover:text-white transition-colors text-sm"
+              className="text-gray-500 hover:text-black transition-colors text-sm"
             >
               Open in p5.js Editor →
             </Link>

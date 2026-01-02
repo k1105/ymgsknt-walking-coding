@@ -319,7 +319,7 @@ function ConnectingLines({
 
       ctx.clearRect(0, 0, canvas.width / dpr, canvas.height / dpr);
       ctx.beginPath();
-      ctx.strokeStyle = "#ffffff";
+      ctx.strokeStyle = "#000000";
       ctx.lineWidth = 1;
 
       if (isInitialLoad) ctx.globalAlpha = strokeProgress;
@@ -493,7 +493,7 @@ export default function Home() {
                 }}
               >
                 <div
-                  className="text-blue-200 text-sm"
+                  className="text-gray-900 text-sm"
                   style={{fontFamily: "var(--font-doto)"}}
                 >
                   {year}/{month}
@@ -515,7 +515,7 @@ export default function Home() {
             return (
               <div key={monthKey} className="aspect-square relative">
                 <div
-                  className="absolute top-2 left-2 text-xs text-white z-10"
+                  className="absolute top-2 left-2 text-xs text-gray-900 z-10"
                   style={{fontFamily: "var(--font-doto)"}}
                 >
                   {year}/{month}
@@ -550,7 +550,7 @@ export default function Home() {
               }}
             >
               <div
-                className="font-bold whitespace-pre-line cursor-pointer text-center relative"
+                className="font-bold whitespace-pre-line cursor-pointer text-center relative text-black"
                 style={{
                   fontSize,
                   lineHeight: fontSize,
@@ -562,7 +562,7 @@ export default function Home() {
 
                 {/* Dot Indicator */}
                 <div
-                  className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-orange-500 pointer-events-none group-hover:scale-100 scale-0 transition-transform duration-300 ease-in-out"
+                  className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gray-500 pointer-events-none group-hover:scale-100 scale-0 transition-transform duration-300 ease-in-out"
                   style={{width: "1rem", height: "1rem"}}
                 />
 
@@ -577,7 +577,7 @@ export default function Home() {
                       alt=""
                       width={200}
                       height={300}
-                      className="w-full h-full object-cover shadow-lg"
+                      className="w-full h-full object-cover border border-black"
                       unoptimized
                     />
                   </div>
