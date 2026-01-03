@@ -388,12 +388,11 @@ function ConnectingLines({
       }
     };
 
-    animRef.current.animationFrameId = requestAnimationFrame(render);
+    const animationFrameId = requestAnimationFrame(render);
+    animRef.current.animationFrameId = animationFrameId;
 
     return () => {
-      if (animRef.current.animationFrameId) {
-        cancelAnimationFrame(animRef.current.animationFrameId);
-      }
+      cancelAnimationFrame(animationFrameId);
     };
   }, [nodes, viewMode, onAnimationComplete, containerHeight]);
 
