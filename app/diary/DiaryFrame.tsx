@@ -543,7 +543,6 @@ export default function DiaryFrame({children}: {children: ReactNode}) {
       </header>
 
       <nav className="fixed top-0 right-0 z-[70] flex items-center">
-        {/* "ス" button - hidden on statement page */}
         {!isStatementPage && (
           <Link
             href="/statement"
@@ -554,7 +553,7 @@ export default function DiaryFrame({children}: {children: ReactNode}) {
                 isMobile ? "w-10 h-10" : "w-10 h-10"
               }`}
             >
-              <span className={isMobile ? "text-base" : "text-s"}>ス</span>
+              <span className={isMobile ? "text-base" : "text-s"}>何</span>
             </div>
             <span
               className={`absolute top-full mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-xs whitespace-nowrap ${
@@ -562,7 +561,7 @@ export default function DiaryFrame({children}: {children: ReactNode}) {
               }`}
               style={{writingMode: "vertical-rl"}}
             >
-              テートメント
+              をしているのか
             </span>
           </Link>
         )}

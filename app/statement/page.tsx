@@ -14,7 +14,7 @@ export default function StatementPage() {
           writingMode: "vertical-rl",
         }}
       >
-        ステートメント
+        What&apos;s this?
       </div>
 
       {/* Content */}
