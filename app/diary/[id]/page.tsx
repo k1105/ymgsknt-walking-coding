@@ -1,5 +1,10 @@
 import {notFound} from "next/navigation";
-import {dummyDiaryEntries, getPreviousEntry, getNextEntry} from "@/lib/data";
+import {
+  getAllEntries,
+  getEntryById,
+  getPreviousEntry,
+  getNextEntry,
+} from "@/lib/data";
 import DiaryClient from "./DiaryClient";
 
 interface DiaryPageProps {
@@ -8,24 +13,36 @@ interface DiaryPageProps {
   }>;
 }
 
+// Enable ISR: revalidate every 24 hours
+export const revalidate = 60 * 60 * 24;
+
 export async function generateStaticParams() {
-  return dummyDiaryEntries.map((entry) => ({
+  const entries = await getAllEntries();
+  return entries.map((entry) => ({
     id: entry.id,
   }));
 }
 
 export default async function DiaryPage({params}: DiaryPageProps) {
   const {id} = await params;
-  const entry = dummyDiaryEntries.find((e) => e.id === id);
+  const entry = await getEntryById(id);
 
   if (!entry) {
     notFound();
   }
 
-  const prevEntry = getPreviousEntry(id);
-  const nextEntry = getNextEntry(id);
+  const prevEntry = await getPreviousEntry(id);
+  const nextEntry = await getNextEntry(id);
+  const prevPrevEntry = prevEntry ? await getPreviousEntry(prevEntry.id) : null;
+  const nextNextEntry = nextEntry ? await getNextEntry(nextEntry.id) : null;
 
   return (
-    <DiaryClient entry={entry} prevEntry={prevEntry} nextEntry={nextEntry} />
+    <DiaryClient
+      entry={entry}
+      prevEntry={prevEntry}
+      nextEntry={nextEntry}
+      prevPrevEntry={prevPrevEntry}
+      nextNextEntry={nextNextEntry}
+    />
   );
 }

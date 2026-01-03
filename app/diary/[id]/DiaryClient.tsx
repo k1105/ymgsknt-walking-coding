@@ -3,25 +3,25 @@
 import Link from "next/link";
 import {useEffect, useState} from "react";
 import {DiaryEntry, getP5jsEmbedUrl, getP5jsEditorUrl} from "@/lib/types";
-import {getNextEntry, getPreviousEntry} from "@/lib/data";
 import {useDiaryFrame} from "@/app/diary/DiaryFrame";
 
 interface DiaryClientProps {
   entry: DiaryEntry;
   prevEntry: DiaryEntry | null;
   nextEntry: DiaryEntry | null;
+  prevPrevEntry: DiaryEntry | null;
+  nextNextEntry: DiaryEntry | null;
 }
 
 export default function DiaryClient({
   entry,
   prevEntry,
   nextEntry,
+  prevPrevEntry,
+  nextNextEntry,
 }: DiaryClientProps) {
   const {setEntryData} = useDiaryFrame();
   const [isContentVisible, setIsContentVisible] = useState(false);
-
-  const nextNextEntry = nextEntry ? getNextEntry(nextEntry.id) : null;
-  const prevPrevEntry = prevEntry ? getPreviousEntry(prevEntry.id) : null;
 
   // Split content into lines for line numbering
   const contentLines = entry.content.split("\n");
