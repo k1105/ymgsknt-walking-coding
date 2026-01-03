@@ -8,589 +8,410 @@ import {
   useRef,
   useMemo,
   ReactNode,
+  useCallback,
 } from "react";
 import {useRouter, usePathname} from "next/navigation";
 import {DiaryEntry} from "@/lib/types";
 import Link from "next/link";
 import {setupCanvas, drawRoughCurve} from "@/lib/canvas";
+import styles from "./DiaryFrame.module.css";
 
-// --- Types & Context ---
+// --- Types & Constants ---
+type EntryRole = "prevPrev" | "prev" | "current" | "next" | "nextNext";
 interface DiaryContextType {
-  setEntryData: (data: {
-    current: DiaryEntry;
-    prev: DiaryEntry | null;
-    next: DiaryEntry | null;
-    prevPrev: DiaryEntry | null;
-    nextNext: DiaryEntry | null;
-  }) => void;
+  setEntryData: (data: Record<EntryRole, DiaryEntry | null>) => void;
   triggerTransition: (direction: "next" | "prev", url: string) => void;
 }
-
 const DiaryContext = createContext<DiaryContextType | null>(null);
 
+const DATE_POSITIONS = {
+  "-2": {
+    pc: "translate3d(-50vw, calc(100dvh - 100% - 2rem), 0)",
+    sp: "translate3d(-100%, 5rem, 0)",
+  },
+  "-1": {
+    pc: "translate3d(calc(35vw - 50%), calc(100dvh - 100% - 2rem), 0)",
+    sp: "translate3d(2rem, 5rem, 0)",
+  },
+  "0": {
+    pc: "translate3d(calc(50vw - 50%), calc(100dvh - 100% - 2rem), 0)",
+    sp: "translate3d(calc(50vw - 50%), 5rem, 0)",
+  },
+  "1": {
+    pc: "translate3d(calc(65vw - 50%), calc(100dvh - 100% - 2rem), 0)",
+    sp: "translate3d(calc(100vw - 100% - 2rem), 5rem, 0)",
+  },
+  "2": {
+    pc: "translate3d(100vw, calc(100dvh - 100% - 2rem), 0)",
+    sp: "translate3d(100vw, 5rem, 0)",
+  },
+} as const;
+
+// --- Custom Hooks ---
 export function useDiaryFrame() {
   const context = useContext(DiaryContext);
-  if (!context) throw new Error("useDiaryFrame must be used within DiaryFrame");
+  if (!context) throw new Error("useDiaryFrame error");
   return context;
 }
 
-// --- Helper ---
-function formatDateDisplay(dateStr: string) {
-  const date = new Date(dateStr);
-  const year = String(date.getFullYear()).slice(-2).padStart(2, "0");
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}\n${month}\n${day}`;
+// タイトルアニメーション制御
+function useTitleAnimation(isRoot: boolean, isMobile: boolean) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [show, setShow] = useState(!isRoot);
+  const textChars = useMemo(() => "Walking●Coding".split(""), []);
+
+  // 現在位置と目標位置
+  const positions = useRef(textChars.map(() => ({x: 0, y: 0})));
+  const targets = useRef(textChars.map(() => ({x: 0, y: 0})));
+  const isIdleRef = useRef(false);
+  const idleTimer = useRef<NodeJS.Timeout | null>(null);
+
+  // 【重要】アクセス時に一度だけランダムシードを生成（リロードするまで固定）
+  // これにより「ランダム」だが「アニメーション中に振動しない」値を確保
+  const [seeds] = useState(() => {
+    return textChars.map(() => ({
+      x: Math.random(), // 0.0 ~ 1.0
+      y: Math.random(), // 0.0 ~ 1.0
+      spacing: Math.random(), // PC版のスペーシング用
+    }));
+  });
+
+  // フェードイン
+  useEffect(() => {
+    if (!isRoot) return;
+    const handler = () => setShow(true);
+    window.addEventListener("diaryTitleFadeIn", handler);
+    return () => window.removeEventListener("diaryTitleFadeIn", handler);
+  }, [isRoot]);
+
+  // アイドル検出 (PCのみ)
+  useEffect(() => {
+    if (isMobile) return;
+    const resetIdle = () => {
+      isIdleRef.current = false;
+      if (idleTimer.current) clearTimeout(idleTimer.current);
+      idleTimer.current = setTimeout(() => {
+        isIdleRef.current = true;
+      }, 30000);
+    };
+    resetIdle();
+    window.addEventListener("mousemove", resetIdle);
+    window.addEventListener("scroll", resetIdle);
+    return () => {
+      window.removeEventListener("mousemove", resetIdle);
+      window.removeEventListener("scroll", resetIdle);
+    };
+  }, [isMobile]);
+
+  // アニメーションループ
+  useEffect(() => {
+    let animationFrameId: number;
+    // PC用の設定値
+    const PC_BASE = {
+      w:
+        typeof window !== "undefined"
+          ? (window.innerWidth - 16 * 5) / 6 - 10
+          : 100,
+      h: typeof window !== "undefined" ? (window.innerHeight / 4) * 3 : 400,
+      pad: 10,
+      offset: {x: 8, y: 8},
+    };
+    // PC版のY軸スペーシング (シードから計算)
+    const pcSpacings = seeds.map((s) => 20 + s.spacing * 15);
+
+    const update = () => {
+      const isIdle = isIdleRef.current;
+      const wWidth = window.innerWidth;
+      const wHeight = window.innerHeight;
+
+      // --- 1. 定位置 (Home) の計算 ---
+      // 以前のループ依存の計算をやめ、計算済みの targets を参照する形にするため
+      // ここで毎フレーム「あるべき位置」を再計算する（レスポンシブ対応のため）
+
+      const homePositions: {x: number; y: number}[] = [];
+
+      if (isMobile) {
+        // === Mobile Logic (過去コードのロジックを復元) ===
+        const mw = wWidth;
+        const mh = mw / 4;
+        const pad = 10;
+        const bottomOffset = wHeight - mh; // 画面下部に配置
+
+        // 累積計算用の変数
+        let prevXPercent = 0;
+
+        textChars.forEach((_, i) => {
+          let x;
+          const seed = seeds[i];
+
+          // X座標: 順序を守りつつランダム配置
+          if (i === 0) {
+            x = mw * 0.05;
+            prevXPercent = 0.05;
+          } else if (i === textChars.length - 1) {
+            x = mw * 0.95;
+          } else {
+            // 前の文字より右に配置 (最小2% + ランダム)
+            const minPercent = prevXPercent + 0.02;
+            const remainingChars = textChars.length - i - 1;
+            // 後の文字のために3%ずつ空ける
+            let maxPercent = 0.95 - remainingChars * 0.03;
+            maxPercent = Math.max(minPercent + 0.02, maxPercent);
+
+            // シードを使ってランダム位置を決定
+            const xPercent = minPercent + seed.x * (maxPercent - minPercent);
+            x = mw * xPercent;
+            prevXPercent = xPercent;
+          }
+
+          // Y座標: 高さの範囲内でランダム
+          // bottomOffset を足して画面下部へ
+          const relativeY = pad + seed.y * (mh - pad * 2);
+          const y = bottomOffset + relativeY;
+
+          homePositions.push({x, y});
+        });
+      } else {
+        // === PC Logic (サイン波配置) ===
+        const {w, h, pad, offset} = PC_BASE;
+        textChars.forEach((_, i) => {
+          let x, y;
+          const seed = seeds[i];
+          if (i === 0) {
+            x = pad;
+            y = pad;
+          } else if (i === textChars.length - 1) {
+            x = w - pad;
+            y = h - pad;
+          } else if (i === 8) {
+            x = w / 2;
+            y = h / 2;
+          } else {
+            // シードを使用したランダム配置
+            // seed.x は 0-1 なので、適度に分散させる
+            const waveSeed = i * 0.618 + seed.x * 100;
+            x = (Math.sin(waveSeed) * 0.5 + 0.5) * (w - pad * 2) + pad;
+
+            let currentY = i < 8 ? pad : h / 2;
+            const startIdx = i < 8 ? 1 : 9;
+            for (let k = startIdx; k <= i; k++) currentY += pcSpacings[k];
+            y = Math.min(currentY, (i < 8 ? h / 2 : h) - pad);
+          }
+          homePositions.push({x: x + offset.x, y: y + offset.y});
+        });
+      }
+
+      // --- 2. ターゲット設定 & アニメーション ---
+      textChars.forEach((_, i) => {
+        const target = targets.current[i];
+        const home = homePositions[i];
+
+        if (isMobile || !isIdle) {
+          // モバイルまたは非アイドル時は定位置へ
+          target.x = home.x;
+          target.y = home.y;
+        } else {
+          // PCアイドル時: ランダム移動
+          const dx = target.x - positions.current[i].x;
+          const dy = target.y - positions.current[i].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          if (dist < 10 || (target.x === 0 && target.y === 0)) {
+            target.x = Math.random() * wWidth;
+            target.y = Math.random() * wHeight;
+          }
+        }
+
+        // イージング (Lerp)
+        const ease = isIdle ? 0.01 : 0.08;
+        positions.current[i].x += (target.x - positions.current[i].x) * ease;
+        positions.current[i].y += (target.y - positions.current[i].y) * ease;
+      });
+
+      // --- 3. 描画 ---
+      if (canvasRef.current) {
+        const ctx = setupCanvas(canvasRef.current, wWidth, wHeight);
+        if (ctx) {
+          ctx.beginPath();
+          ctx.strokeStyle = "#000";
+          ctx.lineWidth = 1;
+          for (let i = 0; i < textChars.length - 1; i++) {
+            const curr = positions.current[i];
+            const next = positions.current[i + 1];
+            if (i === 0) ctx.moveTo(curr.x, curr.y);
+            drawRoughCurve(ctx, curr.x, curr.y, next.x, next.y, i * 0.1, 1);
+          }
+          ctx.stroke();
+        }
+      }
+
+      // DOM要素位置更新
+      textChars.forEach((_, i) => {
+        const el = document.getElementById(`title-char-${i}`);
+        if (el)
+          el.style.transform = `translate(${positions.current[i].x}px, ${positions.current[i].y}px) translate(-50%, -50%)`;
+      });
+
+      animationFrameId = requestAnimationFrame(update);
+    };
+
+    animationFrameId = requestAnimationFrame(update);
+    return () => cancelAnimationFrame(animationFrameId);
+  }, [isMobile, textChars, seeds]); // seedsは不変なのでリロードまで同じ値を維持
+
+  return {canvasRef, show, textChars};
 }
 
 // --- Component ---
 export default function DiaryFrame({children}: {children: ReactNode}) {
   const router = useRouter();
   const pathname = usePathname();
-  const isRootPage = pathname === "/";
-  const isStatementPage = pathname === "/statement";
-  const isDiaryPage = pathname.startsWith("/diary/") && pathname !== "/diary";
-  const titleCanvasRef = useRef<HTMLCanvasElement>(null);
-
-  // Title characters positions
-  const titleText = "Wa●●l●king●Co●ding";
-  const titleChars = useMemo(() => titleText.split(""), []);
-  const [titleCharPositions, setTitleCharPositions] = useState<
-    Array<{char: string; x: number; y: number}>
-  >([]);
+  const isRoot = pathname === "/";
   const [isMobile, setIsMobile] = useState(false);
-  const [windowWidth, setWindowWidth] = useState(0);
-  const [showTitle, setShowTitle] = useState(!isRootPage); // Show immediately if not root page
+
+  const {canvasRef, show, textChars} = useTitleAnimation(isRoot, isMobile);
   const [viewMode, setViewMode] = useState<"network" | "calendar">("network");
+  const [entries, setEntries] = useState<Record<EntryRole, DiaryEntry | null>>({
+    current: null,
+    prev: null,
+    next: null,
+    prevPrev: null,
+    nextNext: null,
+  });
+  const [animDir, setAnimDir] = useState<"next" | "prev" | null>(null);
 
-  const [entries, setEntries] = useState<{
-    current: DiaryEntry | null;
-    prev: DiaryEntry | null;
-    next: DiaryEntry | null;
-    prevPrev: DiaryEntry | null;
-    nextNext: DiaryEntry | null;
-  }>({current: null, prev: null, next: null, prevPrev: null, nextNext: null});
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
 
-  const [animatingDir, setAnimatingDir] = useState<"next" | "prev" | null>(
-    null
+  useEffect(() => {
+    const h = (e: CustomEvent) => setViewMode(e.detail);
+    window.addEventListener("viewModeChange", h as EventListener);
+    return () =>
+      window.removeEventListener("viewModeChange", h as EventListener);
+  }, []);
+
+  const triggerTransition = useCallback(
+    (dir: "next" | "prev", url: string) => {
+      if (animDir) return;
+      setAnimDir(dir);
+      setTimeout(() => router.push(url), 800);
+    },
+    [animDir, router]
   );
-  const [targetUrl, setTargetUrl] = useState<string | null>(null);
 
-  const setEntryData = (data: typeof entries) => {
-    setEntries(data);
-    setAnimatingDir(null);
-    setTargetUrl(null);
-  };
-
-  const triggerTransition = (direction: "next" | "prev", url: string) => {
-    if (animatingDir) return;
-    setTargetUrl(url);
-    setAnimatingDir(direction);
-  };
-
-  useEffect(() => {
-    if (!animatingDir || !targetUrl) return;
-    const timer = setTimeout(() => {
-      router.push(targetUrl);
-    }, 800);
-    return () => clearTimeout(timer);
-  }, [animatingDir, targetUrl, router]);
-
-  // Check if mobile and window width
-  useEffect(() => {
-    const checkMobile = () => {
-      const width = window.innerWidth;
-      setWindowWidth(width);
-      setIsMobile(width < 768);
-    };
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
-
-  // Listen for title fade-in event on root page
-  useEffect(() => {
-    if (!isRootPage) return;
-
-    const handleTitleFadeIn = () => {
-      setShowTitle(true);
-    };
-
-    window.addEventListener(
-      "diaryTitleFadeIn",
-      handleTitleFadeIn as EventListener
-    );
-    return () =>
-      window.removeEventListener(
-        "diaryTitleFadeIn",
-        handleTitleFadeIn as EventListener
-      );
-  }, [isRootPage]);
-
-  // Listen for viewMode changes from page.tsx
-  useEffect(() => {
-    const handleViewModeChange = (e: CustomEvent<"network" | "calendar">) => {
-      setViewMode(e.detail);
-    };
-
-    window.addEventListener(
-      "viewModeChange",
-      handleViewModeChange as EventListener
-    );
-    return () =>
-      window.removeEventListener(
-        "viewModeChange",
-        handleViewModeChange as EventListener
-      );
-  }, []);
-
-  // Generate title character positions
-  useEffect(() => {
-    const generateTitlePositions = () => {
-      let width: number;
-      let height: number;
-
-      if (isMobile && windowWidth > 0) {
-        // スマホ版: 横幅100%、高さは幅の1/4
-        width = windowWidth;
-        height = width / 4;
-      } else if (!isMobile) {
-        // PC版: 固定サイズ
-        width = 100;
-        height = 400;
-      } else {
-        // 初期レンダリング時はスキップ
-        return;
-      }
-
-      const padding = 10;
-      const rangeX = width - padding * 2;
-      const rangeY = height - padding * 2;
-      const centerY = height / 2;
-
-      if (isMobile) {
-        // スマホ版: 横方向に順序を守って、widthに対するパーセンテージで配置
-        // 左端と右端の余白をパーセンテージで定義（文字が画面外に出ないように）
-        const leftPaddingPercent = 0.05; // 5%
-        const rightPaddingPercent = 0.05; // 5%
-
-        // 各文字について、順序を保ちながら利用可能な範囲でランダムに配置
-        const positions: Array<{char: string; x: number; y: number}> = [];
-
-        // 各文字について、順序を保ちながら利用可能な範囲全体でランダムに配置
-        for (let index = 0; index < titleChars.length; index++) {
-          const char = titleChars[index];
-
-          let x: number;
-
-          // 最初の文字（W）は左端に固定
-          if (index === 0) {
-            x = width * leftPaddingPercent;
-          }
-          // 最後の文字（g）は右端に固定
-          else if (index === titleChars.length - 1) {
-            x = width * (1 - rightPaddingPercent);
-          }
-          // その他の文字はランダム配置
-          else {
-            // 前の文字より右に配置する必要がある（最小位置をパーセンテージで計算）
-            let minPercent = leftPaddingPercent;
-            if (positions[index - 1]) {
-              // 前の文字の位置（パーセンテージ）+ 少しの間隔
-              const prevPercent = positions[index - 1].x / width;
-              minPercent = prevPercent + 0.02; // 前の文字より2%右
-            }
-
-            // 後の文字のための余白を確保しつつ最大位置をパーセンテージで計算
-            const remainingChars = titleChars.length - index - 1;
-            const minSpacingPercent = 0.03; // 各文字間の最小間隔3%
-            let maxPercent =
-              1 - rightPaddingPercent - remainingChars * minSpacingPercent;
-
-            // 最小位置と最大位置が逆転しないように調整
-            maxPercent = Math.max(minPercent + 0.02, maxPercent);
-
-            // パーセンテージでランダムな位置を決定
-            const xPercent =
-              minPercent + Math.random() * (maxPercent - minPercent);
-            x = width * xPercent;
-          }
-
-          // 縦方向: ランダム（ただし範囲内）
-          const y = padding + Math.random() * rangeY;
-
-          positions.push({
-            char,
-            x,
-            y: Math.max(padding, Math.min(height - padding, y)),
-          });
-        }
-        setTitleCharPositions(positions);
-      } else {
-        // PC版: 縦方向に順序を守って並べる（既存のロジック）
-        const minSpacing = 20;
-        const maxSpacing = 35;
-        const spacings: number[] = [];
-        for (let i = 0; i < titleChars.length; i++) {
-          spacings.push(minSpacing + Math.random() * (maxSpacing - minSpacing));
-        }
-        const positions = titleChars.map((char, index) => {
-          if (index === 0) return {char, x: padding, y: padding};
-          if (index === 8) return {char, x: width / 2, y: centerY};
-          if (index === titleChars.length - 1)
-            return {char, x: width - padding, y: height - padding};
-          const random1 = Math.random();
-          const seed1 = index * 0.618 + random1 * 100;
-          const x = (Math.sin(seed1) * 0.5 + 0.5) * rangeX + padding;
-          let y;
-          if (index < 8) {
-            let currentY = padding;
-            for (let i = 1; i <= index; i++) currentY += spacings[i];
-            y = Math.min(currentY, centerY - padding);
-          } else {
-            let currentY = centerY;
-            for (let i = 9; i <= index; i++) currentY += spacings[i];
-            y = Math.min(currentY, height - padding);
-          }
-          return {
-            char,
-            x: Math.max(padding, Math.min(width - padding, x)),
-            y: Math.max(padding, Math.min(height - padding, y)),
-          };
-        });
-        setTitleCharPositions(positions);
-      }
-    };
-    generateTitlePositions();
-  }, [titleChars, isMobile, windowWidth]);
-
-  // Draw connecting lines for title
-  useEffect(() => {
-    const canvas = titleCanvasRef.current;
-    if (!canvas || titleCharPositions.length === 0) return;
-
-    let width: number;
-    let height: number;
-
-    if (isMobile && windowWidth > 0) {
-      width = windowWidth;
-      height = width / 4;
-    } else if (!isMobile) {
-      width = 100;
-      height = 400;
-    } else {
-      return;
-    }
-
-    const ctx = setupCanvas(canvas, width, height);
-    if (!ctx) return;
-    ctx.beginPath();
-    ctx.strokeStyle = "#000000";
-    ctx.lineWidth = 1;
-    for (let i = 0; i < titleCharPositions.length - 1; i++) {
-      const current = titleCharPositions[i];
-      const next = titleCharPositions[i + 1];
-      // pos.yは上から下の座標系（0が上端）
-      // Canvasも上から下の座標系なので、pos.yをそのまま使う
-      // 文字はbottom基準で配置されているが、transform: translate(-50%, -50%)により
-      // 文字の中心がpos.yの位置になるので、Canvasの描画でもpos.yをそのまま使えば一致する
-      if (i === 0) ctx.moveTo(current.x, current.y);
-      const seed = i * 0.1;
-      drawRoughCurve(ctx, current.x, current.y, next.x, next.y, seed, 1);
-    }
-    ctx.stroke();
-  }, [titleCharPositions, isMobile, windowWidth]);
-
-  // 定位置の定義
-  // BC_LEFT / BC_RIGHT は使用せず、BL/BR/BCをターゲットにします
-  // PC版では30vwの幅の中で配置（中央から左右に15vwずつ）
-  const POSITIONS_BASE = {
-    TL: "translate3d(2rem, 5rem, 0)", // closeボタンと重ならないように上から5remに変更
-    TR: "translate3d(calc(100vw - 100% - 2rem), 5rem, 0)", // closeボタンと重ならないように上から5remに変更
-    TC: "translate3d(calc(50vw - 50%), 5rem, 0)", // closeボタンと重ならないように上から5remに変更
-    BL: "translate3d(2rem, calc(100dvh - 100% - 2rem), 0)",
-    BR: "translate3d(calc(100vw - 100% - 2rem), calc(100dvh - 100% - 2rem), 0)",
-    BC: "translate3d(calc(50vw - 50%), calc(100dvh - 100% - 2rem), 0)",
-    OFF_LEFT: "translate3d(-100%, calc(100dvh - 100% - 2rem), 0)",
-    OFF_RIGHT: "translate3d(100vw, calc(100dvh - 100% - 2rem), 0)",
-    OFF_LEFT_TOP: "translate3d(-100%, 5rem, 0)", // closeボタンと重ならないように上から5remに変更
-    OFF_RIGHT_TOP: "translate3d(100vw, 5rem, 0)", // closeボタンと重ならないように上から5remに変更
-  };
-
-  const getPositionTransform = (
-    position: keyof typeof POSITIONS_BASE
-  ): string => {
-    const base = POSITIONS_BASE[position];
-    if (isMobile) {
-      // sp版: そのまま使用
-      return base;
-    }
-    // PC版: 30vw幅内に配置
-    switch (position) {
-      case "BL":
-        return "translate3d(calc(35vw - 50%), calc(100dvh - 100% - 2rem), 0)";
-      case "BR":
-        return "translate3d(calc(65vw - 50%), calc(100dvh - 100% - 2rem), 0)";
-      case "OFF_LEFT":
-        return "translate3d(calc(35vw - 50% - 10vw), calc(100dvh - 100% - 2rem), 0)";
-      case "OFF_RIGHT":
-        return "translate3d(calc(65vw - 50% + 10vw), calc(100dvh - 100% - 2rem), 0)";
-      default:
-        return base;
-    }
-  };
-
-  const getDateStyles = (
-    role: "prevprev" | "prev" | "current" | "next" | "nextnext"
-  ) => {
-    let targetPosition: keyof typeof POSITIONS_BASE = "OFF_LEFT";
-    let opacity = 1;
-    let fontSize = "1.5rem";
-    let color = "rgb(107 114 128)"; // gray-500
-    const activeColor = "rgb(0 0 0)"; // black
-    let cursor = "default";
-    let pointerEvents: "auto" | "none" = "auto";
-
-    // sp版では上部に配置、PC版では下部に配置
-    const getPosition = (
-      bottomPos: keyof typeof POSITIONS_BASE
-    ): keyof typeof POSITIONS_BASE => {
-      if (isMobile) {
-        // sp版: 下部位置を上部位置にマッピング
-        const mapping: Record<string, keyof typeof POSITIONS_BASE> = {
-          BL: "TL",
-          BR: "TR",
-          BC: "TC",
-          OFF_LEFT: "OFF_LEFT_TOP",
-          OFF_RIGHT: "OFF_RIGHT_TOP",
-        };
-        return mapping[bottomPos] || bottomPos;
-      }
-      return bottomPos;
-    };
-
-    // --- ロジック修正: 移動先を「遷移後の役割の定位置」に厳密に合わせる ---
-
-    if (animatingDir === "next") {
-      // 次へ進む: 全体が左へシフト
-      switch (role) {
-        case "prev":
-          targetPosition = getPosition("OFF_LEFT"); // 画面外へ
-          opacity = 0;
-          break;
-        case "current":
-          targetPosition = getPosition("BL"); // Current -> 次の Prev 位置へ
-          opacity = 0.7;
-          fontSize = "1.5rem";
-          break;
-        case "next":
-          targetPosition = getPosition("BC"); // Next -> 次の Current 位置へ
-          opacity = 1;
-          fontSize = "2rem";
-          color = activeColor;
-          break;
-        case "nextnext":
-          targetPosition = getPosition("BR"); // NextNext -> 次の Next 位置へ
-          opacity = 0.7;
-          fontSize = "1.5rem";
-          break;
-        default:
-          opacity = 0;
-      }
-    } else if (animatingDir === "prev") {
-      // 前へ戻る: 全体が右へシフト
-      switch (role) {
-        case "prevprev":
-          targetPosition = getPosition("BL"); // PrevPrev -> 次の Prev 位置へ
-          opacity = 0.7;
-          fontSize = "1.5rem";
-          break;
-        case "prev":
-          targetPosition = getPosition("BC"); // Prev -> 次の Current 位置へ
-          opacity = 1;
-          fontSize = "2rem";
-          color = activeColor;
-          break;
-        case "current":
-          targetPosition = getPosition("BR"); // Current -> 次の Next 位置へ
-          opacity = 0.7;
-          fontSize = "1.5rem";
-          break;
-        case "next":
-          targetPosition = getPosition("OFF_RIGHT"); // 画面外へ
-          opacity = 0;
-          break;
-        default:
-          opacity = 0;
-      }
-    } else {
-      // アイドル状態 (通常配置)
-      switch (role) {
-        case "prevprev":
-          targetPosition = getPosition("OFF_LEFT");
-          opacity = 0;
-          pointerEvents = "none";
-          break;
-        case "prev":
-          targetPosition = getPosition("BL");
-          opacity = 0.7;
-          cursor = "pointer";
-          break;
-        case "current":
-          targetPosition = getPosition("BC");
-          opacity = 1;
-          fontSize = "2rem";
-          color = activeColor;
-          break;
-        case "next":
-          targetPosition = getPosition("BR");
-          opacity = 0.7;
-          cursor = "pointer";
-          break;
-        case "nextnext":
-          targetPosition = getPosition("OFF_RIGHT");
-          opacity = 0;
-          pointerEvents = "none";
-          break;
-      }
-    }
-
-    if (animatingDir) pointerEvents = "none";
-
-    // ターゲットが中央かどうかでスタイル起点を変える（モーフィングを自然にするため）
-    // transition-allにより、text-alignの変更は即時適用されるが、
-    // transform移動とoriginの変更で視覚的なズレを最小限にする
-    const isTargetCenter = targetPosition === "BC" || targetPosition === "TC";
-
-    const baseClassName = `fixed top-0 left-0 font-bold whitespace-pre-line transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] z-50 select-none border-0 bg-transparent p-0 m-0 ${
-      isTargetCenter
-        ? "origin-bottom-center text-center"
-        : "origin-bottom-left text-left"
-    }`;
+  const getDateStyle = (role: EntryRole) => {
+    const roleIdx = {prevPrev: -2, prev: -1, current: 0, next: 1, nextNext: 2}[
+      role
+    ];
+    const targetIdx =
+      roleIdx - (animDir === "next" ? 1 : animDir === "prev" ? -1 : 0);
+    const isCenter = targetIdx === 0;
+    const isVisible = targetIdx >= -1 && targetIdx <= 1;
+    const posKey = String(
+      Math.max(-2, Math.min(2, targetIdx))
+    ) as keyof typeof DATE_POSITIONS;
 
     return {
-      className: baseClassName,
+      className: `fixed top-0 left-0 font-bold whitespace-pre-line transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] z-50 select-none ${
+        isCenter
+          ? "origin-bottom-center text-center"
+          : "origin-bottom-left text-left"
+      }`,
       style: {
-        transform: getPositionTransform(targetPosition),
-        opacity,
-        fontSize,
-        lineHeight: fontSize,
-        color,
-        cursor,
-        pointerEvents,
+        transform: DATE_POSITIONS[posKey][isMobile ? "sp" : "pc"],
+        opacity: isVisible ? (isCenter ? 1 : 0.7) : 0,
+        fontSize: isCenter ? "2rem" : "1.5rem",
+        lineHeight: isCenter ? "2rem" : "1.5rem",
+        color: isCenter ? "rgb(0 0 0)" : "rgb(107 114 128)",
+        cursor: !isCenter && isVisible && !animDir ? "pointer" : "default",
+        pointerEvents: animDir || !isVisible ? "none" : "auto",
         fontFamily: "var(--font-doto)",
-      },
+      } as React.CSSProperties,
       onClick: () => {
-        if (animatingDir) return;
-        if (role === "prev" && entries.prev)
+        if (!animDir && role === "prev" && entries.prev)
           triggerTransition("prev", `/diary/${entries.prev.id}`);
-        if (role === "next" && entries.next)
+        if (!animDir && role === "next" && entries.next)
           triggerTransition("next", `/diary/${entries.next.id}`);
       },
     };
   };
 
   return (
-    <DiaryContext.Provider value={{setEntryData, triggerTransition}}>
-      {/* Title Block */}
-      {/* Title Block */}
-      <header
-        className={`fixed z-50 transition-opacity duration-300 ease-in-out ${
-          isMobile ? "bottom-0 left-0 w-full" : "top-8 left-8"
-        } ${showTitle ? "opacity-100" : "opacity-0"}`}
+    <DiaryContext.Provider
+      value={{
+        setEntryData: (d) => {
+          setEntries(d);
+          setAnimDir(null);
+        },
+        triggerTransition,
+      }}
+    >
+      {/* Title Canvas Layer */}
+      <div
+        className={`fixed inset-0 z-[100] pointer-events-none transition-opacity duration-300 ${
+          show ? "opacity-100" : "opacity-0"
+        }`}
       >
-        <div
-          className="relative"
-          style={
-            isMobile && windowWidth > 0
-              ? {
-                  width: "100%",
-                  height: `${windowWidth / 4}px`,
-                }
-              : {width: "100px", height: "400px"}
-          }
-        >
-          <canvas
-            ref={titleCanvasRef}
-            className="absolute top-0 left-0 pointer-events-none"
-            style={
-              isMobile && windowWidth > 0
-                ? {
-                    width: "100%",
-                    height: `${windowWidth / 4}px`,
-                  }
-                : {width: "100px", height: "400px"}
-            }
-          />
-          {titleCharPositions.map((pos, index) => {
-            // 修正箇所: pos.y は上からの距離なので、bottom計算を削除し、直接 top で指定します
-            return (
-              <span
-                key={index}
-                className="absolute text-black"
-                style={{
-                  fontSize: isMobile ? "2rem" : "1.75rem",
-                  left: `${pos.x}px`,
-                  top: `${pos.y}px`, // ここを bottom から top に変更
-                  transform: "translate(-50%, -50%)",
-                }}
-              >
-                {pos.char === " " ? "\u00A0" : pos.char}
-              </span>
-            );
-          })}
-        </div>
-      </header>
+        <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
+        {textChars.map((char, i) => (
+          <span
+            id={`title-char-${i}`}
+            key={i}
+            className="absolute top-0 left-0 text-black will-change-transform"
+            style={{fontSize: isMobile ? "2rem" : "2.75rem"}}
+          >
+            {char === " " ? "\u00A0" : char}
+          </span>
+        ))}
+      </div>
 
+      {/* Navigation */}
       <nav className="fixed top-0 right-0 z-[70] flex items-center">
-        {!isStatementPage && (
+        {pathname !== "/statement" && (
           <Link
             href="/statement"
             className="group relative flex flex-col items-center justify-center text-gray-500 hover:text-black transition-colors"
           >
             <div
-              className={`border border-current flex items-center justify-center ${
-                isMobile ? "w-10 h-10" : "w-10 h-10"
-              }`}
+              className={`border border-current flex items-center justify-center ${styles.button}`}
             >
-              <span className={isMobile ? "text-base" : "text-s"}>何</span>
+              <span className={isMobile ? "text-base" : "text-xl"}>何</span>
             </div>
             <span
-              className={`absolute top-full mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-xs whitespace-nowrap ${
-                isMobile && isDiaryPage ? "hidden" : ""
+              className={`absolute top-full mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-xl whitespace-nowrap ${
+                isMobile && pathname.startsWith("/diary/") ? "hidden" : ""
               }`}
               style={{writingMode: "vertical-rl"}}
             >
-              をしているのか
+              What&apos;s this?
             </span>
           </Link>
         )}
-        {isRootPage ? (
+        {isRoot ? (
           <button
             onClick={() => {
-              const newMode = viewMode === "network" ? "calendar" : "network";
-              setViewMode(newMode);
-              // Dispatch event to page.tsx
-              if (typeof window !== "undefined") {
-                window.dispatchEvent(
-                  new CustomEvent("viewModeChange", {detail: newMode})
-                );
-              }
+              const next = viewMode === "network" ? "calendar" : "network";
+              setViewMode(next);
+              window.dispatchEvent(
+                new CustomEvent("viewModeChange", {detail: next})
+              );
             }}
             className="group relative flex flex-col items-center justify-center text-gray-500 hover:text-black transition-colors"
           >
             <div
-              className={`rounded-full border border-current flex items-center justify-center ${
-                isMobile ? "w-10 h-10" : "w-10 h-10"
-              }`}
+              className={`rounded-full border border-current flex items-center justify-center ${styles.button}`}
             >
-              <span className={isMobile ? "text-base" : "text-s"}>
+              <span className={isMobile ? "text-base" : "text-xl"}>
                 {viewMode === "network" ? "狭" : "広"}
               </span>
             </div>
             <span
-              className={`absolute top-full mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-xs whitespace-nowrap ${
-                isMobile && isDiaryPage ? "hidden" : ""
+              className={`absolute top-full mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-xl whitespace-nowrap ${
+                isMobile && pathname.startsWith("/diary/") ? "hidden" : ""
               }`}
               style={{writingMode: "vertical-rl"}}
             >
@@ -601,65 +422,57 @@ export default function DiaryFrame({children}: {children: ReactNode}) {
           <Link
             href="/"
             className="group relative flex flex-col items-center justify-center text-gray-500 hover:text-black transition-all duration-700 delay-300"
-            aria-label="Back to index"
           >
             <div
-              className={`rounded-full border border-current flex items-center justify-center ${
-                isMobile ? "w-10 h-10" : "w-10 h-10"
-              }`}
+              className={`flex items-center justify-center ${styles.button}`}
             >
               <svg
-                width={isMobile ? "18" : "16"}
-                height={isMobile ? "18" : "16"}
+                width={
+                  isMobile ? "var(--grid-width)" : "calc(var(--grid-width) / 3)"
+                }
+                height={
+                  isMobile ? "var(--grid-width)" : "calc(var(--grid-width) / 3)"
+                }
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+                strokeWidth="0.5"
               >
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
+                <line x1="24" y1="0" x2="0" y2="24" />
+                <line x1="0" y1="0" x2="24" y2="24" />
               </svg>
             </div>
           </Link>
         )}
       </nav>
 
-      {/* Date Elements */}
-      {!isRootPage && !isStatementPage && (
-        <>
-          {entries.prevPrev && (
-            <div key={entries.prevPrev.id} {...getDateStyles("prevprev")}>
-              {formatDateDisplay(entries.prevPrev.date)}
+      {/* Dates */}
+      {!isRoot &&
+        pathname !== "/statement" &&
+        (Object.keys(entries) as EntryRole[]).map((role) => {
+          const entry = entries[role];
+          if (!entry) return null;
+          const s = getDateStyle(role);
+          return (
+            <div
+              key={entry.id}
+              className={s.className}
+              style={s.style}
+              onClick={s.onClick}
+            >
+              {(() => {
+                const D = new Date(entry.date);
+                return `${String(D.getFullYear()).slice(-2)}\n${String(
+                  D.getMonth() + 1
+                ).padStart(2, "0")}\n${String(D.getDate()).padStart(2, "0")}`;
+              })()}
             </div>
-          )}
-          {entries.prev && (
-            <div key={entries.prev.id} {...getDateStyles("prev")}>
-              {formatDateDisplay(entries.prev.date)}
-            </div>
-          )}
-          {entries.current && (
-            <div key={entries.current.id} {...getDateStyles("current")}>
-              {formatDateDisplay(entries.current.date)}
-            </div>
-          )}
-          {entries.next && (
-            <div key={entries.next.id} {...getDateStyles("next")}>
-              {formatDateDisplay(entries.next.date)}
-            </div>
-          )}
-          {entries.nextNext && (
-            <div key={entries.nextNext.id} {...getDateStyles("nextnext")}>
-              {formatDateDisplay(entries.nextNext.date)}
-            </div>
-          )}
-        </>
-      )}
+          );
+        })}
 
       <div
         className={`transition-opacity duration-700 ease-in-out will-change-[opacity] ${
-          isRootPage || !animatingDir ? "opacity-100" : "opacity-0"
+          isRoot || !animDir ? "opacity-100" : "opacity-0"
         }`}
       >
         {children}

@@ -1,64 +1,49 @@
 "use client";
+import Link from "next/link";
+import styles from "./Statement.module.css";
 
 export default function StatementPage() {
   return (
     <div className="relative min-h-screen">
       {/* Background Text Characters */}
       <div
-        className="fixed inset-0 top-1/6 pointer-events-none text-black"
-        style={{
-          fontSize: "2.5rem",
-          letterSpacing: "0.25em",
-          lineHeight: "2.5rem",
-          zIndex: 1,
-          writingMode: "vertical-rl",
-        }}
+        className={`fixed inset-0 top-1/6 pointer-events-none text-black ${styles.header}`}
       >
         What&apos;s this?
       </div>
 
       {/* Content */}
-      <main
-        className="relative ml-auto max-w-4xl px-6 py-64"
-        style={{zIndex: 2}}
-      >
-        <article className="prose prose-invert max-w-150">
+      <main className={`relative max-w-4xl py-64 ${styles.textContainer}`}>
+        <article className="prose prose-invert">
           <div className="text-lg text-black leading-relaxed space-y-6">
+            <h1 className="text-2xl">Walking Codingとは?</h1>
+            <p>
+              AIエージェントを用いたコーディングの登場を受けて、従来のように「人の手によって」コードを書く行為を命名した
+              <Link href="https://ja.wikipedia.org/wiki/%E3%83%AC%E3%83%88%E3%83%AD%E3%83%8B%E3%83%A0">
+                <span className="underline">レトロニム</span>
+              </Link>
+              です。
+            </p>
+            <h1 className="text-2xl mt-32">Background</h1>
             <p>コードを書かなくなった。</p>
             <p>
-              要件定義をGeminiに依頼し、実装をClaudeに依頼する。大枠のレイアウトはIllustratorで組み、画像からレイアウトを起こしてもらう。「spring-layout」「convex
-              hull」と言うだけで期待するアルゴリズムが実装される。
+              要件定義をGeminiに依頼して、実装をClaudeに依頼する。大枠のレイアウトをIllustratorで組んだら、スクリーンショットを撮ってレイアウトを起こしてもらう。「spring-layout」「convex
+              hull」と言うだけで、期待のアルゴリズムが実装される。
             </p>
             <p>
-              コードが手元を離れていく。些細なバグですら、AIに「なんとかして」もらう場面が増えてくる。
+              コードが手元を離れていく。些細なバグですら向き合うのが面倒になり、AIに「なんとかして」もらう場面が増えてくる。
             </p>
             <p>
-              それでも、実はそれほど悲観していない。AIエージェントが行っていることは、すでに「代替」を超えているからだ。ある目的を達成までのコーディングという過程を、これまで私たちは「徒歩」でしか移動できなかった。そこに、「自動車」のような移動手段が加わった。それがもたらすものは、従来
+              悲観はしていない。AIエージェントが行っていることはすでに「代替」を超えていて、私たちはより速く、より遠くを目指せるようになったのだから。システム構築という長い道のりを「徒歩」でしか移動できなかったところに、「自動車」のような移動手段が加わった。そう考えれば、それまでとは全く異なる質を期待して良いはずだ。
             </p>
             <p>
-              この変化によって、「作り方」に向けていた意識の比重が下がり、「何を作るか」への関心が一気に高まった。ある意味では、思考は以前よりもクリアになったと感じている。
+              ただ、「自動車」でしか辿り着けない場所があるのと同様に、「徒歩」でしか辿り着けない場所もある。コーディングをしていると、この定数をいたずらに大きくしたら？とか、乱数にしたらどうなる？とか、「寄り道」のような操作をすることがある。特にビジュアルコーディングのような、目的地が作り手にとっても曖昧で、何が正解で失敗とも言えない中、目の前に現れたものに美的価値を見出す作業こそ、「寄り道」は大切なことのように思う。
             </p>
             <p>
-              しかし皮肉なことに、「何を作るか」という発想は、たいてい「いかに作るか」を考えている最中に生まれてきたものでもある。
+              だから「walking」する。今のところプロンプトに記述できるのは、いわば「首都」や「観光地」のような、誰かがすでに訪ねて、一定の価値を見出している場所だ。
+              そこへまっすぐに向かうのではなく、脇道に外れたり、目的を持たずに散歩するように、自己目的的な移動の中で何かを見出すプロセスの価値を確かめたい。
             </p>
-            <p>
-              コーディングの途中で、この変数をあえて大きくしたらどうなるだろうか、とか、ここで脇道に逸れたら何が起こるだろうか、といったことを考える。そうした「寄り道」のような操作に、もっと期待してもいいのではないかと思うようになった。
-            </p>
-            <p>
-              また、「コーディング」という行為に下支えされていなければ説明できないものが確かに存在する。それは印象や感覚といった言葉ではうまく言い表せない。そうしたものをプロンプトだけで実現しようとすると、結局はコーディングとほとんど変わらない粒度の説明を要求されることになる。
-            </p>
-            <p>
-              だから、「walking」する。今の自分が把握できているのは、いわば「首都」や「観光地」のような、誰かがすでに見たこと・聞いたことのある場所ばかりだ。プロンプトで記述できるのも、そうした目立つ地点に限られている。
-            </p>
-            <p>
-              そこへ一直線に向かうのではなく、道中にあるものを見つける実践をしたい。緩やかに目的地を意識しながらも、脇道に逸れることそのものを重視する。散歩のような移動。
-            </p>
-            <p>
-              なんのことはない。「自分の手でコーディングする」ことのレトロニムとして、これを「Walking
-              Coding」と呼び、自覚的に実践する。
-            </p>
-            <p>つくっている最中に考えていることを記録する。</p>
-            <p>それを「walking」というアナロジーのもとで分析する。</p>
+            <h1 className="text-2xl mt-32">Manner of Walking</h1>
           </div>
         </article>
       </main>

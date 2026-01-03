@@ -2,6 +2,7 @@ import type {Metadata} from "next";
 import {Geist, Geist_Mono, Doto} from "next/font/google";
 import "./globals.css";
 import DiaryFrame from "./diary/DiaryFrame";
+import GridOverlay from "./GridOverlay";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,6 +35,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${doto.variable} antialiased`}
       >
+        {/* <GridOverlay /> */}
         <div className="md:pb-0 pb-[20vh]">
           <DiaryFrame>{children}</DiaryFrame>
         </div>

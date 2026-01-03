@@ -4,6 +4,7 @@ import Link from "next/link";
 import {useEffect, useState} from "react";
 import {DiaryEntry, getP5jsEmbedUrl, getP5jsEditorUrl} from "@/lib/types";
 import {useDiaryFrame} from "@/app/diary/DiaryFrame";
+import styles from "./DiaryClient.module.css";
 
 interface DiaryClientProps {
   entry: DiaryEntry;
@@ -57,17 +58,29 @@ export default function DiaryClient({
         }`}
       >
         {/* Left side (desktop) / Top (mobile) - diary content */}
-        <div className="w-full md:w-1/2 h-auto md:h-full flex flex-col">
-          <article className="flex-1 overflow-y-auto py-64 md:pl-32">
+        <div className={`h-auto md:h-full flex flex-col ${styles.textArea}`}>
+          <article className="flex-1 overflow-y-auto py-64">
             <div className="font-mono text-sm md:text-base">
               {allLines.map((line, index) => (
-                <div key={index} className="flex">
+                <div
+                  key={index}
+                  className="flex"
+                  style={{gap: "var(--grid-gap)"}}
+                >
                   {/* Line number with 5rem left margin */}
-                  <div className="flex-shrink-0 w-12 md:w-16 px-3 py-2 text-right text-gray-500 select-none">
+                  <div
+                    className="flex-shrink-0 w-12 md:w-16 py-2 text-right text-gray-500 select-none"
+                    style={{width: "var(--grid-width)"}}
+                  >
                     {index + 1}
                   </div>
                   {/* Line content */}
-                  <div className="flex-1 px-4 py-2 text-black">
+                  <div
+                    className="flex-1 py-2 text-black"
+                    style={{
+                      width: "calc(var(--grid-width) * 2 + var(--grid-gap))",
+                    }}
+                  >
                     {line || "\u00A0"}
                   </div>
                 </div>

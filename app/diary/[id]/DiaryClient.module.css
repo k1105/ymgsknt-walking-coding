@@ -1,0 +1,9 @@
+.textArea {
+  width: calc(var(--grid-width) * 3 + var(--grid-gap) * 2);
+}
+
+@media screen and (max-width: 768px) {
+  .textArea {
+    width: calc(var(--grid-width) * 5 + var(--grid-gap) * 5);
+  }
+}

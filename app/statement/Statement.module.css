@@ -1,0 +1,24 @@
+.textContainer {
+  width: calc(var(--grid-width) * 3 + var(--grid-gap) * 2);
+  margin-left: calc(var(--grid-width) + var(--grid-gap));
+}
+
+.header {
+  font-size: calc(var(--grid-width) / 3);
+  letter-spacing: 0.25em;
+  line-height: calc(var(--grid-width) / 3);
+  z-index: 1;
+  writing-mode: vertical-rl;
+}
+
+@media screen and (max-width: 768px) {
+  .textContainer {
+    width: calc(var(--grid-width) * 4 + var(--grid-gap) * 4);
+    margin-left: calc(var(--grid-width) + var(--grid-gap));
+  }
+
+  .header {
+    font-size: calc(var(--grid-width));
+    line-height: calc(var(--grid-width));
+  }
+}
