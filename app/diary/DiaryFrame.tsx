@@ -371,27 +371,7 @@ export default function DiaryFrame({children}: {children: ReactNode}) {
 
       {/* Navigation */}
       <nav className="fixed top-0 right-0 z-[70] flex items-center">
-        {pathname !== "/statement" && (
-          <Link
-            href="/statement"
-            className="group relative flex flex-col items-center justify-center text-gray-500 hover:text-black transition-colors"
-          >
-            <div
-              className={`border border-current flex items-center justify-center ${styles.button}`}
-            >
-              <span className={isMobile ? "text-base" : "text-xl"}>何</span>
-            </div>
-            <span
-              className={`absolute top-full mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-xl whitespace-nowrap ${
-                isMobile && pathname.startsWith("/diary/") ? "hidden" : ""
-              }`}
-              style={{writingMode: "vertical-rl"}}
-            >
-              What&apos;s this?
-            </span>
-          </Link>
-        )}
-        {isRoot ? (
+        {isRoot && (
           <button
             onClick={() => {
               const next = viewMode === "network" ? "calendar" : "network";
@@ -418,7 +398,28 @@ export default function DiaryFrame({children}: {children: ReactNode}) {
               く並べる
             </span>
           </button>
-        ) : (
+        )}
+        {pathname !== "/statement" && (
+          <Link
+            href="/statement"
+            className="group relative flex flex-col items-center justify-center text-gray-500 hover:text-black transition-colors"
+          >
+            <div
+              className={`border border-current flex items-center justify-center ${styles.button}`}
+            >
+              <span className={isMobile ? "text-base" : "text-xl"}>何</span>
+            </div>
+            <span
+              className={`absolute top-full mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-xl whitespace-nowrap ${
+                isMobile && pathname.startsWith("/diary/") ? "hidden" : ""
+              }`}
+              style={{writingMode: "vertical-rl"}}
+            >
+              What&apos;s this?
+            </span>
+          </Link>
+        )}
+        {!isRoot && (
           <Link
             href="/"
             className="group relative flex flex-col items-center justify-center text-gray-500 hover:text-black transition-all duration-700 delay-300"

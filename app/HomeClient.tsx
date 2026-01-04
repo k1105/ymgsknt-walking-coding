@@ -53,7 +53,7 @@ function formatDateDisplay(dateStr: string) {
   const year = String(date.getFullYear()).slice(-2).padStart(2, "0");
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
-  return `${year}\n${month}\n${day}`;
+  return `${year}/${month}/${day}`;
 }
 
 function easeInOutCubic(x: number): number {
@@ -534,7 +534,7 @@ export default function HomeClient({entries}: HomeClientProps) {
         {nodes.map((node) => {
           const x = viewMode === "network" ? node.networkX : node.calendarX;
           const y = viewMode === "network" ? node.networkY : node.calendarY;
-          const fontSize = viewMode === "network" ? "4rem" : "1.5rem";
+          const fontSize = viewMode === "network" ? "2rem" : "1.5rem";
 
           return (
             <Link
@@ -553,11 +553,10 @@ export default function HomeClient({entries}: HomeClientProps) {
               }}
             >
               <div
-                className="font-bold whitespace-pre-line cursor-pointer text-center relative text-black"
+                className="whitespace-pre-line cursor-pointer text-center relative text-black"
                 style={{
                   fontSize,
                   lineHeight: fontSize,
-                  fontFamily: "var(--font-doto)",
                   transition: `font-size ${TRANSITION_DURATION}ms ${CSS_EASE_CUBIC}, line-height ${TRANSITION_DURATION}ms ${CSS_EASE_CUBIC}`,
                 }}
               >
