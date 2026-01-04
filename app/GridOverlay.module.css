@@ -1,0 +1,17 @@
+.grid {
+  z-index: -1;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: var(--grid-gap);
+  padding: 0;
+  background-color: rgba(173, 216, 230, 0.5);
+  margin-left: 3rem;
+  margin-right: 3rem;
+}
+
+@media screen and (max-width: 768px) {
+  .grid {
+    margin-left: 1rem;
+    margin-right: 1rem;
+  }
+}

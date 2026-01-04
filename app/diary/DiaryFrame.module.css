@@ -1,11 +1,11 @@
 .button {
-  width: calc(var(--grid-width) / 3);
-  height: calc(var(--grid-width) / 3);
+  width: var(--grid-margin);
+  height: var(--grid-margin);
 }
 
 @media screen and (max-width: 768px) {
   .button {
-    width: calc(var(--grid-width));
-    height: calc(var(--grid-width));
+    width: calc((var(--grid-width) + var(--grid-margin)) / 2);
+    height: calc((var(--grid-width) + var(--grid-margin)) / 2);
   }
 }

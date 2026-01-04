@@ -3,8 +3,21 @@
 :root {
   --background: #ffffff;
   --foreground: #000000;
-  --grid-gap: 16px;
-  --grid-width: calc((100vw - 16px * 5) / 6);
+  --grid-margin: 3rem;
+  --grid-gap: 1rem;
+  --grid-width: calc(
+    (100vw - var(--grid-gap) * 5 - var(--grid-margin) * 2) / 6
+  );
+}
+
+@media screen and (max-width: 768px) {
+  :root {
+    --grid-gap: 0.5rem;
+    --grid-margin: 1rem;
+    --grid-width: calc(
+      (100vw - var(--grid-gap) * 5 - var(--grid-margin) * 2) / 6
+    );
+  }
 }
 
 @theme inline {

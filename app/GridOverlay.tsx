@@ -1,18 +1,8 @@
 "use client";
-
+import styles from "./GridOverlay.module.css";
 export default function GridOverlay() {
   return (
-    <div
-      className="fixed inset-0 pointer-events-none"
-      style={{
-        zIndex: -1,
-        display: "grid",
-        gridTemplateColumns: "repeat(6, 1fr)",
-        gap: "16px",
-        padding: "0",
-        backgroundColor: "rgba(173, 216, 230, 0.5)", // 水色の背景（gap部分と全体）
-      }}
-    >
+    <div className={`fixed inset-0 pointer-events-none ${styles.grid}`}>
       {/* 6列のグリッドアイテム */}
       {Array.from({length: 6}).map((_, index) => (
         <div

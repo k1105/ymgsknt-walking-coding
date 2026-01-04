@@ -1,9 +1,30 @@
+.lineContainer {
+  display: flex;
+  gap: var(--grid-gap);
+}
+
+.lineNumber {
+  width: calc(var(--grid-margin) + var(--grid-width));
+  text-align: right;
+}
+
 .textArea {
-  width: calc(var(--grid-width) * 3 + var(--grid-gap) * 2);
+  width: calc(var(--grid-width) * 3 + var(--grid-gap) * 2 + var(--grid-margin));
 }
 
 @media screen and (max-width: 768px) {
+  .lineNumber {
+    width: var(--grid-margin);
+    text-align: center;
+  }
+
+  .lineContainer {
+    gap: 0;
+  }
+
   .textArea {
-    width: calc(var(--grid-width) * 5 + var(--grid-gap) * 5);
+    width: calc(
+      var(--grid-width) * 5 + var(--grid-gap) * 4 + var(--grid-margin)
+    );
   }
 }

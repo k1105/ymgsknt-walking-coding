@@ -110,7 +110,7 @@ function useTitleAnimation(isRoot: boolean, isMobile: boolean) {
     const PC_BASE = {
       w:
         typeof window !== "undefined"
-          ? (window.innerWidth - 16 * 5) / 6 - 10
+          ? (window.innerWidth - 16 * 11) / 6 + 16 * 3
           : 100,
       h: typeof window !== "undefined" ? (window.innerHeight / 4) * 3 : 400,
       pad: 10,

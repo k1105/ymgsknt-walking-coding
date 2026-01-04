@@ -62,15 +62,9 @@ export default function DiaryClient({
           <article className="flex-1 overflow-y-auto py-64">
             <div className="font-mono text-sm md:text-base">
               {allLines.map((line, index) => (
-                <div
-                  key={index}
-                  className="flex"
-                  style={{gap: "var(--grid-gap)"}}
-                >
-                  {/* Line number with 5rem left margin */}
+                <div key={index} className={`${styles.lineContainer}`}>
                   <div
-                    className="flex-shrink-0 w-12 md:w-16 py-2 text-right text-gray-500 select-none"
-                    style={{width: "var(--grid-width)"}}
+                    className={`flex-shrink-0 py-2 text-gray-500 select-none ${styles.lineNumber}`}
                   >
                     {index + 1}
                   </div>
