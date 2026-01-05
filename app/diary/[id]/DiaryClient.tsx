@@ -59,7 +59,7 @@ export default function DiaryClient({
       >
         {/* Left side (desktop) / Top (mobile) - diary content */}
         <div className={`h-auto md:h-full flex flex-col ${styles.textArea}`}>
-          <article className="flex-1 overflow-y-auto py-64">
+          <article className={`flex-1 overflow-y-auto py-64 ${styles.article}`}>
             <div className="font-mono text-sm md:text-base">
               {allLines.map((line, index) => (
                 <div key={index} className={`${styles.lineContainer}`}>

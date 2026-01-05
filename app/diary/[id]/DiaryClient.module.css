@@ -12,6 +12,11 @@
   width: calc(var(--grid-width) * 3 + var(--grid-gap) * 2 + var(--grid-margin));
 }
 
+.article {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 @media screen and (max-width: 768px) {
   .lineNumber {
     width: var(--grid-margin);
