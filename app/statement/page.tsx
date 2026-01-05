@@ -24,6 +24,9 @@ export default function StatementPage() {
               </Link>
               です。
             </p>
+            <p>
+              人がコードを書かなくても良い時代にあえてコードを書く最中に感じたこと、その過程での試行錯誤の記録を言葉で残すことで、その行為が創作に与える影響や意義について再考します。
+            </p>
             <h1 className="text-2xl mt-32">Background</h1>
             <p>コードを書かなくなった。</p>
             <p>
