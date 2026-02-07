@@ -73,7 +73,7 @@ function useDiaryLayout(entries: DiaryEntry[]) {
 
   const sortedEntries = useMemo(() => {
     return [...entries].sort(
-      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
     );
   }, [entries]);
 
@@ -82,7 +82,7 @@ function useDiaryLayout(entries: DiaryEntry[]) {
     sortedEntries.forEach((entry) => {
       const date = new Date(entry.date);
       const monthKey = `${date.getFullYear()}-${String(
-        date.getMonth() + 1
+        date.getMonth() + 1,
       ).padStart(2, "0")}`;
       if (!map.has(monthKey)) map.set(monthKey, []);
       map.get(monthKey)!.push(entry);
@@ -201,7 +201,7 @@ function useDiaryLayout(entries: DiaryEntry[]) {
               thumbnailUrl: entry.thumbnailUrl,
             });
           });
-        }
+        },
       );
 
       // 初回計算結果を保存
@@ -330,7 +330,7 @@ function ConnectingLines({
       for (let i = 0; i < currentNodes.length - 1; i++) {
         const getInterpolatedPos = (
           nodeStart: DateNode | undefined,
-          nodeTarget: DateNode
+          nodeTarget: DateNode,
         ) => {
           if (!nodeStart || nodeStart.id !== nodeTarget.id) {
             return {
@@ -430,7 +430,7 @@ export default function HomeClient({entries}: HomeClientProps) {
   useEffect(() => {
     if (typeof window !== "undefined") {
       window.dispatchEvent(
-        new CustomEvent("viewModeChange", {detail: viewMode})
+        new CustomEvent("viewModeChange", {detail: viewMode}),
       );
     }
   }, [viewMode]);
@@ -443,18 +443,18 @@ export default function HomeClient({entries}: HomeClientProps) {
 
     window.addEventListener(
       "viewModeChange",
-      handleViewModeChange as EventListener
+      handleViewModeChange as EventListener,
     );
     // Initial sync
     if (typeof window !== "undefined") {
       window.dispatchEvent(
-        new CustomEvent("viewModeChange", {detail: viewMode})
+        new CustomEvent("viewModeChange", {detail: viewMode}),
       );
     }
     return () =>
       window.removeEventListener(
         "viewModeChange",
-        handleViewModeChange as EventListener
+        handleViewModeChange as EventListener,
       );
   }, [viewMode]);
 
@@ -503,7 +503,7 @@ export default function HomeClient({entries}: HomeClientProps) {
                 </div>
               </div>
             );
-          }
+          },
         )}
       </div>
 
@@ -534,7 +534,7 @@ export default function HomeClient({entries}: HomeClientProps) {
         {nodes.map((node) => {
           const x = viewMode === "network" ? node.networkX : node.calendarX;
           const y = viewMode === "network" ? node.networkY : node.calendarY;
-          const fontSize = viewMode === "network" ? "2rem" : "1.5rem";
+          const fontSize = viewMode === "network" ? "1.5rem" : "0.8rem";
 
           return (
             <Link
