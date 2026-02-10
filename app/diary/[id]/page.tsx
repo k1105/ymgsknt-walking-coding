@@ -13,9 +13,6 @@ interface DiaryPageProps {
   }>;
 }
 
-// Enable ISR: revalidate every 24 hours (86400 seconds)
-export const revalidate = 86400;
-
 export async function generateStaticParams() {
   const entries = await getAllEntries();
   return entries.map((entry) => ({

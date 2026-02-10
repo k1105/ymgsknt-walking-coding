@@ -2,12 +2,51 @@
 import {Client} from "@notionhq/client";
 import {isFullPage} from "@notionhq/client/build/src/helpers";
 import {DiaryEntry, ContentBlock, RichTextItem} from "./types";
+import fs from "fs";
+import path from "path";
 
 const notion = new Client({
   auth: process.env.NOTION_TOKEN,
 });
 
 const dataSourceId = process.env.NOTION_DATA_SOURCE_ID;
+
+// ビルド時に画像を保存するディレクトリ
+const IMAGES_DIR = path.join(process.cwd(), "public", "images");
+
+// URLからファイル拡張子を取得
+function getExtFromUrl(url: string): string {
+  try {
+    const pathname = new URL(url).pathname;
+    const ext = path.extname(pathname);
+    return ext || ".png";
+  } catch {
+    return ".png";
+  }
+}
+
+// 画像をダウンロードしてローカルに保存し、公開パスを返す
+async function downloadImage(url: string, filename: string): Promise<string> {
+  fs.mkdirSync(IMAGES_DIR, {recursive: true});
+  const filePath = path.join(IMAGES_DIR, filename);
+  const publicPath = `/images/${filename}`;
+
+  if (fs.existsSync(filePath)) {
+    return publicPath;
+  }
+
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const buffer = Buffer.from(await res.arrayBuffer());
+    fs.writeFileSync(filePath, buffer);
+    console.log(`Downloaded: ${filename}`);
+    return publicPath;
+  } catch (e) {
+    console.warn(`Failed to download image: ${url}`, e);
+    return url; // フォールバック: 元のURLを返す
+  }
+}
 
 // Notion API からの型定義（最小限）
 interface NotionRichTextItem {
@@ -76,10 +115,19 @@ async function fetchAllEntries(): Promise<DiaryEntry[]> {
       thumbnailProperty.files.length > 0
     ) {
       const fileObj = thumbnailProperty.files[0];
+      let rawUrl: string | undefined;
       if (fileObj.type === "file") {
-        thumbnailUrl = fileObj.file.url;
+        rawUrl = fileObj.file.url;
       } else if (fileObj.type === "external") {
-        thumbnailUrl = fileObj.external.url;
+        rawUrl = fileObj.external.url;
+      }
+      if (rawUrl) {
+        const ext = getExtFromUrl(rawUrl);
+        const pageIdClean = page.id.replace(/-/g, "");
+        thumbnailUrl = await downloadImage(
+          rawUrl,
+          `${pageIdClean}-thumb${ext}`
+        );
       }
     }
 
@@ -88,63 +136,74 @@ async function fetchAllEntries(): Promise<DiaryEntry[]> {
       block_id: page.id,
     });
 
-    const contentBlocks: ContentBlock[] = blocksRes.results
-      .map((block: Record<string, unknown>) => {
-        // 1. 画像 (Image)
-        if (block.type === "image") {
-          const image = block.image as Record<string, unknown>;
-          const url =
-            image.type === "file"
-              ? ((image.file as Record<string, unknown>).url as string)
-              : ((image.external as Record<string, unknown>).url as string);
-          const caption =
-            (image.caption as NotionRichTextItem[] | undefined)
-              ?.map((c) => c.plain_text)
-              .join("") || "";
-          return {type: "image", url, caption};
-        }
+    const pageIdClean = page.id.replace(/-/g, "");
+    let imageIndex = 0;
 
-        // 2. コード (Code)
-        if (block.type === "code") {
-          const code = block.code as Record<string, unknown>;
-          const text =
-            (code.rich_text as NotionRichTextItem[] | undefined)
-              ?.map((t) => t.plain_text)
-              .join("") || "";
-          const language = code.language as string;
-          return {type: "code", text, language};
-        }
+    const contentBlocks: ContentBlock[] = (
+      await Promise.all(
+        blocksRes.results.map(async (block: Record<string, unknown>) => {
+          // 1. 画像 (Image)
+          if (block.type === "image") {
+            const image = block.image as Record<string, unknown>;
+            const rawUrl =
+              image.type === "file"
+                ? ((image.file as Record<string, unknown>).url as string)
+                : ((image.external as Record<string, unknown>).url as string);
+            const caption =
+              (image.caption as NotionRichTextItem[] | undefined)
+                ?.map((c) => c.plain_text)
+                .join("") || "";
 
-        // 3. ブックマーク (Bookmark)
-        if (block.type === "bookmark") {
-          const bookmark = block.bookmark as Record<string, unknown>;
-          const url = bookmark.url as string;
-          const caption =
-            (bookmark.caption as NotionRichTextItem[] | undefined)
-              ?.map((c) => c.plain_text)
-              .join("") || "";
-          return {type: "bookmark", url, caption};
-        }
+            const ext = getExtFromUrl(rawUrl);
+            const idx = imageIndex++;
+            const url = await downloadImage(
+              rawUrl,
+              `${pageIdClean}-${idx}${ext}`
+            );
+            return {type: "image" as const, url, caption};
+          }
 
-        // 4. テキスト (Paragraph, Headings, Lists, Quote, etc.)
-        // これらをすべて「テキストブロック」として扱います。
-        // 必要に応じて headingなどを区別するtypeを作っても良いですが、
-        // ここでは汎用的に rich_text を持つものを抽出します。
-        const type = block.type as string;
-        const typeBlock = block[type] as Record<string, unknown> | undefined;
-        if (typeBlock && typeBlock.rich_text) {
-          return {
-            type: "text",
-            content: transformRichText(
-              typeBlock.rich_text as NotionRichTextItem[]
-            ),
-          };
-        }
+          // 2. コード (Code)
+          if (block.type === "code") {
+            const code = block.code as Record<string, unknown>;
+            const text =
+              (code.rich_text as NotionRichTextItem[] | undefined)
+                ?.map((t) => t.plain_text)
+                .join("") || "";
+            const language = code.language as string;
+            return {type: "code" as const, text, language};
+          }
 
-        // 未対応のブロック
-        return null;
-      })
-      .filter((b): b is ContentBlock => b !== null);
+          // 3. ブックマーク (Bookmark)
+          if (block.type === "bookmark") {
+            const bookmark = block.bookmark as Record<string, unknown>;
+            const url = bookmark.url as string;
+            const caption =
+              (bookmark.caption as NotionRichTextItem[] | undefined)
+                ?.map((c) => c.plain_text)
+                .join("") || "";
+            return {type: "bookmark" as const, url, caption};
+          }
+
+          // 4. テキスト (Paragraph, Headings, Lists, Quote, etc.)
+          const type = block.type as string;
+          const typeBlock = block[type] as
+            | Record<string, unknown>
+            | undefined;
+          if (typeBlock && typeBlock.rich_text) {
+            return {
+              type: "text" as const,
+              content: transformRichText(
+                typeBlock.rich_text as NotionRichTextItem[]
+              ),
+            };
+          }
+
+          // 未対応のブロック
+          return null;
+        })
+      )
+    ).filter((b): b is ContentBlock => b !== null);
 
     entries.push({
       id: page.id,
