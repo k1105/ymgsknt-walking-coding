@@ -61,3 +61,27 @@ p {
     font-size: 0.875rem;
   }
 }
+
+/* MDX line numbers via CSS counter */
+.mdx-content {
+  counter-reset: mdx-line;
+}
+
+.mdx-line {
+  counter-increment: mdx-line;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--grid-gap);
+  padding: 0.5rem 0;
+}
+
+.mdx-line::before {
+  content: counter(mdx-line);
+  flex-shrink: 0;
+  width: 2rem;
+  text-align: right;
+  opacity: 0.4;
+  font-size: 0.75rem;
+  line-height: 1.625;
+  user-select: none;
+}

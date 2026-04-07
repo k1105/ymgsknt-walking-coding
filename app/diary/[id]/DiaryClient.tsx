@@ -75,14 +75,15 @@ export default function DiaryClient({
           <article
             className={`flex-1 overflow-y-auto py-64 ${styles.article}`}
           >
-            <div className="font-mono text-sm md:text-base px-8">
-              {/* Header */}
-              <div className="text-white/60 mb-6">
-                {`/* ${entry.date}_diary.md */`}
+            <div className="font-mono text-sm md:text-base px-8 text-white">
+              {/* Header — manual line number style */}
+              <div className="flex items-start gap-[var(--grid-gap)] py-2 mb-2">
+                <span className="flex-shrink-0 w-8 text-right opacity-40 text-xs leading-relaxed select-none">0</span>
+                <span className="opacity-60">{`/* ${entry.date}_diary.md */`}</span>
               </div>
 
-              {/* MDX Content */}
-              <div className="text-white">{children}</div>
+              {/* MDX Content with line numbers */}
+              {children}
             </div>
           </article>
         </div>
@@ -102,12 +103,13 @@ export default function DiaryClient({
         <div className={`h-auto md:h-full flex flex-col ${styles.textArea}`}>
           <article className={`flex-1 overflow-y-auto py-64 ${styles.article}`}>
             <div className="font-mono text-sm md:text-base px-8">
-              {/* Header */}
-              <div className="text-gray-400 mb-6">
-                {`/* ${entry.date}_diary.md */`}
+              {/* Header — manual line number style */}
+              <div className="flex items-start gap-[var(--grid-gap)] py-2 mb-2">
+                <span className="flex-shrink-0 w-8 text-right text-gray-400 text-xs leading-relaxed select-none">0</span>
+                <span className="text-gray-400">{`/* ${entry.date}_diary.md */`}</span>
               </div>
 
-              {/* MDX Content (server-rendered) */}
+              {/* MDX Content with line numbers */}
               <div className="text-black">{children}</div>
             </div>
           </article>

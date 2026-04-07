@@ -5,20 +5,20 @@ import {MDXRemote} from "next-mdx-remote/rsc";
 /* --- Link Card Component --- */
 function LinkCard({url, text}: {url: string; text: string}) {
   return (
-    <div className="my-2">
+    <div className="mdx-line my-2">
       <a
         href={url}
         target="_blank"
         rel="noopener noreferrer"
-        className="flex border border-gray-200 rounded hover:bg-gray-50 transition-colors p-3 no-underline group"
+        className="flex border border-white/20 rounded hover:bg-white/10 transition-colors p-3 no-underline group"
       >
         <div className="flex-1 min-w-0">
-          <div className="text-sm font-medium text-gray-800 truncate group-hover:text-blue-600">
+          <div className="text-sm font-medium truncate group-hover:underline">
             {text || url}
           </div>
-          <div className="text-xs text-gray-400 mt-1 truncate">{url}</div>
+          <div className="text-xs opacity-50 mt-1 truncate">{url}</div>
         </div>
-        <span className="text-gray-400 ml-2">↗</span>
+        <span className="opacity-50 ml-2">↗</span>
       </a>
     </div>
   );
@@ -53,55 +53,55 @@ const mdxComponents = {
       return <LinkCard url={link.url} text={link.text} />;
     }
     return (
-      <div className="whitespace-pre-wrap leading-relaxed mb-4" {...props} />
+      <div className="mdx-line whitespace-pre-wrap leading-relaxed" {...props} />
     );
   },
   h1: (props: React.HTMLAttributes<HTMLHeadingElement>) => (
-    <h1 className="text-2xl font-bold mb-4" {...props} />
+    <h1 className="mdx-line text-2xl font-bold" {...props} />
   ),
   h2: (props: React.HTMLAttributes<HTMLHeadingElement>) => (
-    <h2 className="text-xl font-bold mb-3" {...props} />
+    <h2 className="mdx-line text-xl font-bold" {...props} />
   ),
   h3: (props: React.HTMLAttributes<HTMLHeadingElement>) => (
-    <h3 className="text-lg font-bold mb-2" {...props} />
+    <h3 className="mdx-line text-lg font-bold" {...props} />
   ),
   a: (props: React.AnchorHTMLAttributes<HTMLAnchorElement>) => (
     <a
       target="_blank"
       rel="noopener noreferrer"
-      className="text-blue-600 hover:underline cursor-pointer z-10 relative"
+      className="underline cursor-pointer z-10 relative"
       {...props}
     />
   ),
   ul: (props: React.HTMLAttributes<HTMLUListElement>) => (
-    <ul className="list-disc pl-6 mb-4" {...props} />
+    <ul className="mdx-line list-disc pl-6" {...props} />
   ),
   ol: (props: React.HTMLAttributes<HTMLOListElement>) => (
-    <ol className="list-decimal pl-6 mb-4" {...props} />
+    <ol className="mdx-line list-decimal pl-6" {...props} />
   ),
   li: (props: React.HTMLAttributes<HTMLLIElement>) => (
     <li className="mb-1" {...props} />
   ),
   blockquote: (props: React.HTMLAttributes<HTMLQuoteElement>) => (
     <blockquote
-      className="border-l-4 border-gray-300 pl-4 italic text-gray-600 mb-4"
+      className="mdx-line border-l-4 border-current/30 pl-4 italic opacity-70"
       {...props}
     />
   ),
   code: (props: React.HTMLAttributes<HTMLElement>) => (
     <code
-      className="font-mono bg-gray-100 rounded px-1 text-red-500 text-sm"
+      className="font-mono bg-white/10 rounded px-1 text-sm"
       {...props}
     />
   ),
   pre: (props: React.HTMLAttributes<HTMLPreElement>) => (
-    <div className="my-2 bg-[#f6f8fa] border border-gray-200 rounded p-3 overflow-x-auto mb-4">
-      <pre className="font-mono text-sm text-gray-800" {...props} />
+    <div className="mdx-line my-2 bg-white/5 border border-white/10 rounded p-3 overflow-x-auto">
+      <pre className="font-mono text-sm" {...props} />
     </div>
   ),
   img: (props: React.ImgHTMLAttributes<HTMLImageElement>) => (
-    <span className="block my-4">
-      <span className="relative block w-full h-[300px] max-h-[500px] rounded overflow-hidden border border-gray-200">
+    <span className="mdx-line block my-2">
+      <span className="relative block w-full h-[300px] max-h-[500px] rounded overflow-hidden border border-white/20">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           className="w-full h-full object-cover rounded"
@@ -112,7 +112,7 @@ const mdxComponents = {
       </span>
     </span>
   ),
-  hr: () => <hr className="my-6 border-gray-200" />,
+  hr: () => <hr className="mdx-line my-4 border-current/20" />,
 };
 
 interface MdxContentProps {
@@ -120,5 +120,9 @@ interface MdxContentProps {
 }
 
 export default function MdxContent({source}: MdxContentProps) {
-  return <MDXRemote source={source} components={mdxComponents} />;
+  return (
+    <div className="mdx-content">
+      <MDXRemote source={source} components={mdxComponents} />
+    </div>
+  );
 }
