@@ -12,6 +12,7 @@ const SKETCHES_DIR = path.join(process.cwd(), "public", "sketches");
 interface MetaJson {
   date: string;
   p5jsSketchId: string;
+  sketchType?: "p5js-editor" | "local";
   thumbnail?: string;
   notionPageId?: string;
 }
@@ -60,10 +61,15 @@ function loadEntry(dirName: string): DiaryEntry | null {
       `/sketches/${dirName}/$1`
     );
 
+    // Auto-detect local sketch if index.html exists
+    const hasLocalSketch = fs.existsSync(path.join(dir, "index.html"));
+    const sketchType = meta.sketchType || (hasLocalSketch ? "local" : "p5js-editor");
+
     return {
       id: dirName, // use date as ID
       date: meta.date,
       p5jsSketchId: meta.p5jsSketchId,
+      sketchType,
       thumbnailUrl,
       rawContent: rewrittenContent,
     };

@@ -4,15 +4,23 @@ export interface DiaryEntry {
   id: string;
   date: string;
   p5jsSketchId: string;
+  sketchType?: "p5js-editor" | "local"; // default: "p5js-editor"
   thumbnailUrl?: string;
   rawContent: string; // MDX/Markdown source
 }
 
-// p5.js用のヘルパー関数
-export function getP5jsEmbedUrl(entry: DiaryEntry) {
+// スケッチのembed URLを返す
+export function getSketchEmbedUrl(entry: DiaryEntry): string {
+  if (entry.sketchType === "local") {
+    return `/sketches/${entry.id}/index.html`;
+  }
   return `https://editor.p5js.org/k1105/embed/${entry.p5jsSketchId}`;
 }
 
-export function getP5jsEditorUrl(entry: DiaryEntry) {
+// スケッチのソースリンクを返す（ローカルの場合はnull）
+export function getSketchSourceUrl(entry: DiaryEntry): string | null {
+  if (entry.sketchType === "local") {
+    return null;
+  }
   return `https://editor.p5js.org/k1105/sketches/${entry.p5jsSketchId}`;
 }

@@ -5,8 +5,8 @@ import Link from "next/link";
 import {useEffect, useState} from "react";
 import {
   DiaryEntry,
-  getP5jsEmbedUrl,
-  getP5jsEditorUrl,
+  getSketchEmbedUrl,
+  getSketchSourceUrl,
 } from "@/lib/types";
 import {useDiaryFrame} from "@/app/diary/DiaryFrame";
 import styles from "./DiaryClient.module.css";
@@ -71,27 +71,29 @@ export default function DiaryClient({
           </article>
         </div>
 
-        {/* Right side: p5.js sketch */}
+        {/* Right side: Sketch */}
         <div className="w-full md:w-1/2 h-[50vh] md:h-full flex flex-col md:p-30 bg-white border-l border-gray-100">
           <div className="flex-1 relative">
             <iframe
-              src={getP5jsEmbedUrl(entry)}
+              src={getSketchEmbedUrl(entry)}
               width="100%"
               height="100%"
               className="border-0"
               allow="autoplay"
             />
           </div>
-          <div className="p-4 text-center">
-            <Link
-              href={getP5jsEditorUrl(entry)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-gray-500 hover:text-black transition-colors text-sm font-mono"
-            >
-              Open in p5.js Editor →
-            </Link>
-          </div>
+          {getSketchSourceUrl(entry) && (
+            <div className="p-4 text-center">
+              <Link
+                href={getSketchSourceUrl(entry)!}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-500 hover:text-black transition-colors text-sm font-mono"
+              >
+                Open in p5.js Editor →
+              </Link>
+            </div>
+          )}
         </div>
       </main>
     </div>
