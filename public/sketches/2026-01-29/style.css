@@ -1,0 +1,17 @@
+html, body {
+  margin: 0;
+  padding: 0;
+}
+canvas {
+  display: block;
+}
+
+.status {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  font-size: 3rem;
+  font-weight: bold;
+  color: yellow;
+  mix-blend-mode: difference;
+}

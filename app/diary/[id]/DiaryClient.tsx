@@ -32,6 +32,9 @@ export default function DiaryClient({
 }: DiaryClientProps) {
   const {setEntryData} = useDiaryFrame();
   const [isContentVisible, setIsContentVisible] = useState(false);
+  const [isDiaryOpen, setIsDiaryOpen] = useState(false);
+
+  const isLocal = entry.sketchType === "local";
 
   useEffect(() => {
     setEntryData({
@@ -49,6 +52,58 @@ export default function DiaryClient({
     return () => clearTimeout(timer);
   }, [entry.id]);
 
+  // ローカルスケッチ: フルスクリーン + オーバーレイ日記
+  if (isLocal) {
+    return (
+      <div className="min-h-screen overflow-hidden relative">
+        <main
+          className={`transition-all duration-700 ease-out will-change-[opacity,transform] ${
+            isContentVisible ? "opacity-100" : "opacity-0"
+          }`}
+        >
+          {/* Fullscreen Sketch */}
+          <div className="fixed inset-0 flex items-center justify-center bg-black">
+            <iframe
+              src={getSketchEmbedUrl(entry)}
+              className="border-0 w-full h-full"
+              allow="autoplay"
+            />
+          </div>
+
+          {/* Diary toggle button */}
+          <button
+            onClick={() => setIsDiaryOpen(!isDiaryOpen)}
+            className="fixed bottom-6 right-6 z-50 bg-white/90 backdrop-blur-sm border border-gray-200 rounded-full px-4 py-2 text-sm font-mono text-gray-600 hover:text-black hover:bg-white transition-all shadow-sm"
+          >
+            {isDiaryOpen ? "✕ close" : "diary"}
+          </button>
+
+          {/* Diary overlay panel */}
+          <div
+            className={`fixed right-0 top-0 h-full w-full md:w-[480px] bg-white/95 backdrop-blur-sm border-l border-gray-200 z-40 transition-transform duration-300 ease-out overflow-y-auto ${
+              isDiaryOpen
+                ? "translate-x-0"
+                : "translate-x-full"
+            }`}
+          >
+            <article className="py-24 px-8">
+              <div className="font-mono text-sm md:text-base">
+                {/* Header */}
+                <div className="text-gray-400 mb-6">
+                  {`/* ${entry.date}_diary.md */`}
+                </div>
+
+                {/* MDX Content */}
+                <div className="text-black">{children}</div>
+              </div>
+            </article>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // p5js-editor: 従来の左右分割レイアウト
   return (
     <div className="min-h-screen overflow-hidden relative">
       <main
