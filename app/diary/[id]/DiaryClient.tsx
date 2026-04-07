@@ -67,21 +67,22 @@ export default function DiaryClient({
           allow="autoplay"
         />
 
-        {/* Diary Content — left side, same style as original DiaryFrame */}
+        {/* Diary Content — left side, transparent with mix-blend-mode */}
         <div
-          className={`absolute left-0 top-0 h-full flex flex-col ${styles.textArea} bg-white/95 backdrop-blur-sm border-r border-gray-100 z-10`}
+          className={`absolute left-0 top-0 h-full flex flex-col ${styles.textArea} z-10`}
+          style={{mixBlendMode: "difference"}}
         >
           <article
             className={`flex-1 overflow-y-auto py-64 ${styles.article}`}
           >
             <div className="font-mono text-sm md:text-base px-8">
               {/* Header */}
-              <div className="text-gray-400 mb-6">
+              <div className="text-white/60 mb-6">
                 {`/* ${entry.date}_diary.md */`}
               </div>
 
               {/* MDX Content */}
-              <div className="text-black">{children}</div>
+              <div className="text-white">{children}</div>
             </div>
           </article>
         </div>
