@@ -67,10 +67,10 @@ export default function DiaryClient({
           allow="autoplay"
         />
 
-        {/* Diary Content — left side, transparent with mix-blend-mode */}
+        {/* Diary Content — left side, transparent with text shadow for readability */}
         <div
           className={`absolute left-0 top-0 h-full flex flex-col ${styles.textArea} z-10`}
-          style={{mixBlendMode: "difference"}}
+          style={{textShadow: "0 0 8px rgba(0,0,0,0.8), 0 0 2px rgba(0,0,0,0.9)"}}
         >
           <article
             className={`flex-1 overflow-y-auto py-64 ${styles.article}`}
