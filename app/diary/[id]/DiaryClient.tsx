@@ -1,8 +1,8 @@
 // DiaryClient.tsx
 "use client";
 
+import React from "react";
 import Link from "next/link";
-import Image from "next/image";
 import {useEffect, useState} from "react";
 import {MDXRemote, MDXRemoteSerializeResult} from "next-mdx-remote";
 import {
@@ -13,11 +13,56 @@ import {
 import {useDiaryFrame} from "@/app/diary/DiaryFrame";
 import styles from "./DiaryClient.module.css";
 
+/* --- Link Card Component --- */
+const LinkCard = ({url, text}: {url: string; text: string}) => (
+  <div className="my-2">
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="flex border border-gray-200 rounded hover:bg-gray-50 transition-colors p-3 no-underline group"
+    >
+      <div className="flex-1 min-w-0">
+        <div className="text-sm font-medium text-gray-800 truncate group-hover:text-blue-600">
+          {text || url}
+        </div>
+        <div className="text-xs text-gray-400 mt-1 truncate">{url}</div>
+      </div>
+      <span className="text-gray-400 ml-2">↗</span>
+    </a>
+  </div>
+);
+
+/* --- Helper: check if children is a single link --- */
+function getSoleLinkFromChildren(
+  children: React.ReactNode
+): {url: string; text: string} | null {
+  // children が単一の <a> 要素かチェック
+  const childArray = React.Children.toArray(children);
+  if (childArray.length !== 1) return null;
+
+  const child = childArray[0];
+  if (React.isValidElement<{href?: string; children?: React.ReactNode}>(child) && child.props?.href) {
+    const text =
+      typeof child.props.children === "string"
+        ? child.props.children
+        : child.props.href;
+    return {url: child.props.href, text};
+  }
+  return null;
+}
+
 /* --- MDX Custom Components --- */
 const mdxComponents = {
-  p: (props: React.HTMLAttributes<HTMLParagraphElement>) => (
-    <div className="whitespace-pre-wrap leading-relaxed mb-4" {...props} />
-  ),
+  p: (props: React.HTMLAttributes<HTMLParagraphElement>) => {
+    const link = getSoleLinkFromChildren(props.children);
+    if (link) {
+      return <LinkCard url={link.url} text={link.text} />;
+    }
+    return (
+      <div className="whitespace-pre-wrap leading-relaxed mb-4" {...props} />
+    );
+  },
   h1: (props: React.HTMLAttributes<HTMLHeadingElement>) => (
     <h1 className="text-2xl font-bold mb-4" {...props} />
   ),
