@@ -70,12 +70,12 @@ export default function DiaryClient({
         {/* Diary Content — left side, transparent with text shadow for readability */}
         <div
           className={`absolute left-0 top-0 h-full flex flex-col ${styles.textArea} z-10`}
-          style={{textShadow: "0 0 8px rgba(0,0,0,0.8), 0 0 2px rgba(0,0,0,0.9)"}}
+          style={{textShadow: "0 0 8px rgba(255,255,255,0.8), 0 0 2px rgba(255,255,255,0.9)"}}
         >
           <article
             className={`flex-1 overflow-y-auto py-64 ${styles.article}`}
           >
-            <div className="font-mono text-sm md:text-base px-8 text-white">
+            <div className="font-mono text-sm md:text-base px-8 text-black">
               {/* Header — manual line number style */}
               <div className="flex items-start gap-[var(--grid-gap)] py-2 mb-2">
                 <span className="flex-shrink-0 w-8 text-right opacity-40 text-xs leading-relaxed select-none">0</span>
