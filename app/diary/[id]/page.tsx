@@ -6,6 +6,7 @@ import {
   getNextEntry,
 } from "@/lib/data";
 import DiaryClient from "./DiaryClient";
+import MdxContent from "./MdxContent";
 
 interface DiaryPageProps {
   params: Promise<{
@@ -40,6 +41,8 @@ export default async function DiaryPage({params}: DiaryPageProps) {
       nextEntry={nextEntry}
       prevPrevEntry={prevPrevEntry}
       nextNextEntry={nextNextEntry}
-    />
+    >
+      <MdxContent source={entry.rawContent} />
+    </DiaryClient>
   );
 }
