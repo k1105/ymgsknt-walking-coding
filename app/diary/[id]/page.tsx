@@ -5,8 +5,8 @@ import {
   getPreviousEntry,
   getNextEntry,
 } from "@/lib/data";
-import {serialize} from "next-mdx-remote/serialize";
 import DiaryClient from "./DiaryClient";
+import MdxContent from "./MdxContent";
 
 interface DiaryPageProps {
   params: Promise<{
@@ -34,17 +34,15 @@ export default async function DiaryPage({params}: DiaryPageProps) {
   const prevPrevEntry = prevEntry ? await getPreviousEntry(prevEntry.id) : null;
   const nextNextEntry = nextEntry ? await getNextEntry(nextEntry.id) : null;
 
-  // Serialize MDX on the server
-  const mdxSource = await serialize(entry.rawContent);
-
   return (
     <DiaryClient
       entry={entry}
-      mdxSource={mdxSource}
       prevEntry={prevEntry}
       nextEntry={nextEntry}
       prevPrevEntry={prevPrevEntry}
       nextNextEntry={nextNextEntry}
-    />
+    >
+      <MdxContent source={entry.rawContent} />
+    </DiaryClient>
   );
 }
