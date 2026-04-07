@@ -32,7 +32,6 @@ export default function DiaryClient({
 }: DiaryClientProps) {
   const {setEntryData} = useDiaryFrame();
   const [isContentVisible, setIsContentVisible] = useState(false);
-  const [isDiaryOpen, setIsDiaryOpen] = useState(false);
 
   const isLocal = entry.sketchType === "local";
   const sourceUrl = getSketchSourceUrl(entry);
@@ -53,7 +52,7 @@ export default function DiaryClient({
     return () => clearTimeout(timer);
   }, [entry.id]);
 
-  // ローカルスケッチ: フルスクリーン + オーバーレイ日記
+  // ローカルスケッチ: フルスクリーンスケッチ + 左側に日記（元のスタイル）
   if (isLocal) {
     return (
       <div
@@ -61,29 +60,21 @@ export default function DiaryClient({
           isContentVisible ? "opacity-100" : "opacity-0"
         }`}
       >
-        {/* Fullscreen Sketch — absolute within the 100vh container */}
+        {/* Fullscreen Sketch — behind diary */}
         <iframe
           src={getSketchEmbedUrl(entry)}
           className="absolute inset-0 w-full h-full border-0"
           allow="autoplay"
         />
 
-        {/* Diary toggle button */}
-        <button
-          onClick={() => setIsDiaryOpen(!isDiaryOpen)}
-          className="absolute bottom-6 right-6 z-30 bg-white/90 backdrop-blur-sm border border-gray-200 rounded-full px-4 py-2 text-sm font-mono text-gray-600 hover:text-black hover:bg-white transition-all shadow-sm"
-        >
-          {isDiaryOpen ? "✕ close" : "diary"}
-        </button>
-
-        {/* Diary overlay panel */}
+        {/* Diary Content — left side, same style as original DiaryFrame */}
         <div
-          className={`absolute right-0 top-0 h-full w-full md:w-[480px] bg-white/95 backdrop-blur-sm border-l border-gray-200 z-20 transition-transform duration-300 ease-out overflow-y-auto ${
-            isDiaryOpen ? "translate-x-0" : "translate-x-full"
-          }`}
+          className={`absolute left-0 top-0 h-full flex flex-col ${styles.textArea} bg-white/95 backdrop-blur-sm border-r border-gray-100 z-10`}
         >
-          <article className="py-24 px-8">
-            <div className="font-mono text-sm md:text-base">
+          <article
+            className={`flex-1 overflow-y-auto py-64 ${styles.article}`}
+          >
+            <div className="font-mono text-sm md:text-base px-8">
               {/* Header */}
               <div className="text-gray-400 mb-6">
                 {`/* ${entry.date}_diary.md */`}

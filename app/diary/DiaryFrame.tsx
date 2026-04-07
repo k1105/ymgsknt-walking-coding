@@ -324,8 +324,8 @@ export default function DiaryFrame({children}: {children: ReactNode}) {
       style: {
         transform: DATE_POSITIONS[posKey][isMobile ? "sp" : "pc"],
         opacity: isVisible ? (isCenter ? 1 : 0.7) : 0,
-        fontSize: isCenter ? "2rem" : "1.5rem",
-        lineHeight: isCenter ? "2rem" : "1.5rem",
+        fontSize: isCenter ? "1rem" : "0.85rem",
+        lineHeight: isCenter ? "1rem" : "0.85rem",
         color: isCenter ? "rgb(0 0 0)" : "rgb(107 114 128)",
         cursor: !isCenter && isVisible && !animDir ? "pointer" : "default",
         pointerEvents: animDir || !isVisible ? "none" : "auto",
