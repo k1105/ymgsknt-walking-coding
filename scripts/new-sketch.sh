@@ -14,7 +14,7 @@ if [ -d "$TARGET_DIR" ]; then
 fi
 
 cp -r "$TEMPLATE_DIR" "$TARGET_DIR"
-sed -i "s/YYYY-MM-DD/$DATE/g" "$TARGET_DIR/meta.json"
+sed -i '' "s/YYYY-MM-DD/$DATE/g" "$TARGET_DIR/meta.json"
 
 echo "Created: $TARGET_DIR"
 echo "  diary.md    - 日記を書く"
