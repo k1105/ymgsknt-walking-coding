@@ -26,9 +26,9 @@ interface GraphData {
 
 // Date string to radius: older = center, newer = outer
 function dateToRadius(id: string, minDate: number, maxDate: number): number {
-  const minR = 50;
-  const maxR = 350;
-  const unexploredR = maxR + 80;
+  const minR = 30;
+  const maxR = 300;
+  const unexploredR = maxR + 100;
   if (!id.match(/^\d{4}-\d{2}-\d{2}$/)) return unexploredR;
   const t = new Date(id).getTime();
   if (maxDate === minDate) return (minR + maxR) / 2;
@@ -111,20 +111,20 @@ export default function NetworkClient() {
         d3
           .forceLink<GraphNode, GraphEdge>(edges)
           .id((d) => d.id)
-          .distance(60)
-          .strength(0.5)
+          .distance(50)
+          .strength(0.4)
       )
-      .force("charge", d3.forceManyBody().strength(-80))
-      .force("center", d3.forceCenter(cx, cy).strength(0.05))
+      .force("charge", d3.forceManyBody().strength(-40))
+      .force("center", d3.forceCenter(cx, cy).strength(0.02))
       .force(
         "radial",
         d3.forceRadial<GraphNode>(
           (d) => dateToRadius(d.id, minDate, maxDate),
           cx,
           cy
-        ).strength(0.3)
+        ).strength(0.7)
       )
-      .force("collision", d3.forceCollide().radius(25));
+      .force("collision", d3.forceCollide().radius(20));
 
     // Edge lines
     const link = g
