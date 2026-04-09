@@ -42,6 +42,17 @@
     { "id": "2026-02-15", "type": "sketch", "tags": ["noise", "particle", "fire", "blend-mode", "screen"], "label": "炎+SCREEN合成" },
     { "id": "2026-03-29", "type": "sketch", "tags": ["physics", "matter-js", "text", "gravity"], "label": "落下する文字" },
 
+    { "id": "2026-01-13", "type": "sketch", "tags": ["noise", "circle", "interpolation", "bounce"], "label": "パチンコライティング" },
+    { "id": "2026-01-19", "type": "sketch", "tags": ["noise", "text", "filter", "blur"], "label": "ぼかし+テキスト深度" },
+    { "id": "2026-01-23", "type": "sketch", "tags": ["noise", "circle", "trail", "bounce"], "label": "みかんネットの軌跡" },
+    { "id": "2026-01-26", "type": "sketch", "tags": ["noise", "ellipse", "trail", "rotation"], "label": "回転楕円の軌跡" },
+    { "id": "2026-01-29", "type": "sketch", "tags": ["webgl", "image", "d3-ease", "bpm"], "label": "画像+BPMバウンス" },
+    { "id": "2026-02-01", "type": "sketch", "tags": ["d3-ease", "bpm", "circle", "trail"], "label": "d3 ease関数のスタディ" },
+    { "id": "2026-02-16", "type": "sketch", "tags": ["noise", "particle", "fire", "circle"], "label": "炎の精緻化" },
+    { "id": "2026-02-17", "type": "sketch", "tags": ["network", "graph", "spring-layout", "bezier"], "label": "ネットワーク+ベジェ線" },
+    { "id": "2026-02-20", "type": "sketch", "tags": ["physics", "matter-js", "circle", "text"], "label": "Matter.js円+テキスト" },
+    { "id": "2026-02-28", "type": "sketch", "tags": ["bezier", "animation", "loop", "blend-mode", "noise"], "label": "ベジェ閉路の精緻化" },
+
     { "id": "curl-noise", "type": "unexplored", "tags": ["noise", "flow-field", "curl", "math"], "label": "Curl Noise" },
     { "id": "domain-warping", "type": "unexplored", "tags": ["noise", "texture", "recursive"], "label": "Domain Warping" },
     { "id": "delaunay", "type": "unexplored", "tags": ["neighbor", "mesh", "triangulation"], "label": "Delaunay三角形分割" },
@@ -101,6 +112,15 @@
     { "source": "2026-02-09", "target": "2026-02-10", "type": "A", "reason": "Spring-layoutに重み付けを追加" },
     { "source": "2026-02-13", "target": "2026-02-15", "type": "A", "reason": "炎エフェクトにSCREEN合成追加" },
     { "source": "2026-02-15", "target": "2026-03-04", "type": "B", "reason": "blendMode(SCREEN)の使用" },
-    { "source": "2026-02-18", "target": "2026-03-29", "type": "B", "reason": "Matter.js+テキストの物理" }
+    { "source": "2026-02-18", "target": "2026-03-29", "type": "B", "reason": "Matter.js+テキストの物理" },
+    { "source": "2026-01-17", "target": "2026-01-19", "type": "A", "reason": "BLURぼかし表現の継続" },
+    { "source": "2026-01-06", "target": "2026-01-23", "type": "C", "reason": "軌跡を残すパーティクル表現" },
+    { "source": "2026-01-28", "target": "2026-01-29", "type": "A", "reason": "VJイベント準備の継続" },
+    { "source": "2026-01-29", "target": "2026-02-01", "type": "A", "reason": "d3-easeのスタディ継続" },
+    { "source": "2026-02-13", "target": "2026-02-16", "type": "A", "reason": "炎パーティクルの精緻化" },
+    { "source": "2026-02-10", "target": "2026-02-17", "type": "A", "reason": "Spring-layout+ベジェ曲線で線を描画" },
+    { "source": "2026-02-18", "target": "2026-02-20", "type": "B", "reason": "Matter.js+テキスト" },
+    { "source": "2026-02-23", "target": "2026-02-28", "type": "A", "reason": "ベジェ閉路の動きの精緻化" },
+    { "source": "2026-02-28", "target": "2026-03-01", "type": "A", "reason": "線幅を太くして面に変換" }
   ]
 }
