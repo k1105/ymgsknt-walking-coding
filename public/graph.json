@@ -30,6 +30,7 @@
     { "id": "2026-04-02", "type": "sketch", "tags": ["webgl", "shader", "glsl", "fractal", "copycat"], "label": "フラクタル万華鏡シェーダー" },
     { "id": "2026-04-07", "type": "sketch", "tags": ["noise", "flow-field", "2d", "particle"], "label": "フローフィールド（2D）" },
     { "id": "2026-04-08", "type": "sketch", "tags": ["noise", "flow-field", "3d", "webgl", "particle", "neighbor"], "label": "3Dフローフィールド+近接結線" },
+    { "id": "2026-04-09", "type": "sketch", "tags": ["noise", "flow-field", "voronoi", "d3-delaunay"], "label": "Voronoi+noiseフローフィールド" },
 
     { "id": "2026-01-07", "type": "sketch", "tags": ["noise", "organic", "particle", "color", "trail"], "label": "火花のような軌跡" },
     { "id": "2026-01-12", "type": "sketch", "tags": ["webgl", "3d", "camera", "ground-plane"], "label": "カメラワーク地面制約" },
@@ -70,7 +71,8 @@
     { "id": "verlet-integration", "type": "unexplored", "tags": ["physics", "constraint", "simulation"], "label": "Verlet Integration" },
     { "id": "sdf-2d", "type": "unexplored", "tags": ["shader", "math", "shape", "glsl"], "label": "2D SDF" },
     { "id": "strange-attractors", "type": "unexplored", "tags": ["math", "chaos", "3d", "differential-eq"], "label": "ストレンジアトラクター" },
-    { "id": "shader-post-process", "type": "unexplored", "tags": ["shader", "glsl", "post-process", "vj"], "label": "シェーダーポストプロセス" }
+    { "id": "shader-post-process", "type": "unexplored", "tags": ["shader", "glsl", "post-process", "vj"], "label": "シェーダーポストプロセス" },
+    { "id": "voronoi-stippling", "type": "unexplored", "tags": ["voronoi", "image", "lloyd", "stippling"], "label": "Weighted Voronoi Stippling" }
   ],
   "edges": [
     { "source": "2026-01-03", "target": "2026-01-04", "type": "A", "reason": "WEBGLでの3D点群表現の連続" },
@@ -137,6 +139,10 @@
     { "source": "2026-02-26", "target": "2026-02-28", "type": "A", "reason": "シームレスな動きへの精緻化" },
     { "source": "2026-01-28", "target": "2026-03-18", "type": "B", "reason": "BPM同期パターン" },
     { "source": "2026-01-03", "target": "2026-03-19", "type": "B", "reason": "WEBGLでのBox表現" },
-    { "source": "2026-03-19", "target": "2026-03-20", "type": "A", "reason": "WEBGL Boxスタディの継続" }
+    { "source": "2026-03-19", "target": "2026-03-20", "type": "A", "reason": "WEBGL Boxスタディの継続" },
+    { "source": "2026-04-07", "target": "2026-04-09", "type": "B", "reason": "noiseフローフィールドの活用" },
+    { "source": "2026-04-08", "target": "2026-04-09", "type": "A", "reason": "近接結線→Voronoiによる隣接構造" },
+    { "source": "2026-04-09", "target": "delaunay", "type": "B", "reason": "d3-delaunayの使用（Voronoiの双対）" },
+    { "source": "2026-04-09", "target": "voronoi-stippling", "type": "D", "reason": "Voronoi+画像→点描表現" }
   ]
 }
