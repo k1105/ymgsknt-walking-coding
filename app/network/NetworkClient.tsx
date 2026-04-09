@@ -306,7 +306,7 @@ export default function NetworkClient() {
 
       {/* Legend */}
       <div
-        className="fixed top-8 left-8 text-xs z-50"
+        className="fixed bottom-8 right-8 text-xs z-50"
         style={{ fontFamily: "var(--font-geist-mono), monospace" }}
       >
         <div className="mb-3">
@@ -346,14 +346,6 @@ export default function NetworkClient() {
         <div className="mt-3 text-gray-300">中心=古い 外側=新しい</div>
       </div>
 
-      {/* Back link */}
-      <Link
-        href="/"
-        className="fixed top-8 right-8 text-xs underline z-50"
-        style={{ fontFamily: "var(--font-geist-mono), monospace" }}
-      >
-        ← top
-      </Link>
     </div>
   );
 }
