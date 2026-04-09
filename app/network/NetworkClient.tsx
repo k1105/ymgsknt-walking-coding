@@ -15,6 +15,7 @@ interface GraphNode extends d3.SimulationNodeDatum {
 interface GraphEdge extends d3.SimulationLinkDatum<GraphNode> {
   source: string | GraphNode;
   target: string | GraphNode;
+  type: "A" | "B" | "C" | "D";
   reason: string;
 }
 
@@ -23,17 +24,46 @@ interface GraphData {
   edges: GraphEdge[];
 }
 
+// Date string to radius: older = center, newer = outer
+function dateToRadius(id: string, minDate: number, maxDate: number): number {
+  if (!id.match(/^\d{4}-\d{2}-\d{2}$/)) return maxDate + 100; // unexplored → outermost
+  const t = new Date(id).getTime();
+  const minR = 50;
+  const maxR = 350;
+  if (maxDate === minDate) return (minR + maxR) / 2;
+  return minR + ((t - minDate) / (maxDate - minDate)) * (maxR - minR);
+}
+
+// Edge style based on type
+function getEdgeStyle(type: string) {
+  switch (type) {
+    case "A": return { width: 2, dash: "none", opacity: 0.6 };      // explicit reference
+    case "B": return { width: 1.2, dash: "none", opacity: 0.4 };    // same tech
+    case "C": return { width: 1, dash: "4,3", opacity: 0.35 };      // theme similarity
+    case "D": return { width: 1, dash: "2,4", opacity: 0.3 };       // unexplored
+    default:  return { width: 1, dash: "none", opacity: 0.3 };
+  }
+}
+
+const EDGE_TYPE_LABELS: Record<string, string> = {
+  A: "明示的参照",
+  B: "同一技術",
+  C: "テーマ類似",
+  D: "未踏への推測",
+};
+
 export default function NetworkClient() {
   const svgRef = useRef<SVGSVGElement>(null);
   const router = useRouter();
   const [graphData, setGraphData] = useState<GraphData | null>(null);
   const [hoveredNode, setHoveredNode] = useState<GraphNode | null>(null);
   const [hoveredEdge, setHoveredEdge] = useState<GraphEdge | null>(null);
+  const [currentZoom, setCurrentZoom] = useState(1);
 
   useEffect(() => {
     fetch("/graph.json")
       .then((res) => res.json())
-      .then((data) => setGraphData(data));
+      .then((data: GraphData) => setGraphData(data));
   }, []);
 
   useEffect(() => {
@@ -44,6 +74,8 @@ export default function NetworkClient() {
 
     const width = window.innerWidth;
     const height = window.innerHeight;
+    const cx = width / 2;
+    const cy = height / 2;
 
     svg.attr("width", width).attr("height", height);
 
@@ -51,18 +83,26 @@ export default function NetworkClient() {
 
     // Zoom
     const zoom = d3.zoom<SVGSVGElement, unknown>()
-      .scaleExtent([0.3, 3])
+      .scaleExtent([0.3, 4])
       .on("zoom", (event) => {
         g.attr("transform", event.transform);
+        setCurrentZoom(event.transform.k);
       });
 
     svg.call(zoom);
 
-    // Deep copy nodes and edges for simulation
+    // Deep copy
     const nodes: GraphNode[] = graphData.nodes.map((n) => ({ ...n }));
     const edges: GraphEdge[] = graphData.edges.map((e) => ({ ...e }));
 
-    // Force simulation
+    // Calculate date range for radial layout
+    const sketchDates = nodes
+      .filter((n) => n.type === "sketch")
+      .map((n) => new Date(n.id).getTime());
+    const minDate = Math.min(...sketchDates);
+    const maxDate = Math.max(...sketchDates);
+
+    // Force simulation with radial layout
     const simulation = d3
       .forceSimulation(nodes)
       .force(
@@ -70,23 +110,47 @@ export default function NetworkClient() {
         d3
           .forceLink<GraphNode, GraphEdge>(edges)
           .id((d) => d.id)
-          .distance(120)
+          .distance(80)
+          .strength(0.3)
       )
-      .force("charge", d3.forceManyBody().strength(-300))
-      .force("center", d3.forceCenter(width / 2, height / 2))
-      .force("collision", d3.forceCollide().radius(40));
+      .force("charge", d3.forceManyBody().strength(-200))
+      .force(
+        "radial",
+        d3.forceRadial<GraphNode>(
+          (d) => dateToRadius(d.id, minDate, maxDate),
+          cx,
+          cy
+        ).strength(0.8)
+      )
+      .force("collision", d3.forceCollide().radius(30));
 
-    // Edges
+    // Edge lines
     const link = g
       .append("g")
       .selectAll("line")
       .data(edges)
       .join("line")
-      .attr("stroke", "#999")
-      .attr("stroke-opacity", 0.4)
-      .attr("stroke-width", 1)
+      .attr("stroke", "#000")
+      .attr("stroke-opacity", (d) => getEdgeStyle(d.type).opacity)
+      .attr("stroke-width", (d) => getEdgeStyle(d.type).width)
+      .attr("stroke-dasharray", (d) => getEdgeStyle(d.type).dash)
       .on("mouseenter", (_, d) => setHoveredEdge(d))
-      .on("mouseleave", () => setHoveredEdge(null));
+      .on("mouseleave", () => setHoveredEdge(null))
+      .style("pointer-events", "stroke");
+
+    // Edge labels (reason text on edges)
+    const edgeLabels = g
+      .append("g")
+      .selectAll("text")
+      .data(edges)
+      .join("text")
+      .text((d) => d.reason)
+      .attr("font-size", "8px")
+      .attr("font-family", "var(--font-geist-mono), monospace")
+      .attr("fill", "#999")
+      .attr("text-anchor", "middle")
+      .attr("dy", -4)
+      .style("pointer-events", "none");
 
     // Nodes
     let dragStartPos: { x: number; y: number } | null = null;
@@ -113,7 +177,6 @@ export default function NetworkClient() {
             if (!event.active) simulation.alphaTarget(0);
             d.fx = null;
             d.fy = null;
-            // Click detection: if barely moved, navigate
             if (dragStartPos && d.type === "sketch") {
               const dx = event.x - dragStartPos.x;
               const dy = event.y - dragStartPos.y;
@@ -128,22 +191,23 @@ export default function NetworkClient() {
       .on("mouseleave", () => setHoveredNode(null))
       .style("cursor", (d) => (d.type === "sketch" ? "pointer" : "grab"));
 
-    // Circle for each node
+    // Circle
     node
       .append("circle")
       .attr("r", (d) => (d.type === "sketch" ? 6 : 5))
       .attr("fill", (d) => (d.type === "sketch" ? "#000" : "none"))
       .attr("stroke", (d) => (d.type === "sketch" ? "none" : "#000"))
       .attr("stroke-width", (d) => (d.type === "sketch" ? 0 : 1.5))
-      .attr("stroke-dasharray", (d) => (d.type === "unexplored" ? "3,2" : "none"));
+      .attr("stroke-dasharray", (d) =>
+        d.type === "unexplored" ? "3,2" : "none"
+      );
 
-    // Label
+    // Node label
     node
       .append("text")
       .text((d) => {
         if (d.type === "sketch") {
-          const date = d.id;
-          const parts = date.split("-");
+          const parts = d.id.split("-");
           return `${parts[1]}/${parts[2]}`;
         }
         return d.label;
@@ -153,7 +217,9 @@ export default function NetworkClient() {
       .attr("font-size", (d) => (d.type === "sketch" ? "11px" : "10px"))
       .attr("font-family", "var(--font-geist-mono), monospace")
       .attr("fill", (d) => (d.type === "sketch" ? "#000" : "#666"))
-      .attr("font-style", (d) => (d.type === "unexplored" ? "italic" : "normal"));
+      .attr("font-style", (d) =>
+        d.type === "unexplored" ? "italic" : "normal"
+      );
 
     // Tick
     simulation.on("tick", () => {
@@ -163,13 +229,33 @@ export default function NetworkClient() {
         .attr("x2", (d) => (d.target as GraphNode).x!)
         .attr("y2", (d) => (d.target as GraphNode).y!);
 
+      edgeLabels
+        .attr(
+          "x",
+          (d) =>
+            ((d.source as GraphNode).x! + (d.target as GraphNode).x!) / 2
+        )
+        .attr(
+          "y",
+          (d) =>
+            ((d.source as GraphNode).y! + (d.target as GraphNode).y!) / 2
+        );
+
       node.attr("transform", (d) => `translate(${d.x},${d.y})`);
     });
 
     return () => {
       simulation.stop();
     };
-  }, [graphData]);
+  }, [graphData, router]);
+
+  // Update edge label visibility based on zoom
+  useEffect(() => {
+    if (!svgRef.current) return;
+    const svg = d3.select(svgRef.current);
+    svg.selectAll<SVGTextElement, GraphEdge>("g > g:nth-child(2) > text")
+      .style("opacity", currentZoom > 1.5 ? 1 : 0);
+  }, [currentZoom]);
 
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-white">
@@ -191,12 +277,7 @@ export default function NetworkClient() {
             {hoveredNode.tags.join(", ")}
           </div>
           {hoveredNode.type === "sketch" && (
-            <Link
-              href={`/diary/${hoveredNode.id}`}
-              className="text-xs underline mt-2 inline-block"
-            >
-              → diary
-            </Link>
+            <div className="text-xs mt-2 underline">click → diary</div>
           )}
           {hoveredNode.type === "unexplored" && (
             <div className="text-xs mt-1 italic text-gray-400">未踏</div>
@@ -210,6 +291,9 @@ export default function NetworkClient() {
           className="fixed bottom-8 left-8 bg-white border border-gray-300 px-4 py-3 max-w-sm z-50"
           style={{ fontFamily: "var(--font-geist-mono), monospace" }}
         >
+          <div className="text-xs text-gray-400 mb-1">
+            {EDGE_TYPE_LABELS[(hoveredEdge as GraphEdge).type] ?? ""}
+          </div>
           <div className="text-xs text-gray-500">
             {(hoveredEdge.source as GraphNode).id} →{" "}
             {(hoveredEdge.target as GraphNode).id}
@@ -223,17 +307,41 @@ export default function NetworkClient() {
         className="fixed top-8 left-8 text-xs z-50"
         style={{ fontFamily: "var(--font-geist-mono), monospace" }}
       >
-        <div className="flex items-center gap-2 mb-1">
-          <div className="w-3 h-3 rounded-full bg-black" />
-          <span>sketch</span>
+        <div className="mb-3">
+          <div className="flex items-center gap-2 mb-1">
+            <div className="w-3 h-3 rounded-full bg-black" />
+            <span>sketch</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div
+              className="w-3 h-3 rounded-full border border-black"
+              style={{ borderStyle: "dashed" }}
+            />
+            <span className="text-gray-500 italic">unexplored</span>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <div
-            className="w-3 h-3 rounded-full border border-black"
-            style={{ borderStyle: "dashed" }}
-          />
-          <span className="text-gray-500 italic">unexplored</span>
+        <div className="text-gray-400">
+          <div className="flex items-center gap-2 mb-0.5">
+            <div className="w-6 border-t-2 border-black" />
+            <span>A: 明示的参照</span>
+          </div>
+          <div className="flex items-center gap-2 mb-0.5">
+            <div className="w-6 border-t border-black" />
+            <span>B: 同一技術</span>
+          </div>
+          <div className="flex items-center gap-2 mb-0.5">
+            <div className="w-6 border-t border-black border-dashed" />
+            <span>C: テーマ類似</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div
+              className="w-6 border-t border-black"
+              style={{ borderStyle: "dotted" }}
+            />
+            <span>D: 未踏への推測</span>
+          </div>
         </div>
+        <div className="mt-3 text-gray-300">中心=古い 外側=新しい</div>
       </div>
 
       {/* Back link */}
