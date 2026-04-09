@@ -141,8 +141,8 @@ export default function NetworkClient() {
       .style("pointer-events", "stroke");
 
     // Edge labels (reason text on edges)
-    const edgeLabels = g
-      .append("g")
+    const edgeLabelGroup = g.append("g").attr("class", "edge-labels");
+    const edgeLabels = edgeLabelGroup
       .selectAll("text")
       .data(edges)
       .join("text")
@@ -152,7 +152,8 @@ export default function NetworkClient() {
       .attr("fill", "#999")
       .attr("text-anchor", "middle")
       .attr("dy", -4)
-      .style("pointer-events", "none");
+      .style("pointer-events", "none")
+      .style("opacity", 0);
 
     // Nodes
     let dragStartPos: { x: number; y: number } | null = null;
@@ -255,7 +256,7 @@ export default function NetworkClient() {
   useEffect(() => {
     if (!svgRef.current) return;
     const svg = d3.select(svgRef.current);
-    svg.selectAll<SVGTextElement, GraphEdge>("g > g:nth-child(2) > text")
+    svg.selectAll<SVGTextElement, GraphEdge>(".edge-labels text")
       .style("opacity", currentZoom > 1.5 ? 1 : 0);
   }, [currentZoom]);
 
