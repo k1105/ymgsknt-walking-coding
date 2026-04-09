@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import * as d3 from "d3";
 import Link from "next/link";
 
@@ -24,6 +25,7 @@ interface GraphData {
 
 export default function NetworkClient() {
   const svgRef = useRef<SVGSVGElement>(null);
+  const router = useRouter();
   const [graphData, setGraphData] = useState<GraphData | null>(null);
   const [hoveredNode, setHoveredNode] = useState<GraphNode | null>(null);
   const [hoveredEdge, setHoveredEdge] = useState<GraphEdge | null>(null);
@@ -87,6 +89,8 @@ export default function NetworkClient() {
       .on("mouseleave", () => setHoveredEdge(null));
 
     // Nodes
+    let dragStartPos: { x: number; y: number } | null = null;
+
     const node = g
       .append("g")
       .selectAll<SVGGElement, GraphNode>("g")
@@ -96,6 +100,7 @@ export default function NetworkClient() {
         d3
           .drag<SVGGElement, GraphNode>()
           .on("start", (event, d) => {
+            dragStartPos = { x: event.x, y: event.y };
             if (!event.active) simulation.alphaTarget(0.3).restart();
             d.fx = d.x;
             d.fy = d.y;
@@ -108,10 +113,20 @@ export default function NetworkClient() {
             if (!event.active) simulation.alphaTarget(0);
             d.fx = null;
             d.fy = null;
+            // Click detection: if barely moved, navigate
+            if (dragStartPos && d.type === "sketch") {
+              const dx = event.x - dragStartPos.x;
+              const dy = event.y - dragStartPos.y;
+              if (Math.sqrt(dx * dx + dy * dy) < 5) {
+                router.push(`/diary/${d.id}`);
+              }
+            }
+            dragStartPos = null;
           })
       )
       .on("mouseenter", (_, d) => setHoveredNode(d))
-      .on("mouseleave", () => setHoveredNode(null));
+      .on("mouseleave", () => setHoveredNode(null))
+      .style("cursor", (d) => (d.type === "sketch" ? "pointer" : "grab"));
 
     // Circle for each node
     node
