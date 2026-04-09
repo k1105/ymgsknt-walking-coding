@@ -31,6 +31,17 @@
     { "id": "2026-04-07", "type": "sketch", "tags": ["noise", "flow-field", "2d", "particle"], "label": "フローフィールド（2D）" },
     { "id": "2026-04-08", "type": "sketch", "tags": ["noise", "flow-field", "3d", "webgl", "particle", "neighbor"], "label": "3Dフローフィールド+近接結線" },
 
+    { "id": "2026-01-07", "type": "sketch", "tags": ["noise", "organic", "particle", "color", "trail"], "label": "火花のような軌跡" },
+    { "id": "2026-01-12", "type": "sketch", "tags": ["webgl", "3d", "camera", "ground-plane"], "label": "カメラワーク地面制約" },
+    { "id": "2026-01-16", "type": "sketch", "tags": ["text", "typography", "noise", "class"], "label": "じんわり揺れる文字" },
+    { "id": "2026-01-21", "type": "sketch", "tags": ["bezier", "text", "interactive", "drag"], "label": "ベジェ制御点ドラッグ" },
+    { "id": "2026-01-25", "type": "sketch", "tags": ["text", "noise", "d3-ease", "filter", "blur"], "label": "散らばるPACK文字" },
+    { "id": "2026-02-05", "type": "sketch", "tags": ["network", "graph", "polar", "noise", "lerp"], "label": "ネットワーク内側拡大" },
+    { "id": "2026-02-06", "type": "sketch", "tags": ["bezier", "d3-ease", "radial", "symmetry"], "label": "放射状ベジェ+ease" },
+    { "id": "2026-02-10", "type": "sketch", "tags": ["network", "graph", "spring-layout", "weight"], "label": "重み付きSpring-layout" },
+    { "id": "2026-02-15", "type": "sketch", "tags": ["noise", "particle", "fire", "blend-mode", "screen"], "label": "炎+SCREEN合成" },
+    { "id": "2026-03-29", "type": "sketch", "tags": ["physics", "matter-js", "text", "gravity"], "label": "落下する文字" },
+
     { "id": "curl-noise", "type": "unexplored", "tags": ["noise", "flow-field", "curl", "math"], "label": "Curl Noise" },
     { "id": "domain-warping", "type": "unexplored", "tags": ["noise", "texture", "recursive"], "label": "Domain Warping" },
     { "id": "delaunay", "type": "unexplored", "tags": ["neighbor", "mesh", "triangulation"], "label": "Delaunay三角形分割" },
@@ -78,6 +89,18 @@
     { "source": "2026-02-18", "target": "differential-growth", "type": "D", "reason": "物理的不安定性→形態生成へ" },
     { "source": "2026-04-02", "target": "sdf-2d", "type": "D", "reason": "GLSLでの数学的形状定義" },
     { "source": "2026-04-02", "target": "shader-post-process", "type": "D", "reason": "シェーダー技術のVJ応用" },
-    { "source": "2026-01-28", "target": "texture-mapping", "type": "D", "reason": "VJ実践→映像歪みエフェクト" }
+    { "source": "2026-01-28", "target": "texture-mapping", "type": "D", "reason": "VJ実践→映像歪みエフェクト" },
+    { "source": "2026-01-06", "target": "2026-01-07", "type": "A", "reason": "日記で「昨日のをコピーして書き換え」" },
+    { "source": "2026-01-09", "target": "2026-01-12", "type": "A", "reason": "カメラワーク実験の継続" },
+    { "source": "2026-01-14", "target": "2026-01-16", "type": "A", "reason": "踊る文字の一般化（DancingTextクラス）" },
+    { "source": "2026-01-20", "target": "2026-01-21", "type": "A", "reason": "ベジェ制御点のインタラクション追加" },
+    { "source": "2026-01-24", "target": "2026-01-25", "type": "A", "reason": "PACKテーマの継続" },
+    { "source": "2026-02-04", "target": "2026-02-05", "type": "A", "reason": "ネットワークのマイナーチェンジ" },
+    { "source": "2026-01-28", "target": "2026-02-06", "type": "B", "reason": "d3-easeの使用" },
+    { "source": "2026-02-06", "target": "2026-02-23", "type": "B", "reason": "ベジェ曲線+d3-easeの組み合わせ" },
+    { "source": "2026-02-09", "target": "2026-02-10", "type": "A", "reason": "Spring-layoutに重み付けを追加" },
+    { "source": "2026-02-13", "target": "2026-02-15", "type": "A", "reason": "炎エフェクトにSCREEN合成追加" },
+    { "source": "2026-02-15", "target": "2026-03-04", "type": "B", "reason": "blendMode(SCREEN)の使用" },
+    { "source": "2026-02-18", "target": "2026-03-29", "type": "B", "reason": "Matter.js+テキストの物理" }
   ]
 }
