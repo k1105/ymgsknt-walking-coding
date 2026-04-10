@@ -73,7 +73,8 @@
     { "id": "strange-attractors", "type": "unexplored", "tags": ["math", "chaos", "3d", "differential-eq"], "label": "ストレンジアトラクター", "research": "/research/strange-attractors.md" },
     { "id": "shader-post-process", "type": "unexplored", "tags": ["shader", "glsl", "post-process", "vj"], "label": "シェーダーポストプロセス" },
     { "id": "voronoi-stippling", "type": "unexplored", "tags": ["voronoi", "image", "lloyd", "stippling"], "label": "Weighted Voronoi Stippling", "research": "/research/voronoi-stippling.md" },
-    { "id": "lloyd-relaxation", "type": "unexplored", "tags": ["voronoi", "centroid", "relaxation", "balance"], "label": "Lloyd's Relaxation", "research": "/research/lloyd-relaxation.md" }
+    { "id": "lloyd-relaxation", "type": "unexplored", "tags": ["voronoi", "centroid", "relaxation", "balance"], "label": "Lloyd's Relaxation", "research": "/research/lloyd-relaxation.md" },
+    { "id": "biological-motion", "type": "unexplored", "tags": ["perception", "psychology", "motion", "animation"], "label": "Biological Motion Perception", "research": "/research/biological-motion.md" }
   ],
   "edges": [
     { "source": "2026-01-03", "target": "2026-01-04", "type": "A", "reason": "WEBGLでの3D点群表現の連続" },
@@ -145,6 +146,8 @@
     { "source": "2026-04-08", "target": "2026-04-09", "type": "A", "reason": "近接結線→Voronoiによる隣接構造" },
     { "source": "2026-04-09", "target": "delaunay", "type": "B", "reason": "d3-delaunayの使用（Voronoiの双対）" },
     { "source": "2026-04-09", "target": "voronoi-stippling", "type": "D", "reason": "Voronoi+画像→点描表現" },
-    { "source": "2026-04-09", "target": "lloyd-relaxation", "type": "D", "reason": "セルの均一化と「秩序vs混沌」のバランス" }
+    { "source": "2026-04-09", "target": "lloyd-relaxation", "type": "D", "reason": "セルの均一化と「秩序vs混沌」のバランス" },
+    { "source": "2026-02-09", "target": "biological-motion", "type": "D", "reason": "「物理的な動きに惹かれる理由」の心理学的回答" },
+    { "source": "2026-04-08", "target": "biological-motion", "type": "D", "reason": "クラスタ知覚は同じ知覚機構（gestalt grouping by motion）" }
   ]
 }
