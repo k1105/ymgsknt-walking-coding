@@ -10,6 +10,7 @@ interface GraphNode extends d3.SimulationNodeDatum {
   type: "sketch" | "unexplored";
   tags: string[];
   label: string;
+  research?: string;
 }
 
 interface GraphEdge extends d3.SimulationLinkDatum<GraphNode> {
@@ -60,6 +61,8 @@ export default function NetworkClient() {
   const [hoveredNode, setHoveredNode] = useState<GraphNode | null>(null);
   const [hoveredEdge, setHoveredEdge] = useState<GraphEdge | null>(null);
   const [currentZoom, setCurrentZoom] = useState(1);
+  const [researchContent, setResearchContent] = useState<string | null>(null);
+  const [researchNode, setResearchNode] = useState<GraphNode | null>(null);
 
   useEffect(() => {
     fetch("/graph.json")
@@ -180,11 +183,22 @@ export default function NetworkClient() {
             if (!event.active) simulation.alphaTarget(0);
             d.fx = null;
             d.fy = null;
-            if (dragStartPos && d.type === "sketch") {
+            if (dragStartPos) {
               const dx = event.x - dragStartPos.x;
               const dy = event.y - dragStartPos.y;
               if (Math.sqrt(dx * dx + dy * dy) < 5) {
-                router.push(`/diary/${d.id}`);
+                if (d.type === "sketch") {
+                  router.push(`/diary/${d.id}`);
+                } else if (d.type === "unexplored" && d.research) {
+                  fetch(d.research)
+                    .then((res) => res.ok ? res.text() : null)
+                    .then((text) => {
+                      if (text) {
+                        setResearchNode(d);
+                        setResearchContent(text);
+                      }
+                    });
+                }
               }
             }
             dragStartPos = null;
@@ -283,7 +297,9 @@ export default function NetworkClient() {
             <div className="text-xs mt-2 underline">click → diary</div>
           )}
           {hoveredNode.type === "unexplored" && (
-            <div className="text-xs mt-1 italic text-gray-400">未踏</div>
+            <div className="text-xs mt-1 italic text-gray-400">
+              {hoveredNode.research ? "click → research" : "未踏（調査なし）"}
+            </div>
           )}
         </div>
       )}
@@ -346,6 +362,28 @@ export default function NetworkClient() {
         </div>
         <div className="mt-3 text-gray-300">中心=古い 外側=新しい</div>
       </div>
+
+      {/* Research Panel */}
+      {researchContent && researchNode && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20">
+          <div
+            className="bg-white border border-black max-w-lg max-h-[80vh] overflow-y-auto p-6 relative"
+            style={{ fontFamily: "var(--font-geist-mono), monospace" }}
+          >
+            <button
+              onClick={() => { setResearchContent(null); setResearchNode(null); }}
+              className="absolute top-3 right-3 text-gray-400 hover:text-black text-sm"
+            >
+              ✕
+            </button>
+            <div className="text-xs text-gray-400 mb-1 italic">unexplored</div>
+            <div className="text-sm font-bold mb-4">{researchNode.label}</div>
+            <div className="text-xs leading-relaxed whitespace-pre-wrap">
+              {researchContent}
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );
