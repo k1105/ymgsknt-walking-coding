@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import * as d3 from "d3";
 import Link from "next/link";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 interface GraphNode extends d3.SimulationNodeDatum {
   id: string;
@@ -378,8 +380,41 @@ export default function NetworkClient() {
             </button>
             <div className="text-xs text-gray-400 mb-1 italic">unexplored</div>
             <div className="text-sm font-bold mb-4">{researchNode.label}</div>
-            <div className="text-xs leading-relaxed whitespace-pre-wrap">
-              {researchContent}
+            <div className="text-xs leading-relaxed research-md">
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                components={{
+                  h1: ({ children }) => <h1 className="text-base font-bold mt-4 mb-2">{children}</h1>,
+                  h2: ({ children }) => <h2 className="text-sm font-bold mt-3 mb-2">{children}</h2>,
+                  h3: ({ children }) => <h3 className="text-xs font-bold mt-2 mb-1">{children}</h3>,
+                  p: ({ children }) => <p className="my-2">{children}</p>,
+                  ul: ({ children }) => <ul className="list-disc pl-4 my-2">{children}</ul>,
+                  ol: ({ children }) => <ol className="list-decimal pl-4 my-2">{children}</ol>,
+                  li: ({ children }) => <li className="my-0.5">{children}</li>,
+                  a: ({ children, href }) => (
+                    <a href={href} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline break-all">
+                      {children}
+                    </a>
+                  ),
+                  code: ({ children, className }) => {
+                    const isBlock = className?.includes("language");
+                    return isBlock ? (
+                      <code className="block bg-gray-100 p-2 text-[10px] overflow-x-auto my-2">{children}</code>
+                    ) : (
+                      <code className="bg-gray-100 px-1 text-[10px]">{children}</code>
+                    );
+                  },
+                  pre: ({ children }) => <pre className="bg-gray-100 p-2 text-[10px] overflow-x-auto my-2">{children}</pre>,
+                  img: ({ src, alt }) => (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={src as string} alt={alt ?? ""} className="my-2 max-w-full" />
+                  ),
+                  hr: () => <hr className="my-3 border-gray-300" />,
+                  strong: ({ children }) => <strong className="font-bold">{children}</strong>,
+                }}
+              >
+                {researchContent}
+              </ReactMarkdown>
             </div>
           </div>
         </div>
