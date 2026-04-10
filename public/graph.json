@@ -72,7 +72,8 @@
     { "id": "sdf-2d", "type": "unexplored", "tags": ["shader", "math", "shape", "glsl"], "label": "2D SDF", "research": "/research/sdf-2d.md" },
     { "id": "strange-attractors", "type": "unexplored", "tags": ["math", "chaos", "3d", "differential-eq"], "label": "ストレンジアトラクター", "research": "/research/strange-attractors.md" },
     { "id": "shader-post-process", "type": "unexplored", "tags": ["shader", "glsl", "post-process", "vj"], "label": "シェーダーポストプロセス" },
-    { "id": "voronoi-stippling", "type": "unexplored", "tags": ["voronoi", "image", "lloyd", "stippling"], "label": "Weighted Voronoi Stippling", "research": "/research/voronoi-stippling.md" }
+    { "id": "voronoi-stippling", "type": "unexplored", "tags": ["voronoi", "image", "lloyd", "stippling"], "label": "Weighted Voronoi Stippling", "research": "/research/voronoi-stippling.md" },
+    { "id": "lloyd-relaxation", "type": "unexplored", "tags": ["voronoi", "centroid", "relaxation", "balance"], "label": "Lloyd's Relaxation", "research": "/research/lloyd-relaxation.md" }
   ],
   "edges": [
     { "source": "2026-01-03", "target": "2026-01-04", "type": "A", "reason": "WEBGLでの3D点群表現の連続" },
@@ -143,6 +144,7 @@
     { "source": "2026-04-07", "target": "2026-04-09", "type": "B", "reason": "noiseフローフィールドの活用" },
     { "source": "2026-04-08", "target": "2026-04-09", "type": "A", "reason": "近接結線→Voronoiによる隣接構造" },
     { "source": "2026-04-09", "target": "delaunay", "type": "B", "reason": "d3-delaunayの使用（Voronoiの双対）" },
-    { "source": "2026-04-09", "target": "voronoi-stippling", "type": "D", "reason": "Voronoi+画像→点描表現" }
+    { "source": "2026-04-09", "target": "voronoi-stippling", "type": "D", "reason": "Voronoi+画像→点描表現" },
+    { "source": "2026-04-09", "target": "lloyd-relaxation", "type": "D", "reason": "セルの均一化と「秩序vs混沌」のバランス" }
   ]
 }
