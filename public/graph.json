@@ -75,7 +75,8 @@
     { "id": "voronoi-stippling", "type": "unexplored", "tags": ["voronoi", "image", "lloyd", "stippling"], "label": "Weighted Voronoi Stippling", "research": "/research/voronoi-stippling.md" },
     { "id": "lloyd-relaxation", "type": "unexplored", "tags": ["voronoi", "centroid", "relaxation", "balance"], "label": "Lloyd's Relaxation", "research": "/research/lloyd-relaxation.md" },
     { "id": "biological-motion", "type": "unexplored", "tags": ["perception", "psychology", "motion", "animation"], "label": "Biological Motion Perception", "research": "/research/biological-motion.md" },
-    { "id": "ribbon-trails", "type": "unexplored", "tags": ["3d", "mesh", "trail", "ribbon", "vj"], "label": "Ribbon Trails", "research": "/research/ribbon-trails.md" }
+    { "id": "ribbon-trails", "type": "unexplored", "tags": ["3d", "mesh", "trail", "ribbon", "vj"], "label": "Ribbon Trails", "research": "/research/ribbon-trails.md" },
+    { "id": "worley-noise", "type": "unexplored", "tags": ["noise", "texture", "cellular", "voronoi"], "label": "Worley Noise", "research": "/research/worley-noise.md" }
   ],
   "edges": [
     { "source": "2026-01-03", "target": "2026-01-04", "type": "A", "reason": "WEBGLでの3D点群表現の連続" },
@@ -151,6 +152,8 @@
     { "source": "2026-02-09", "target": "biological-motion", "type": "D", "reason": "「物理的な動きに惹かれる理由」の心理学的回答" },
     { "source": "2026-04-08", "target": "biological-motion", "type": "D", "reason": "クラスタ知覚は同じ知覚機構（gestalt grouping by motion）" },
     { "source": "2026-03-01", "target": "ribbon-trails", "type": "D", "reason": "「線→面」を3Dに拡張、軌跡をリボンとして描く" },
-    { "source": "2026-02-23", "target": "ribbon-trails", "type": "D", "reason": "ベジェ閉路の動きをリボンメッシュで描く" }
+    { "source": "2026-02-23", "target": "ribbon-trails", "type": "D", "reason": "ベジェ閉路の動きをリボンメッシュで描く" },
+    { "source": "2026-02-15", "target": "worley-noise", "type": "D", "reason": "デッサンの「肌理」を作るためのnoise" },
+    { "source": "2026-04-09", "target": "worley-noise", "type": "B", "reason": "Voronoiから連続的なテクスチャへ" }
   ]
 }
