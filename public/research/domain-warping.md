@@ -1,34 +1,64 @@
-# Domain Warping — noiseにnoiseを食わせる
+# Domain Warping — noiseに食わせる座標を、noiseで歪ませる
 
-## 調査トピック
+[2026-04-07のスケッチ](/diary/2026-04-07)で、`noise(p.x * 0.005, p.y * 0.005)` から角度を取って粒子を流してたよね。あのスケッチではnoiseフィールドは「滑らかな地形」だった。
 
-Inigo Quilezによるdomain warping技法。fBM (Fractional Brownian Motion) を使って空間を歪める手法。
+**じゃあ、noiseに渡す座標自体をnoiseで歪ませたら？**
 
-## 見つけたもの
+これがdomain warping。Inigo Quilez（シェーダー界のレジェンド）が体系化した技法。
 
-### Inigo Quilez原典 (iquilezles.org/articles/warp/)
-- domain warping = `f(p)` の代わりに `f(g(p))` を評価する。`g(p) = p + h(p)` で空間をずらす
-- 段階的に複雑化：
-  1. 普通のfBM → 基本的なnoiseテクスチャ
-  2. 1段warp: `fbm(p + 4.0 * q)` where `q = vec2(fbm(p), fbm(p+offset))` → 有機的な歪み
-  3. 2段warp: さらにもう一段重ねる → 大理石・雲のような複雑なテクスチャ
-- 中間値（q, r）をカラーマッピングに使うことで、内部構造に基づいた色分けが可能
+## 何が起きるか
 
-### インタラクティブ解説 (st4yho.me)
-- Mathias Isaksenによるインタラクティブな入門記事
-- パラメータをリアルタイム調整して効果を確認できる
-- p5.jsの `noise()` 関数との接続を明示
-- 段階的な説明: 数学基礎 → コード実装 → インタラクティブ探索 → 複雑化
-- 作品例: Goo, Eidolon, Exhume（domain warpingで制作）
+普通のnoise:
+```
+f(p) = noise(p)
+```
+→ 滑らかな丘陵
 
-## 山岸の関心との接続点
+domain warping:
+```
+f(p) = noise(p + noise(p))
+```
+→ 大理石、雲、有機的な渦巻き
 
-- 昨日のフローフィールドで「noiseの値を読む / 傾きを読む / 傾きを90度回す」の3モードを学んだ
-- domain warpingは4つ目のモード：「noiseの出力を別のnoiseの入力座標にする」
-- 「道具の使い方のバリエーションを増やしたい」という関心にど真ん中
-- p5.jsの `noise()` だけで実装可能 — 新しいライブラリ不要
-- フローフィールドが「noiseで動きを作る」なら、domain warpingは「noiseで空間を歪める」
+二段重ねにするとさらに：
+```
+q = noise(p)
+r = noise(p + q)
+f(p) = noise(p + r)
+```
+→ 内部に複雑な構造を持つテクスチャ
 
-## Discord投稿
+[Inigo Quilez本人のインタラクティブデモ](https://iquilezles.org/articles/warp/) を見てほしい。記事の中盤に「one warp」「two warps」と進化していく図がある。同じnoiseが全然違う見え方になるのがわかる。
 
-researchチャンネルに投稿済み（2026-04-08 09:27 JST）
+## 4/7のスケッチに足すなら
+
+今のあのコードを最小限変えるとこう：
+
+```js
+let scale = 0.005;
+
+// noiseの座標を、別のnoiseで歪ませる
+let qx = noise(p.x * scale, p.y * scale);
+let qy = noise(p.x * scale + 100, p.y * scale + 100);
+
+let angle = noise(
+  p.x * scale + qx * 4,  // ← 歪ませた座標
+  p.y * scale + qy * 4
+) * TWO_PI * 2;
+
+p.x += cos(angle);
+p.y += sin(angle);
+```
+
+`qx, qy` の係数（4）が歪ませる強さ。0だと普通のフローフィールド、大きくすると粒子の流れに「乱気流」が混じる。
+
+## 道具の使い方の4つ目
+
+4/7の日記で「noiseの値を読む / 傾きを読む / 傾きを90度回す」の話してたよね。domain warpingは4つ目：**「noiseの出力を別のnoiseの入力にする」**。
+
+curl noiseが「微分」だとすれば、domain warpingは「合成」。同じnoise関数でも、何を入力にするかで全く違うものが出てくる。
+
+## さらに見るなら
+
+- [Inigo Quilez原典記事](https://iquilezles.org/articles/warp/) — 図がわかりやすい
+- [Shadertoy: Warp 2](https://www.shadertoy.com/view/lsl3RH) — Inigo Quilez本人のシェーダー実装
