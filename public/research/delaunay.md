@@ -1,51 +1,67 @@
-# Delaunay三角形分割 + Voronoi図 — 点群から2つの「双対」構造が生まれる
+# Delaunay三角形分割 — 「隣接ノードをうまく繋げたら」への回答
 
-## 調査トピック
+[2026-04-08のスケッチ](/diary/2026-04-08)で、3D空間のパーティクル同士を距離閾値で結ぶ実装をやってたよね。日記で書いてた一文：
 
-Delaunay三角形分割とVoronoi図の双対関係。計算幾何学の基礎。
+> ランダムに繋いでるからなー。隣接するノード同士をうまく繋げたらいいんだけど。
 
-## 見つけたもの
+これに対する答えがDelaunay三角形分割。「点群から、どの点が隣か」を自動的に計算してくれる。
 
-### Delaunay三角形分割
+## 何が起きるか
 
-- 点群を三角形で埋め尽くす
-- 条件: どの三角形の外接円も他の点を含まない（empty circumcircle property）
-- 「最小角度を最大化」する三角形分割 → 細長い三角形が避けられる
-- 計算量: O(n log n)
+ランダムに撒かれた点を「最も自然な三角形メッシュ」で繋ぐ。条件はシンプル：**どの三角形の外接円も、他の点を含んではいけない**。
 
-### Voronoi図
+これだけのルールから、奇跡的に「細長い三角形が避けられた、最小角度が最大化されたメッシュ」が出てくる。
 
-- 各点に「最寄りの領域」を割り当てる
-- 多角形のタイル状パターン
-- 自然界: キリンの模様、ひび割れ、細胞、結晶構造
+[d3-delaunayの公式デモ](https://d3js.org/d3-delaunay) を見ると、点をマウスで動かすたびに三角形メッシュがリアルタイムに組み変わるのがわかる。
 
-### 双対（dual）の関係
+そして同じ点群から、もう一つの構造が同時に得られる。それが**Voronoi図**（4/9で山岸さんが既にやったやつ）。Delaunayで隣り合う三角形の外接円の中心を結ぶと、それがVoronoiのエッジになる。**2つの図は同じ点群の表と裏**。
 
-- Delaunayで隣接する2つの三角形の外接円中心を結ぶ → Voronoiの辺
-- Delaunayの三角形の外接円中心 = Voronoiの頂点
-- 一方を計算すればもう一方が自動的に得られる
-- 数学的に美しい対称性
+## 4/8のスケッチに足すなら
 
-### アルゴリズム
+```html
+<!-- index.htmlに追加 -->
+<script src="https://cdn.jsdelivr.net/npm/d3-delaunay@6"></script>
+```
 
-- Fortune's Algorithm: sweep lineベース、O(n log n)
-- Bowyer-Watson: 増分法、実装がシンプル
-- d3-delaunay: JavaScriptの定番ライブラリ
+```js
+// draw内で：3D点群を一旦x-z平面に投影してDelaunay計算
+let coords = [];
+for (let p of particles) {
+  coords.push(p.x, p.z);
+}
+let delaunay = new d3.Delaunay(coords);
+let tri = delaunay.triangles;
 
-### Creative codingでの応用
+// 三角形を描画（昨日の二重ループ判定の代わり）
+stroke(255, 50);
+for (let i = 0; i < tri.length; i += 3) {
+  let a = particles[tri[i]];
+  let b = particles[tri[i + 1]];
+  let c = particles[tri[i + 2]];
+  line(a.x, a.y, a.z, b.x, b.y, b.z);
+  line(b.x, b.y, b.z, c.x, c.y, c.z);
+  line(c.x, c.y, c.z, a.x, a.y, a.z);
+}
+```
 
-- Low-poly画像化: 画像から点をサンプリング → Delaunay → 各三角形を平均色で塗る
-- スティップリング: Voronoiの重心にドットを置く（Lloyd relaxation）
-- 地形生成: Delaunayメッシュ上で高さを割り当て
-- Poisson disk sampling → Delaunay/Voronoiのパイプライン
+ポイント：d3-delaunayは2D前提なので、3DパーティクルをY軸（高さ）だけ無視してx-z平面に落とす。隣接関係はその2D投影で計算されるけど、描画は3D座標でやる。
 
-## 山岸の関心との接続点
+## 距離閾値より良い理由
 
-- **Poisson disk samplingとの組み合わせ**: 均等な点群 → Delaunay/Voronoiで構造化するパイプライン
-- **双対の数学**: 「1つの点群から2つの構造が生まれる」双対性は、noiseの値/傾き/curlのような「同じ入力から異なる読み方」に通じる
-- **p5.jsで使える**: d3-delaunayライブラリを読み込めばすぐ試せる
-- **VJとの接続**: Voronoiパターンはリアルタイム映像でよく使われる視覚要素
+距離閾値だと：
+- 粒子が近寄ると一気に密に繋がる
+- 離れると断絶する
+- 全ペア判定でO(n²)
 
-## Discord投稿
+Delaunayだと：
+- 「最近隣」が一意に定まる（距離ではなくトポロジで）
+- 点が動いても繋がりは滑らかに変化する
+- O(n log n)
 
-researchチャンネルに投稿済み（2026-04-09 00:12 JST）
+昨日「結局convex envelopeみたいに最大公約数的な形になる」と書いてたけど、Delaunayなら内部構造もちゃんと拾える。
+
+## さらに見るなら
+
+- [d3-delaunay公式](https://d3js.org/d3-delaunay) — APIリファレンス + デモ
+- [delaunator](https://mapbox.github.io/delaunator/) — d3-delaunayの中身。インタラクティブデモあり
+- [Three.js + Delaunatorの3D例](https://codepen.io/prisoner849/pen/bQWOjY) — 2D投影で計算→3D描画のパターン
