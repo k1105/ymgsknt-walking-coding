@@ -1,51 +1,105 @@
-# Differential Growth — 力のバランスから有機的な形が生まれるアルゴリズム
+# Differential Growth — 「死」を入れずに重くならない増殖
 
-## 調査トピック
+[2026-01-06のスケッチ](/diary/2026-01-06)で「分裂増殖」をやって、こう書いてたよね：
 
-Differential growth（差分成長）アルゴリズム。ノード列への局所的な力の適用とsubdivisionによる有機的形態の創発。
+> 純粋に増殖する形にすると、時間経過と共に処理が重くなるので「死」の概念を導入した。翻って言えば、自分はアニメーションは永久に持続してほしいと思っているんだな。
 
-## 見つけたもの
+「永久に持続してほしい」気持ちと「重くなる」現実の間の妥協点として「死」を入れた。これに対する別解がdifferential growth。
 
-### アルゴリズムの構造
+## 何が起きるか
 
-閉じた曲線（ノード列）に3つの力を毎フレーム適用：
+ノードが連なった**1本の閉曲線**から始まる。各ノードに3つの力をかけ続ける：
 
-1. **反発力**: 全ノードが近隣ノード（接続の有無を問わず）を押し返す。距離の逆数で減衰。成長のドライバー
-2. **引力（バネ）**: 隣接ノード同士がフックの法則で引き合う。曲線の連結を維持
-3. **整列力**: 各ノードが隣接2点の中点に向かう。曲線の滑らかさを保つ
+1. **反発力** — 全ノード同士が押し合う
+2. **整列力** — 隣接2点の中点に向かう
+3. **挿入** — エッジが長くなりすぎたら中点に新ノードを追加
 
-### 成長の仕組み
+それだけ。すると曲線は珊瑚の縁、レタスの葉、脳のしわみたいに**勝手にうねり始める**。
 
-- エッジが閾値長を超えたら中点に新ノードを挿入（subdivision）
-- この挿入が成長の「燃料」。なければ系は平衡に達して停止
-- 高曲率部分に優先的に挿入する変種もある
+死なない。ノードの数は緩やかに増えるけど、**形が複雑化する分の増加**だから1/6でやってた指数関数的な爆発にはならない。
 
-### パラメータ
+[Jason Webbのインタラクティブplayground](https://jasonwebb.github.io/2d-differential-growth-experiments/experiments/playground/) を見てほしい。パラメータをグリグリ動かして、いろんな形が出るのを試せる。
 
-- 反発半径: ノード同士が影響し合う距離
-- バネ定数: 引力の強さ
-- 分裂閾値: エッジがこの長さを超えたら新ノード挿入
-- 各力の重み付け
+## 1/6への回答として
 
-### Jason Webb の実装（JavaScript + p5.js）
+1/6で導入した「死」は処理負荷を抑えるための妥協だった。differential growthは別のアプローチで同じ問題を解く：
 
-- GitHub: jasonwebb/2d-differential-growth-experiments
-- ES6 + p5.js、Browserify
-- インタラクティブplayground付き
-- 詳細な解説記事あり（Medium）
+- **死を入れる**: 全体を一定数に保つ。粒子は出入りする
+- **differential growth**: 全体を1本の曲線に縛る。複雑化はノード数増加だが、上限に達したら挿入を止めればいい
 
-### p5.js Web Editor実装
+「永久に持続するアニメーション」という意味では、こっちの方が近いかも。**形は変わり続けるけど、構造は壊れない**。粒子が出入りしないから、見ていて落ち着く。
 
-- AhmadMoussa: シンプルな実装、読みやすいコード
-- hspencer: 別アプローチの実装
+## 最小実装
 
-## 山岸の関心との接続点
+```js
+let nodes = [];
+const REPULSION_R = 20;
+const MAX_EDGE = 10;
 
-- **フローフィールドとの対比**: フローフィールドは「外部の力場に粒子が従う」、differential growthは「ノード同士の局所的相互作用から大域的な形が創発する」。同じ力学シミュレーションだが構造が異なる
-- **noise不要**: 方程式はシンプル（フックの法則 + 反発力）。パラメータ変更で挙動が激変
-- **「道具の使い方」の拡張**: noise→flow field→curl noise→domain warpingの流れに対して、「noiseを使わない形態生成」という別軸を提供
-- **3D化が自然**: 2Dの曲線→3Dのメッシュに拡張可能（Blender実装例あり）
+function setup() {
+  createCanvas(800, 800);
+  for (let i = 0; i < 30; i++) {
+    let a = (i / 30) * TWO_PI;
+    nodes.push(createVector(400 + cos(a) * 50, 400 + sin(a) * 50));
+  }
+}
 
-## Discord投稿
+function draw() {
+  background(255);
 
-researchチャンネルに投稿済み（2026-04-08 20:12 JST）
+  // 1. 反発力
+  for (let i = 0; i < nodes.length; i++) {
+    let force = createVector(0, 0);
+    for (let j = 0; j < nodes.length; j++) {
+      if (i === j) continue;
+      let d = p5.Vector.dist(nodes[i], nodes[j]);
+      if (d < REPULSION_R) {
+        let dir = p5.Vector.sub(nodes[i], nodes[j]).normalize();
+        force.add(dir.mult((REPULSION_R - d) * 0.05));
+      }
+    }
+    nodes[i].add(force);
+  }
+
+  // 2. 整列力（隣接2点の中点に向かう）
+  let next = nodes.map((n, i) => {
+    let prev = nodes[(i - 1 + nodes.length) % nodes.length];
+    let nxt = nodes[(i + 1) % nodes.length];
+    let mid = p5.Vector.add(prev, nxt).mult(0.5);
+    return p5.Vector.lerp(n, mid, 0.05);
+  });
+  nodes = next;
+
+  // 3. エッジが長すぎたら新ノード挿入
+  for (let i = nodes.length - 1; i >= 0; i--) {
+    let nxt = nodes[(i + 1) % nodes.length];
+    if (p5.Vector.dist(nodes[i], nxt) > MAX_EDGE) {
+      let mid = p5.Vector.add(nodes[i], nxt).mult(0.5);
+      nodes.splice(i + 1, 0, mid);
+    }
+  }
+
+  // 描画
+  noFill();
+  stroke(0);
+  beginShape();
+  for (let n of nodes) vertex(n.x, n.y);
+  endShape(CLOSE);
+}
+```
+
+円から始めて数秒待つと、勝手に脳みそみたいな曲線になる。
+
+## 02-18の「不安定さ」とも繋がる
+
+[2026-02-18のMatter.jsスケッチ](/diary/2026-02-18)で「物理的不安定さが面白い」って書いてた。differential growthも物理シミュレーションの一種だけど、不安定さを「制御された美しさ」に変える方向。同じ系統の関心。
+
+## 1/24の円充填の延長としても
+
+[2026-01-24で円の充填](/diary/2026-01-24)をやってたけど、circle packingが「静的な空間充填」だとしたら、differential growthは「動的な空間充填」。同じく「空間を埋める」ことに関心がある。
+
+## さらに見るなら
+
+- [Jason Webb playground](https://jasonwebb.github.io/2d-differential-growth-experiments/experiments/playground/) — 全パラメータがインタラクティブ
+- [Jason Webb解説記事](https://medium.com/@jason.webb/2d-differential-growth-in-js-1843fd51b0ce) — 実装の詳細
+- [morphogenesis-resources](https://github.com/jasonwebb/morphogenesis-resources) — 形態生成アルゴリズムの宝庫
