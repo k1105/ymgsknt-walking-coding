@@ -72,7 +72,7 @@
     { "id": "sdf-2d", "type": "unexplored", "tags": ["shader", "math", "shape", "glsl"], "label": "2D SDF", "research": "/research/sdf-2d.md" },
     { "id": "strange-attractors", "type": "unexplored", "tags": ["math", "chaos", "3d", "differential-eq"], "label": "ストレンジアトラクター", "research": "/research/strange-attractors.md" },
     { "id": "shader-post-process", "type": "unexplored", "tags": ["shader", "glsl", "post-process", "vj"], "label": "シェーダーポストプロセス" },
-    { "id": "voronoi-stippling", "type": "unexplored", "tags": ["voronoi", "image", "lloyd", "stippling"], "label": "Weighted Voronoi Stippling" }
+    { "id": "voronoi-stippling", "type": "unexplored", "tags": ["voronoi", "image", "lloyd", "stippling"], "label": "Weighted Voronoi Stippling", "research": "/research/voronoi-stippling.md" }
   ],
   "edges": [
     { "source": "2026-01-03", "target": "2026-01-04", "type": "A", "reason": "WEBGLでの3D点群表現の連続" },
