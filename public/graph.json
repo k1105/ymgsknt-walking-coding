@@ -83,7 +83,8 @@
     { "id": "boids", "type": "unexplored", "tags": ["particle", "flocking", "self-organization", "agent"], "label": "Boids (Flocking)", "research": "/research/boids.md" },
     { "id": "moire-patterns", "type": "unexplored", "tags": ["pattern", "interference", "math", "visual"], "label": "Moiré Patterns", "research": "/research/moire-patterns.md" },
     { "id": "cinematic-camera", "type": "unexplored", "tags": ["camera", "3d", "webgl", "vj", "cinematic"], "label": "Cinematic Camera", "research": "/research/cinematic-camera.md" },
-    { "id": "reaction-diffusion", "type": "unexplored", "tags": ["organic", "growth", "pattern", "cellular", "turing"], "label": "Reaction-Diffusion", "research": "/research/reaction-diffusion.md" }
+    { "id": "reaction-diffusion", "type": "unexplored", "tags": ["organic", "growth", "pattern", "cellular", "turing"], "label": "Reaction-Diffusion", "research": "/research/reaction-diffusion.md" },
+    { "id": "audio-reactive", "type": "unexplored", "tags": ["audio", "vj", "fft", "bpm", "interaction"], "label": "Audio Reactive", "research": "/research/audio-reactive.md" }
   ],
   "edges": [
     { "source": "2026-01-03", "target": "2026-01-04", "type": "A", "reason": "WEBGLでの3D点群表現の連続" },
@@ -173,6 +174,8 @@
     { "source": "2026-01-09", "target": "cinematic-camera", "type": "D", "reason": "「カメラワークどうしてるんだろ」への回答" },
     { "source": "2026-01-12", "target": "cinematic-camera", "type": "D", "reason": "「グシャっとしてくると面白い」を実現する技" },
     { "source": "2026-03-13", "target": "reaction-diffusion", "type": "D", "reason": "「描く」を化学反応に置き換えるラディカルな代替" },
-    { "source": "2026-01-06", "target": "reaction-diffusion", "type": "D", "reason": "「分裂増殖」「死」を連続濃度で表現" }
+    { "source": "2026-01-06", "target": "reaction-diffusion", "type": "D", "reason": "「分裂増殖」「死」を連続濃度で表現" },
+    { "source": "2026-01-28", "target": "audio-reactive", "type": "D", "reason": "「BPMで考える」「パラメータスライダー」の自動運転版" },
+    { "source": "2026-03-18", "target": "audio-reactive", "type": "D", "reason": "BPM同期の発展形" }
   ]
 }
