@@ -80,7 +80,8 @@
     { "id": "variable-fonts", "type": "unexplored", "tags": ["text", "typography", "font", "css"], "label": "Variable Fonts", "research": "/research/variable-fonts.md" },
     { "id": "80s-mv-grade", "type": "unexplored", "tags": ["shader", "post-process", "vj", "bloom", "glint", "grade"], "label": "80s MV Grade", "research": "/research/80s-mv-grade.md" },
     { "id": "wave-propagation", "type": "unexplored", "tags": ["network", "graph", "wave", "bfs", "propagation"], "label": "Wave Propagation on Graphs", "research": "/research/wave-propagation.md" },
-    { "id": "boids", "type": "unexplored", "tags": ["particle", "flocking", "self-organization", "agent"], "label": "Boids (Flocking)", "research": "/research/boids.md" }
+    { "id": "boids", "type": "unexplored", "tags": ["particle", "flocking", "self-organization", "agent"], "label": "Boids (Flocking)", "research": "/research/boids.md" },
+    { "id": "moire-patterns", "type": "unexplored", "tags": ["pattern", "interference", "math", "visual"], "label": "Moiré Patterns", "research": "/research/moire-patterns.md" }
   ],
   "edges": [
     { "source": "2026-01-03", "target": "2026-01-04", "type": "A", "reason": "WEBGLでの3D点群表現の連続" },
@@ -164,6 +165,8 @@
     { "source": "shader-post-process", "target": "80s-mv-grade", "type": "D", "reason": "シェーダーポストプロセスの具体例" },
     { "source": "2026-02-08", "target": "wave-propagation", "type": "D", "reason": "「順序ずらし」をネットワーク構造に基づく波伝播へ" },
     { "source": "2026-04-07", "target": "boids", "type": "D", "reason": "「列をなして流れる」を意図的に作るアルゴリズム" },
-    { "source": "2026-01-08", "target": "boids", "type": "D", "reason": "有機的な動きを自己組織化で作る" }
+    { "source": "2026-01-08", "target": "boids", "type": "D", "reason": "有機的な動きを自己組織化で作る" },
+    { "source": "2026-02-22", "target": "moire-patterns", "type": "D", "reason": "サイン波グリッドを2枚重ねる→モアレへ" },
+    { "source": "2026-03-01", "target": "moire-patterns", "type": "D", "reason": "「ズラシで因数分解しづらくする」の数学的方法" }
   ]
 }
