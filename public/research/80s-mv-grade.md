@@ -101,6 +101,17 @@ float vig = 1.0 - length(uv - 0.5) * 1.4;
 col *= vig;
 ```
 
+## 物理リファレンス
+
+シェーダーで再現する効果は全部、物理カメラの**実際のフィルター**に対応している：
+
+- **Cross filter (Star filter)** = レンズの前のガラスに細い線が縦横/6方向/8方向に刻まれていて、光がその溝で回折して光条が伸びる。[Star Filter解説](https://pages.mtu.edu/~shene/DigiCam/User-Guide/filter/filter-star.html)
+- **Anamorphic streak** = anamorphicレンズ自体の楕円形状による光の引き伸ばし
+- **Bloom / glow** = 古いレンズのコーティング不足による光の散乱
+- **Diffusion / Pro-Mist** = レンズ前のガラスに微細な凹凸があり、ハイライトが滲む
+
+物理リファレンスがあると、シェーダーで「何を再現してるか」が言語化しやすい。
+
 ## 写経候補
 
 各要素を別々のShadertoyから引っ張ってくるのが現実的：
