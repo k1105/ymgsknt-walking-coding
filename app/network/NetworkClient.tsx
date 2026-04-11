@@ -62,7 +62,6 @@ export default function NetworkClient() {
   const [graphData, setGraphData] = useState<GraphData | null>(null);
   const [hoveredNode, setHoveredNode] = useState<GraphNode | null>(null);
   const [hoveredEdge, setHoveredEdge] = useState<GraphEdge | null>(null);
-  const [currentZoom, setCurrentZoom] = useState(1);
   const [researchContent, setResearchContent] = useState<string | null>(null);
   const [researchNode, setResearchNode] = useState<GraphNode | null>(null);
 
@@ -92,7 +91,6 @@ export default function NetworkClient() {
       .scaleExtent([0.3, 4])
       .on("zoom", (event) => {
         g.attr("transform", event.transform);
-        setCurrentZoom(event.transform.k);
       });
 
     svg.call(zoom);
@@ -206,8 +204,27 @@ export default function NetworkClient() {
             dragStartPos = null;
           })
       )
-      .on("mouseenter", (_, d) => setHoveredNode(d))
-      .on("mouseleave", () => setHoveredNode(null))
+      .on("mouseenter", (_, d) => {
+        setHoveredNode(d);
+        // Show only edge labels connected to this node
+        edgeLabels.style("opacity", (e) => {
+          const src = (e.source as GraphNode).id ?? e.source;
+          const tgt = (e.target as GraphNode).id ?? e.target;
+          return (src === d.id || tgt === d.id) ? 1 : 0;
+        });
+        // Highlight connected edges too
+        link.attr("stroke-opacity", (e) => {
+          const src = (e.source as GraphNode).id ?? e.source;
+          const tgt = (e.target as GraphNode).id ?? e.target;
+          const isConnected = src === d.id || tgt === d.id;
+          return isConnected ? Math.max(getEdgeStyle(e.type).opacity, 0.8) : getEdgeStyle(e.type).opacity * 0.3;
+        });
+      })
+      .on("mouseleave", () => {
+        setHoveredNode(null);
+        edgeLabels.style("opacity", 0);
+        link.attr("stroke-opacity", (e) => getEdgeStyle(e.type).opacity);
+      })
       .style("cursor", (d) => (d.type === "sketch" ? "pointer" : "grab"));
 
     // Circle
@@ -268,13 +285,6 @@ export default function NetworkClient() {
     };
   }, [graphData, router]);
 
-  // Update edge label visibility based on zoom
-  useEffect(() => {
-    if (!svgRef.current) return;
-    const svg = d3.select(svgRef.current);
-    svg.selectAll<SVGTextElement, GraphEdge>(".edge-labels text")
-      .style("opacity", currentZoom > 1.5 ? 1 : 0);
-  }, [currentZoom]);
 
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-white">
