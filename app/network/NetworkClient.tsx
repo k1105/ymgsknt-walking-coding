@@ -296,6 +296,15 @@ export default function NetworkClient() {
           className="fixed bottom-8 left-8 bg-white border border-black px-4 py-3 max-w-sm z-50"
           style={{ fontFamily: "var(--font-geist-mono), monospace" }}
         >
+          {hoveredNode.type === "sketch" && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={`/sketches/${hoveredNode.id}/thumbnail.png`}
+              alt=""
+              className="w-full h-32 object-cover mb-2 bg-gray-100"
+              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+            />
+          )}
           <div className="text-sm font-bold">
             {hoveredNode.type === "sketch" ? hoveredNode.id : hoveredNode.label}
           </div>
@@ -305,9 +314,6 @@ export default function NetworkClient() {
           <div className="text-xs mt-1 text-gray-500">
             {hoveredNode.tags.join(", ")}
           </div>
-          {hoveredNode.type === "sketch" && (
-            <div className="text-xs mt-2 underline">click → diary</div>
-          )}
           {hoveredNode.type === "unexplored" && (
             <div className="text-xs mt-1 italic text-gray-400">
               {hoveredNode.research ? "click → research" : "未踏（調査なし）"}
