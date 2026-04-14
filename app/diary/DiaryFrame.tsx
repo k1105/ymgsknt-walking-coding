@@ -471,13 +471,7 @@ export default function DiaryFrame({children}: {children: ReactNode}) {
           );
         })}
 
-      <div
-        className={`transition-opacity duration-700 ease-in-out will-change-[opacity] ${
-          isRoot || !animDir ? "opacity-100" : "opacity-0"
-        }`}
-      >
-        {children}
-      </div>
+      {children}
     </DiaryContext.Provider>
   );
 }

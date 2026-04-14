@@ -10,11 +10,13 @@
 
 .textArea {
   width: calc(var(--grid-width) * 3 + var(--grid-gap) * 2 + var(--grid-margin));
+  mix-blend-mode: difference;
 }
 
 .article {
   -ms-overflow-style: none;
   scrollbar-width: none;
+  color: white;
 }
 
 @media screen and (max-width: 768px) {
@@ -29,7 +31,7 @@
 
   .textArea {
     width: calc(
-      var(--grid-width) * 5 + var(--grid-gap) * 4 + var(--grid-margin)
+      var(--grid-width) * 6 + var(--grid-gap) * 5 + var(--grid-margin)
     );
   }
 }
