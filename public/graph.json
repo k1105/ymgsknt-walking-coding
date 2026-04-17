@@ -32,6 +32,8 @@
     { "id": "2026-04-08", "type": "sketch", "tags": ["noise", "flow-field", "3d", "webgl", "particle", "neighbor"], "label": "3Dフローフィールド+近接結線" },
     { "id": "2026-04-09", "type": "sketch", "tags": ["noise", "flow-field", "voronoi", "d3-delaunay"], "label": "Voronoi+noiseフローフィールド" },
     { "id": "2026-04-13", "type": "sketch", "tags": ["shader", "glsl", "bloom", "post-process", "webgl"], "label": "Bloomシェーダー+グリッドマスク" },
+    { "id": "2026-04-14", "type": "sketch", "tags": ["shader", "glsl", "bloom", "radial", "inverse"], "label": "放射状bloom+逆bloom実験" },
+    { "id": "2026-04-16", "type": "sketch", "tags": ["pixel", "sort", "image", "loadPixels", "animation"], "label": "ピクセルソート+sin波アニメ" },
 
     { "id": "2026-01-07", "type": "sketch", "tags": ["noise", "organic", "particle", "color", "trail"], "label": "火花のような軌跡" },
     { "id": "2026-01-12", "type": "sketch", "tags": ["webgl", "3d", "camera", "ground-plane"], "label": "カメラワーク地面制約" },
@@ -86,7 +88,9 @@
     { "id": "cinematic-camera", "type": "unexplored", "tags": ["camera", "3d", "webgl", "vj", "cinematic"], "label": "Cinematic Camera", "research": "/research/cinematic-camera.md" },
     { "id": "reaction-diffusion", "type": "unexplored", "tags": ["organic", "growth", "pattern", "cellular", "turing"], "label": "Reaction-Diffusion", "research": "/research/reaction-diffusion.md" },
     { "id": "audio-reactive", "type": "unexplored", "tags": ["audio", "vj", "fft", "bpm", "interaction"], "label": "Audio Reactive", "research": "/research/audio-reactive.md" },
-    { "id": "bloom-variations", "type": "unexplored", "tags": ["shader", "bloom", "post-process", "anamorphic", "radial"], "label": "Bloom Variations", "research": "/research/bloom-variations.md" }
+    { "id": "bloom-variations", "type": "unexplored", "tags": ["shader", "bloom", "post-process", "anamorphic", "radial"], "label": "Bloom Variations", "research": "/research/bloom-variations.md" },
+    { "id": "pixel-sort-directions", "type": "unexplored", "tags": ["pixel", "sort", "direction", "curve", "radial"], "label": "ピクセルソート方向制御", "research": "/research/pixel-sort-directions.md" },
+    { "id": "glitch-art", "type": "unexplored", "tags": ["glitch", "databend", "pixel", "corruption"], "label": "Glitch Art / Databending", "research": "/research/glitch-art.md" }
   ],
   "edges": [
     { "source": "2026-01-03", "target": "2026-01-04", "type": "A", "reason": "WEBGLでの3D点群表現の連続" },
@@ -182,6 +186,11 @@
     { "source": "2026-04-02", "target": "2026-04-13", "type": "B", "reason": "GLSLシェーダーの使用" },
     { "source": "2026-02-07", "target": "2026-04-13", "type": "B", "reason": "シェーダーパイプラインの活用" },
     { "source": "2026-04-13", "target": "bloom-variations", "type": "D", "reason": "bloomのoffset計算を変えて5つの表情" },
-    { "source": "2026-04-13", "target": "80s-mv-grade", "type": "D", "reason": "bloom→フルグレードパイプラインへ" }
+    { "source": "2026-04-13", "target": "80s-mv-grade", "type": "D", "reason": "bloom→フルグレードパイプラインへ" },
+    { "source": "2026-04-13", "target": "2026-04-14", "type": "A", "reason": "bloomシェーダーの改変実験（radial+inverse）" },
+    { "source": "2026-04-14", "target": "bloom-variations", "type": "D", "reason": "bloom改変の体系化" },
+    { "source": "2026-04-13", "target": "2026-04-16", "type": "C", "reason": "シェーダー→ピクセル操作への展開" },
+    { "source": "2026-04-16", "target": "pixel-sort-directions", "type": "D", "reason": "日記で「ソートのベクトルを歪ませたい」" },
+    { "source": "2026-04-16", "target": "glitch-art", "type": "D", "reason": "ピクセルソートの延長としてのグリッチ全般" }
   ]
 }
