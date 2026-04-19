@@ -91,8 +91,7 @@
     { "id": "audio-reactive", "type": "unexplored", "tags": ["audio", "vj", "fft", "bpm", "interaction"], "label": "Audio Reactive", "research": "/research/audio-reactive.md" },
     { "id": "bloom-variations", "type": "unexplored", "tags": ["shader", "bloom", "post-process", "anamorphic", "radial"], "label": "Bloom Variations", "research": "/research/bloom-variations.md" },
     { "id": "pixel-sort-directions", "type": "unexplored", "tags": ["pixel", "sort", "direction", "curve", "radial"], "label": "ピクセルソート方向制御", "research": "/research/pixel-sort-directions.md" },
-    { "id": "glitch-art", "type": "unexplored", "tags": ["glitch", "databend", "pixel", "corruption"], "label": "Glitch Art / Databending", "research": "/research/glitch-art.md" },
-    { "id": "recursive-revisit", "type": "unexplored", "tags": ["practice", "revisit", "theme", "variation"], "label": "再演としてのwalking coding", "research": "/research/recursive-revisit.md" }
+    { "id": "glitch-art", "type": "unexplored", "tags": ["glitch", "databend", "pixel", "corruption"], "label": "Glitch Art / Databending", "research": "/research/glitch-art.md" }
   ],
   "edges": [
     { "source": "2026-01-03", "target": "2026-01-04", "type": "A", "reason": "WEBGLでの3D点群表現の連続" },
@@ -195,7 +194,6 @@
     { "source": "2026-04-16", "target": "pixel-sort-directions", "type": "D", "reason": "日記で「ソートのベクトルを歪ませたい」" },
     { "source": "2026-04-16", "target": "glitch-art", "type": "D", "reason": "ピクセルソートの延長としてのグリッチ全般" },
     { "source": "2026-04-16", "target": "2026-04-18", "type": "A", "reason": "ピクセルソートに閾値+縦方向を追加" },
-    { "source": "2026-04-18", "target": "pixel-sort-directions", "type": "D", "reason": "さらなる方向制御の発展" },
-    { "source": "2026-04-18", "target": "recursive-revisit", "type": "D", "reason": "松本零士の「再演」をwalking codingに適用" }
+    { "source": "2026-04-18", "target": "pixel-sort-directions", "type": "D", "reason": "さらなる方向制御の発展" }
   ]
 }
