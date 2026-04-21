@@ -2,7 +2,7 @@ let img;
 let threshold = 200;
 
 function preload() {
-  img = loadImage("photo.jpg");
+  img = loadImage("/assets/photo.jpg");
 }
 
 function setup() {
