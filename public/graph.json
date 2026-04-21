@@ -36,6 +36,7 @@
     { "id": "2026-04-16", "type": "sketch", "tags": ["pixel", "sort", "image", "loadPixels", "animation"], "label": "ピクセルソート+sin波アニメ" },
     { "id": "2026-04-18", "type": "sketch", "tags": ["pixel", "sort", "threshold", "vertical", "image"], "label": "閾値付き縦方向ピクセルソート" },
     { "id": "2026-04-19", "type": "sketch", "tags": ["pixel", "sort", "noise", "angle", "direction"], "label": "noiseベース斜めピクセルソート" },
+    { "id": "2026-04-20", "type": "sketch", "tags": ["pixel", "image", "colormap", "noise", "threshold"], "label": "サーモフィルター+noiseアニメ" },
 
     { "id": "2026-01-07", "type": "sketch", "tags": ["noise", "organic", "particle", "color", "trail"], "label": "火花のような軌跡" },
     { "id": "2026-01-12", "type": "sketch", "tags": ["webgl", "3d", "camera", "ground-plane"], "label": "カメラワーク地面制約" },
@@ -92,7 +93,8 @@
     { "id": "audio-reactive", "type": "unexplored", "tags": ["audio", "vj", "fft", "bpm", "interaction"], "label": "Audio Reactive", "research": "/research/audio-reactive.md" },
     { "id": "bloom-variations", "type": "unexplored", "tags": ["shader", "bloom", "post-process", "anamorphic", "radial"], "label": "Bloom Variations", "research": "/research/bloom-variations.md" },
     { "id": "pixel-sort-directions", "type": "unexplored", "tags": ["pixel", "sort", "direction", "curve", "radial"], "label": "ピクセルソート方向制御", "research": "/research/pixel-sort-directions.md" },
-    { "id": "glitch-art", "type": "unexplored", "tags": ["glitch", "databend", "pixel", "corruption"], "label": "Glitch Art / Databending", "research": "/research/glitch-art.md" }
+    { "id": "glitch-art", "type": "unexplored", "tags": ["glitch", "databend", "pixel", "corruption"], "label": "Glitch Art / Databending", "research": "/research/glitch-art.md" },
+    { "id": "shader-colormap", "type": "unexplored", "tags": ["shader", "colormap", "thermal", "gpu", "palette"], "label": "Shader Colormap", "research": "/research/shader-colormap.md" }
   ],
   "edges": [
     { "source": "2026-01-03", "target": "2026-01-04", "type": "A", "reason": "WEBGLでの3D点群表現の連続" },
@@ -197,6 +199,9 @@
     { "source": "2026-04-16", "target": "2026-04-18", "type": "A", "reason": "ピクセルソートに閾値+縦方向を追加" },
     { "source": "2026-04-18", "target": "pixel-sort-directions", "type": "D", "reason": "さらなる方向制御の発展" },
     { "source": "2026-04-18", "target": "2026-04-19", "type": "A", "reason": "縦ソートにnoiseベースの角度制御を追加" },
-    { "source": "2026-04-19", "target": "pixel-sort-directions", "type": "D", "reason": "粗密問題のさらなる解決" }
+    { "source": "2026-04-19", "target": "pixel-sort-directions", "type": "D", "reason": "粗密問題のさらなる解決" },
+    { "source": "2026-04-16", "target": "2026-04-20", "type": "B", "reason": "loadPixels/ピクセル操作" },
+    { "source": "2026-04-20", "target": "shader-colormap", "type": "D", "reason": "日記で「shaderベースでやったら軽量」" },
+    { "source": "2026-04-13", "target": "shader-colormap", "type": "B", "reason": "同じcreateGraphics→shaderパイプライン" }
   ]
 }
