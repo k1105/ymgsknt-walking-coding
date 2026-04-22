@@ -279,6 +279,16 @@ export default function DiaryFrame({children}: {children: ReactNode}) {
     nextNext: null,
   });
   const [animDir, setAnimDir] = useState<"next" | "prev" | null>(null);
+  const [uiOpacity, setUiOpacity] = useState(1);
+
+  useEffect(() => {
+    const h = (e: Event) => {
+      const detail = (e as CustomEvent<number>).detail;
+      if (typeof detail === "number") setUiOpacity(detail);
+    };
+    window.addEventListener("diaryUIFade", h);
+    return () => window.removeEventListener("diaryUIFade", h);
+  }, []);
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
@@ -315,20 +325,22 @@ export default function DiaryFrame({children}: {children: ReactNode}) {
       Math.max(-2, Math.min(2, targetIdx))
     ) as keyof typeof DATE_POSITIONS;
 
+    const baseOpacity = isVisible ? (isCenter ? 1 : 0.7) : 0;
     return {
-      className: `fixed top-0 left-0 font-bold whitespace-pre-line transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] z-50 select-none ${
+      className: `fixed top-0 left-0 font-bold whitespace-pre-line transition-[transform,color,font-size,line-height] duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] z-50 select-none ${
         isCenter
           ? "origin-bottom-center text-center"
           : "origin-bottom-left text-left"
       }`,
       style: {
         transform: DATE_POSITIONS[posKey][isMobile ? "sp" : "pc"],
-        opacity: isVisible ? (isCenter ? 1 : 0.7) : 0,
+        opacity: baseOpacity * uiOpacity,
         fontSize: isCenter ? "1rem" : "0.85rem",
         lineHeight: isCenter ? "1rem" : "0.85rem",
         color: isCenter ? "rgb(0 0 0)" : "rgb(107 114 128)",
         cursor: !isCenter && isVisible && !animDir ? "pointer" : "default",
-        pointerEvents: animDir || !isVisible ? "none" : "auto",
+        pointerEvents:
+          animDir || !isVisible || uiOpacity < 0.05 ? "none" : "auto",
         fontFamily: "var(--font-doto)",
       } as React.CSSProperties,
       onClick: () => {
@@ -352,9 +364,11 @@ export default function DiaryFrame({children}: {children: ReactNode}) {
     >
       {/* Title Canvas Layer */}
       <div
-        className={`fixed inset-0 z-[100] pointer-events-none transition-opacity duration-300 ${
-          show ? "opacity-100" : "opacity-0"
-        }`}
+        className="fixed inset-0 z-[100] pointer-events-none"
+        style={{
+          opacity: (show ? 1 : 0) * uiOpacity,
+          transition: "opacity 150ms linear",
+        }}
       >
         <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
         {textChars.map((char, i) => (
@@ -370,7 +384,14 @@ export default function DiaryFrame({children}: {children: ReactNode}) {
       </div>
 
       {/* Navigation */}
-      <nav className="fixed top-0 right-0 z-[70] flex items-center">
+      <nav
+        className="fixed top-0 right-0 z-[70] flex items-center"
+        style={{
+          opacity: uiOpacity,
+          pointerEvents: uiOpacity < 0.05 ? "none" : "auto",
+          transition: "opacity 150ms linear",
+        }}
+      >
         {isRoot && (
           <button
             onClick={() => {

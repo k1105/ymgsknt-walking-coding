@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import {useEffect, useRef, useState} from "react";
+import {useRouter} from "next/navigation";
 import * as d3 from "d3";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
@@ -41,11 +41,16 @@ function dateToRadius(id: string, minDate: number, maxDate: number): number {
 // Edge style based on type
 function getEdgeStyle(type: string) {
   switch (type) {
-    case "A": return { width: 2, dash: "none", opacity: 0.6 };      // explicit reference
-    case "B": return { width: 1.2, dash: "none", opacity: 0.4 };    // same tech
-    case "C": return { width: 1, dash: "4,3", opacity: 0.35 };      // theme similarity
-    case "D": return { width: 1, dash: "2,4", opacity: 0.3 };       // unexplored
-    default:  return { width: 1, dash: "none", opacity: 0.3 };
+    case "A":
+      return {width: 2, dash: "none", opacity: 0.6}; // explicit reference
+    case "B":
+      return {width: 1.2, dash: "none", opacity: 0.4}; // same tech
+    case "C":
+      return {width: 1, dash: "4,3", opacity: 0.35}; // theme similarity
+    case "D":
+      return {width: 1, dash: "2,4", opacity: 0.3}; // unexplored
+    default:
+      return {width: 1, dash: "none", opacity: 0.3};
   }
 }
 
@@ -87,7 +92,8 @@ export default function NetworkClient() {
     const g = svg.append("g");
 
     // Zoom
-    const zoom = d3.zoom<SVGSVGElement, unknown>()
+    const zoom = d3
+      .zoom<SVGSVGElement, unknown>()
       .scaleExtent([0.3, 4])
       .on("zoom", (event) => {
         g.attr("transform", event.transform);
@@ -96,8 +102,8 @@ export default function NetworkClient() {
     svg.call(zoom);
 
     // Deep copy
-    const nodes: GraphNode[] = graphData.nodes.map((n) => ({ ...n }));
-    const edges: GraphEdge[] = graphData.edges.map((e) => ({ ...e }));
+    const nodes: GraphNode[] = graphData.nodes.map((n) => ({...n}));
+    const edges: GraphEdge[] = graphData.edges.map((e) => ({...e}));
 
     // Calculate date range for radial layout
     const sketchDates = nodes
@@ -115,17 +121,19 @@ export default function NetworkClient() {
           .forceLink<GraphNode, GraphEdge>(edges)
           .id((d) => d.id)
           .distance(50)
-          .strength(0.4)
+          .strength(0.4),
       )
       .force("charge", d3.forceManyBody().strength(-40))
       .force("center", d3.forceCenter(cx, cy).strength(0.02))
       .force(
         "radial",
-        d3.forceRadial<GraphNode>(
-          (d) => dateToRadius(d.id, minDate, maxDate),
-          cx,
-          cy
-        ).strength(0.7)
+        d3
+          .forceRadial<GraphNode>(
+            (d) => dateToRadius(d.id, minDate, maxDate),
+            cx,
+            cy,
+          )
+          .strength(0.7),
       )
       .force("collision", d3.forceCollide().radius(20));
 
@@ -159,7 +167,7 @@ export default function NetworkClient() {
       .style("opacity", 0);
 
     // Nodes
-    let dragStartPos: { x: number; y: number } | null = null;
+    let dragStartPos: {x: number; y: number} | null = null;
 
     const node = g
       .append("g")
@@ -170,7 +178,7 @@ export default function NetworkClient() {
         d3
           .drag<SVGGElement, GraphNode>()
           .on("start", (event, d) => {
-            dragStartPos = { x: event.x, y: event.y };
+            dragStartPos = {x: event.x, y: event.y};
             if (!event.active) simulation.alphaTarget(0.3).restart();
             d.fx = d.x;
             d.fy = d.y;
@@ -191,7 +199,7 @@ export default function NetworkClient() {
                   router.push(`/diary/${d.id}`);
                 } else if (d.type === "unexplored" && d.research) {
                   fetch(d.research)
-                    .then((res) => res.ok ? res.text() : null)
+                    .then((res) => (res.ok ? res.text() : null))
                     .then((text) => {
                       if (text) {
                         setResearchNode(d);
@@ -202,7 +210,7 @@ export default function NetworkClient() {
               }
             }
             dragStartPos = null;
-          })
+          }),
       )
       .on("mouseenter", (_, d) => {
         setHoveredNode(d);
@@ -210,14 +218,16 @@ export default function NetworkClient() {
         edgeLabels.style("opacity", (e) => {
           const src = (e.source as GraphNode).id ?? e.source;
           const tgt = (e.target as GraphNode).id ?? e.target;
-          return (src === d.id || tgt === d.id) ? 1 : 0;
+          return src === d.id || tgt === d.id ? 1 : 0;
         });
         // Highlight connected edges too
         link.attr("stroke-opacity", (e) => {
           const src = (e.source as GraphNode).id ?? e.source;
           const tgt = (e.target as GraphNode).id ?? e.target;
           const isConnected = src === d.id || tgt === d.id;
-          return isConnected ? Math.max(getEdgeStyle(e.type).opacity, 0.8) : getEdgeStyle(e.type).opacity * 0.3;
+          return isConnected
+            ? Math.max(getEdgeStyle(e.type).opacity, 0.8)
+            : getEdgeStyle(e.type).opacity * 0.3;
         });
       })
       .on("mouseleave", () => {
@@ -235,7 +245,7 @@ export default function NetworkClient() {
       .attr("stroke", (d) => (d.type === "sketch" ? "none" : "#000"))
       .attr("stroke-width", (d) => (d.type === "sketch" ? 0 : 1.5))
       .attr("stroke-dasharray", (d) =>
-        d.type === "unexplored" ? "3,2" : "none"
+        d.type === "unexplored" ? "3,2" : "none",
       );
 
     // Node label
@@ -254,7 +264,7 @@ export default function NetworkClient() {
       .attr("font-family", "var(--font-geist-mono), monospace")
       .attr("fill", (d) => (d.type === "sketch" ? "#000" : "#666"))
       .attr("font-style", (d) =>
-        d.type === "unexplored" ? "italic" : "normal"
+        d.type === "unexplored" ? "italic" : "normal",
       );
 
     // Tick
@@ -268,13 +278,11 @@ export default function NetworkClient() {
       edgeLabels
         .attr(
           "x",
-          (d) =>
-            ((d.source as GraphNode).x! + (d.target as GraphNode).x!) / 2
+          (d) => ((d.source as GraphNode).x! + (d.target as GraphNode).x!) / 2,
         )
         .attr(
           "y",
-          (d) =>
-            ((d.source as GraphNode).y! + (d.target as GraphNode).y!) / 2
+          (d) => ((d.source as GraphNode).y! + (d.target as GraphNode).y!) / 2,
         );
 
       node.attr("transform", (d) => `translate(${d.x},${d.y})`);
@@ -285,7 +293,6 @@ export default function NetworkClient() {
     };
   }, [graphData, router]);
 
-
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-white">
       <svg ref={svgRef} className="w-full h-full" />
@@ -294,7 +301,7 @@ export default function NetworkClient() {
       {hoveredNode && (
         <div
           className="fixed bottom-8 left-8 bg-white border border-black px-4 py-3 max-w-sm z-50"
-          style={{ fontFamily: "var(--font-geist-mono), monospace" }}
+          style={{fontFamily: "var(--font-geist-mono), monospace"}}
         >
           {hoveredNode.type === "sketch" && (
             // eslint-disable-next-line @next/next/no-img-element
@@ -302,7 +309,9 @@ export default function NetworkClient() {
               src={`/sketches/${hoveredNode.id}/thumbnail.png`}
               alt=""
               className="w-full h-32 object-cover mb-2 bg-gray-100"
-              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = "none";
+              }}
             />
           )}
           <div className="text-sm font-bold">
@@ -326,7 +335,7 @@ export default function NetworkClient() {
       {hoveredEdge && !hoveredNode && (
         <div
           className="fixed bottom-8 left-8 bg-white border border-gray-300 px-4 py-3 max-w-sm z-50"
-          style={{ fontFamily: "var(--font-geist-mono), monospace" }}
+          style={{fontFamily: "var(--font-geist-mono), monospace"}}
         >
           <div className="text-xs text-gray-400 mb-1">
             {EDGE_TYPE_LABELS[(hoveredEdge as GraphEdge).type] ?? ""}
@@ -342,7 +351,7 @@ export default function NetworkClient() {
       {/* Legend */}
       <div
         className="fixed bottom-8 right-8 text-xs z-50"
-        style={{ fontFamily: "var(--font-geist-mono), monospace" }}
+        style={{fontFamily: "var(--font-geist-mono), monospace"}}
       >
         <div className="mb-3">
           <div className="flex items-center gap-2 mb-1">
@@ -352,7 +361,7 @@ export default function NetworkClient() {
           <div className="flex items-center gap-2">
             <div
               className="w-3 h-3 rounded-full border border-black"
-              style={{ borderStyle: "dashed" }}
+              style={{borderStyle: "dashed"}}
             />
             <span className="text-gray-500 italic">unexplored</span>
           </div>
@@ -373,12 +382,11 @@ export default function NetworkClient() {
           <div className="flex items-center gap-2">
             <div
               className="w-6 border-t border-black"
-              style={{ borderStyle: "dotted" }}
+              style={{borderStyle: "dotted"}}
             />
             <span>D: 未踏への推測</span>
           </div>
         </div>
-        <div className="mt-3 text-gray-300">中心=古い 外側=新しい</div>
       </div>
 
       {/* Research Panel */}
@@ -386,10 +394,13 @@ export default function NetworkClient() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20">
           <div
             className="bg-white border border-black max-w-lg max-h-[80vh] overflow-y-auto p-6 relative"
-            style={{ fontFamily: "var(--font-geist-mono), monospace" }}
+            style={{fontFamily: "var(--font-geist-mono), monospace"}}
           >
             <button
-              onClick={() => { setResearchContent(null); setResearchNode(null); }}
+              onClick={() => {
+                setResearchContent(null);
+                setResearchNode(null);
+              }}
               className="absolute top-3 right-3 text-gray-400 hover:text-black text-sm"
             >
               ✕
@@ -400,33 +411,64 @@ export default function NetworkClient() {
               <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
                 components={{
-                  h1: ({ children }) => <h1 className="text-base font-bold mt-4 mb-2">{children}</h1>,
-                  h2: ({ children }) => <h2 className="text-sm font-bold mt-3 mb-2">{children}</h2>,
-                  h3: ({ children }) => <h3 className="text-xs font-bold mt-2 mb-1">{children}</h3>,
-                  p: ({ children }) => <p className="my-2">{children}</p>,
-                  ul: ({ children }) => <ul className="list-disc pl-4 my-2">{children}</ul>,
-                  ol: ({ children }) => <ol className="list-decimal pl-4 my-2">{children}</ol>,
-                  li: ({ children }) => <li className="my-0.5">{children}</li>,
-                  a: ({ children, href }) => (
-                    <a href={href} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline break-all">
+                  h1: ({children}) => (
+                    <h1 className="text-base font-bold mt-4 mb-2">
+                      {children}
+                    </h1>
+                  ),
+                  h2: ({children}) => (
+                    <h2 className="text-sm font-bold mt-3 mb-2">{children}</h2>
+                  ),
+                  h3: ({children}) => (
+                    <h3 className="text-xs font-bold mt-2 mb-1">{children}</h3>
+                  ),
+                  p: ({children}) => <p className="my-2">{children}</p>,
+                  ul: ({children}) => (
+                    <ul className="list-disc pl-4 my-2">{children}</ul>
+                  ),
+                  ol: ({children}) => (
+                    <ol className="list-decimal pl-4 my-2">{children}</ol>
+                  ),
+                  li: ({children}) => <li className="my-0.5">{children}</li>,
+                  a: ({children, href}) => (
+                    <a
+                      href={href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 underline break-all"
+                    >
                       {children}
                     </a>
                   ),
-                  code: ({ children, className }) => {
+                  code: ({children, className}) => {
                     const isBlock = className?.includes("language");
                     return isBlock ? (
-                      <code className="block bg-gray-100 p-2 text-[10px] overflow-x-auto my-2">{children}</code>
+                      <code className="block bg-gray-100 p-2 text-[10px] overflow-x-auto my-2">
+                        {children}
+                      </code>
                     ) : (
-                      <code className="bg-gray-100 px-1 text-[10px]">{children}</code>
+                      <code className="bg-gray-100 px-1 text-[10px]">
+                        {children}
+                      </code>
                     );
                   },
-                  pre: ({ children }) => <pre className="bg-gray-100 p-2 text-[10px] overflow-x-auto my-2">{children}</pre>,
-                  img: ({ src, alt }) => (
+                  pre: ({children}) => (
+                    <pre className="bg-gray-100 p-2 text-[10px] overflow-x-auto my-2">
+                      {children}
+                    </pre>
+                  ),
+                  img: ({src, alt}) => (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={src as string} alt={alt ?? ""} className="my-2 max-w-full" />
+                    <img
+                      src={src as string}
+                      alt={alt ?? ""}
+                      className="my-2 max-w-full"
+                    />
                   ),
                   hr: () => <hr className="my-3 border-gray-300" />,
-                  strong: ({ children }) => <strong className="font-bold">{children}</strong>,
+                  strong: ({children}) => (
+                    <strong className="font-bold">{children}</strong>
+                  ),
                 }}
               >
                 {researchContent}
@@ -435,7 +477,6 @@ export default function NetworkClient() {
           </div>
         </div>
       )}
-
     </div>
   );
 }
