@@ -28,8 +28,12 @@ export default function DiaryClient({
   const {setEntryData} = useDiaryFrame();
   const [isContentVisible, setIsContentVisible] = useState(false);
   const [uiOpacity, setUiOpacity] = useState(1);
+  const [spacerHeight, setSpacerHeight] = useState(0);
   const articleRef = useRef<HTMLElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+
+  const FADE_VIEWPORT_RATIO = 0.7;
+  const READING_BUFFER_RATIO = 0.5;
 
   useEffect(() => {
     setEntryData({
@@ -52,13 +56,34 @@ export default function DiaryClient({
     const content = contentRef.current;
     if (!article || !content) return;
 
-    const handleScroll = () => {
-      const fadeDistance = window.innerHeight * 0.5;
-      if (fadeDistance <= 0) return;
+    const getMetrics = () => {
+      const clientHeight = article.clientHeight;
       const contentBottom = content.offsetTop + content.offsetHeight;
-      const viewBottom = article.scrollTop + article.clientHeight;
-      const pastEnd = viewBottom - contentBottom;
-      const progress = Math.max(0, Math.min(1, pastEnd / fadeDistance));
+      const fadeDistance = clientHeight * FADE_VIEWPORT_RATIO;
+      const readingBuffer = clientHeight * READING_BUFFER_RATIO;
+      const restingScrollTop = Math.max(
+        0,
+        contentBottom - clientHeight + readingBuffer
+      );
+      return {clientHeight, contentBottom, fadeDistance, restingScrollTop};
+    };
+
+    const recomputeSpacer = () => {
+      const {clientHeight, contentBottom, fadeDistance, restingScrollTop} =
+        getMetrics();
+      const bottomPad =
+        parseFloat(getComputedStyle(article).paddingBottom) || 0;
+      // Guarantee maxScroll >= restingScrollTop + fadeDistance
+      const needed =
+        restingScrollTop + fadeDistance + clientHeight - contentBottom - bottomPad;
+      setSpacerHeight(Math.max(0, needed));
+    };
+
+    const handleScroll = () => {
+      const {fadeDistance, restingScrollTop} = getMetrics();
+      if (fadeDistance <= 0) return;
+      const pastRest = article.scrollTop - restingScrollTop;
+      const progress = Math.max(0, Math.min(1, pastRest / fadeDistance));
       const opacity = 1 - progress;
       setUiOpacity(opacity);
       window.dispatchEvent(
@@ -66,12 +91,21 @@ export default function DiaryClient({
       );
     };
 
+    const handleResize = () => {
+      recomputeSpacer();
+      handleScroll();
+    };
+
+    recomputeSpacer();
     handleScroll();
     article.addEventListener("scroll", handleScroll, {passive: true});
-    window.addEventListener("resize", handleScroll);
+    window.addEventListener("resize", handleResize);
+    const ro = new ResizeObserver(handleResize);
+    ro.observe(content);
     return () => {
       article.removeEventListener("scroll", handleScroll);
-      window.removeEventListener("resize", handleScroll);
+      window.removeEventListener("resize", handleResize);
+      ro.disconnect();
       window.dispatchEvent(new CustomEvent("diaryUIFade", {detail: 1}));
     };
   }, [entry.id]);
@@ -108,7 +142,7 @@ export default function DiaryClient({
             {/* MDX Content with line numbers */}
             {children}
           </div>
-          <div aria-hidden style={{height: "50vh"}} />
+          <div aria-hidden style={{height: spacerHeight}} />
         </article>
       </div>
     </div>
