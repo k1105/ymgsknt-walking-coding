@@ -395,10 +395,11 @@ export default function DiaryFrame({children}: {children: ReactNode}) {
         {isRoot && (
           <button
             onClick={() => {
-              const cycle: Record<string, "expand" | "compact" | "list"> = {
+              const cycle: Record<string, "expand" | "compact" | "list" | "network"> = {
                 expand: "compact",
                 compact: "list",
-                list: "expand",
+                list: "network",
+                network: "expand",
               };
               const next = cycle[viewMode] || "expand";
               setViewMode(next);
@@ -412,7 +413,7 @@ export default function DiaryFrame({children}: {children: ReactNode}) {
               className={`rounded-full border border-current flex items-center justify-center ${styles.button}`}
             >
               <span className={isMobile ? "text-base" : "text-xl"}>
-                {viewMode === "expand" ? "狭" : viewMode === "compact" ? "整" : "広"}
+                {viewMode === "expand" ? "狭" : viewMode === "compact" ? "整" : viewMode === "list" ? "繋" : "広"}
               </span>
             </div>
             <span
@@ -421,35 +422,7 @@ export default function DiaryFrame({children}: {children: ReactNode}) {
               }`}
               style={{writingMode: "vertical-rl"}}
             >
-              {viewMode === "expand" ? "く並べる" : viewMode === "compact" ? "列する" : "く並べる"}
-            </span>
-          </button>
-        )}
-        {isRoot && (
-          <button
-            onClick={() => {
-              const next = viewMode === "network" ? "expand" : "network";
-              setViewMode(next as "expand" | "compact" | "list");
-              window.dispatchEvent(
-                new CustomEvent("viewModeChange", {detail: next})
-              );
-            }}
-            className="group relative flex flex-col items-center justify-center text-gray-500 hover:text-black transition-colors"
-          >
-            <div
-              className={`rounded-full border border-current flex items-center justify-center ${styles.button}`}
-            >
-              <span className={isMobile ? "text-base" : "text-xl"}>
-                {viewMode === "network" ? "戻" : "繋"}
-              </span>
-            </div>
-            <span
-              className={`absolute top-full mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-xl whitespace-nowrap ${
-                isMobile && pathname.startsWith("/diary/") ? "hidden" : ""
-              }`}
-              style={{writingMode: "vertical-rl"}}
-            >
-              {viewMode === "network" ? "る" : "がりを見る"}
+              {viewMode === "expand" ? "く並べる" : viewMode === "compact" ? "列する" : viewMode === "list" ? "がりを見る" : "く並べる"}
             </span>
           </button>
         )}
