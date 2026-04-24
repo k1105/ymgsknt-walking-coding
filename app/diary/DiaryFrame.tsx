@@ -270,7 +270,7 @@ export default function DiaryFrame({children}: {children: ReactNode}) {
   const [isMobile, setIsMobile] = useState(false);
 
   const {canvasRef, show, textChars} = useTitleAnimation(isRoot, isMobile);
-  const [viewMode, setViewMode] = useState<"network" | "calendar" | "list">("network");
+  const [viewMode, setViewMode] = useState<"expand" | "compact" | "list">("expand");
   const [entries, setEntries] = useState<Record<EntryRole, DiaryEntry | null>>({
     current: null,
     prev: null,
@@ -298,7 +298,7 @@ export default function DiaryFrame({children}: {children: ReactNode}) {
   }, []);
 
   useEffect(() => {
-    const h = (e: CustomEvent<"network" | "calendar" | "list">) => setViewMode(e.detail);
+    const h = (e: CustomEvent<"expand" | "compact" | "list">) => setViewMode(e.detail);
     window.addEventListener("viewModeChange", h as EventListener);
     return () =>
       window.removeEventListener("viewModeChange", h as EventListener);
@@ -395,12 +395,12 @@ export default function DiaryFrame({children}: {children: ReactNode}) {
         {isRoot && (
           <button
             onClick={() => {
-              const cycle: Record<string, "network" | "calendar" | "list"> = {
-                network: "calendar",
-                calendar: "list",
-                list: "network",
+              const cycle: Record<string, "expand" | "compact" | "list"> = {
+                expand: "compact",
+                compact: "list",
+                list: "expand",
               };
-              const next = cycle[viewMode] || "network";
+              const next = cycle[viewMode] || "expand";
               setViewMode(next);
               window.dispatchEvent(
                 new CustomEvent("viewModeChange", {detail: next})
@@ -412,7 +412,7 @@ export default function DiaryFrame({children}: {children: ReactNode}) {
               className={`rounded-full border border-current flex items-center justify-center ${styles.button}`}
             >
               <span className={isMobile ? "text-base" : "text-xl"}>
-                {viewMode === "network" ? "狭" : viewMode === "calendar" ? "整" : "広"}
+                {viewMode === "expand" ? "狭" : viewMode === "compact" ? "整" : "広"}
               </span>
             </div>
             <span
@@ -421,9 +421,29 @@ export default function DiaryFrame({children}: {children: ReactNode}) {
               }`}
               style={{writingMode: "vertical-rl"}}
             >
-              {viewMode === "network" ? "く並べる" : viewMode === "calendar" ? "列する" : "く並べる"}
+              {viewMode === "expand" ? "く並べる" : viewMode === "compact" ? "列する" : "く並べる"}
             </span>
           </button>
+        )}
+        {(isRoot || pathname === "/network") && (
+          <Link
+            href="/network"
+            className="group relative flex flex-col items-center justify-center text-gray-500 hover:text-black transition-colors"
+          >
+            <div
+              className={`rounded-full border border-current flex items-center justify-center ${styles.button}`}
+            >
+              <span className={isMobile ? "text-base" : "text-xl"}>繋</span>
+            </div>
+            <span
+              className={`absolute top-full mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-xl whitespace-nowrap ${
+                isMobile && pathname.startsWith("/diary/") ? "hidden" : ""
+              }`}
+              style={{writingMode: "vertical-rl"}}
+            >
+              がりを見る
+            </span>
+          </Link>
         )}
         {pathname !== "/statement" && (
           <Link

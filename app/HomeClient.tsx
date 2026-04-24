@@ -229,7 +229,7 @@ function ConnectingLines({
   onAnimationComplete,
 }: {
   nodes: DateNode[];
-  viewMode: "network" | "calendar" | "list";
+  viewMode: "expand" | "compact" | "list";
   containerHeight: number;
   onAnimationComplete?: () => void;
 }) {
@@ -243,7 +243,7 @@ function ConnectingLines({
     isInitialLoad: boolean;
     initialStrokeProgress: number;
     viewModeChanged: boolean;
-    prevViewMode: "network" | "calendar" | "list";
+    prevViewMode: "expand" | "compact" | "list";
   }>({
     startTime: null,
     startNodes: null,
@@ -335,28 +335,28 @@ function ConnectingLines({
           if (!nodeStart || nodeStart.id !== nodeTarget.id) {
             return {
               x:
-                viewMode === "network"
+                viewMode === "expand"
                   ? nodeTarget.networkX
                   : nodeTarget.calendarX,
               y:
-                viewMode === "network"
+                viewMode === "expand"
                   ? nodeTarget.networkY
                   : nodeTarget.calendarY,
             };
           }
 
           const startX =
-            animRef.current.prevViewMode === "network"
+            animRef.current.prevViewMode === "expand"
               ? nodeStart.networkX
               : nodeStart.calendarX;
           const startY =
-            animRef.current.prevViewMode === "network"
+            animRef.current.prevViewMode === "expand"
               ? nodeStart.networkY
               : nodeStart.calendarY;
           const targetX =
-            viewMode === "network" ? nodeTarget.networkX : nodeTarget.calendarX;
+            viewMode === "expand" ? nodeTarget.networkX : nodeTarget.calendarX;
           const targetY =
-            viewMode === "network" ? nodeTarget.networkY : nodeTarget.calendarY;
+            viewMode === "expand" ? nodeTarget.networkY : nodeTarget.calendarY;
 
           return {
             x: startX + (targetX - startX) * ease,
@@ -411,7 +411,7 @@ interface HomeClientProps {
 }
 
 export default function HomeClient({entries}: HomeClientProps) {
-  const [viewMode, setViewMode] = useState<"network" | "calendar" | "list">("network");
+  const [viewMode, setViewMode] = useState<"expand" | "compact" | "list">("expand");
   const [showDateTexts, setShowDateTexts] = useState(false);
 
   // Use Custom Hook logic
@@ -437,7 +437,7 @@ export default function HomeClient({entries}: HomeClientProps) {
 
   // Listen for viewMode changes from DiaryFrame
   useEffect(() => {
-    const handleViewModeChange = (e: CustomEvent<"network" | "calendar" | "list">) => {
+    const handleViewModeChange = (e: CustomEvent<"expand" | "compact" | "list">) => {
       setViewMode(e.detail);
     };
 
@@ -466,7 +466,7 @@ export default function HomeClient({entries}: HomeClientProps) {
   }, [entries]);
 
   const currentPageHeight =
-    viewMode === "list" ? undefined : (viewMode === "network" ? networkHeight : calendarHeight);
+    viewMode === "list" ? undefined : (viewMode === "expand" ? networkHeight : calendarHeight);
 
   if (viewMode === "list") {
     return (
@@ -488,13 +488,13 @@ export default function HomeClient({entries}: HomeClientProps) {
                   <Image
                     src={entry.thumbnailUrl}
                     alt=""
-                    width={120}
-                    height={80}
-                    className="w-[120px] h-[80px] object-cover flex-shrink-0 border border-gray-200 group-hover:border-black transition-colors"
+                    width={90}
+                    height={120}
+                    className="w-[90px] h-[120px] object-cover flex-shrink-0 border border-gray-200 group-hover:border-black transition-colors"
                     unoptimized
                   />
                 ) : (
-                  <div className="w-[120px] h-[80px] flex-shrink-0 bg-gray-100 border border-gray-200" />
+                  <div className="w-[90px] h-[120px] flex-shrink-0 bg-gray-100 border border-gray-200" />
                 )}
                 <div className="flex-1 min-w-0">
                   <div
@@ -534,7 +534,7 @@ export default function HomeClient({entries}: HomeClientProps) {
       {/* Background Month Labels (Network Mode Only) */}
       <div
         className="absolute inset-0 pointer-events-none transition-opacity duration-700"
-        style={{opacity: viewMode === "network" ? 1 : 0}}
+        style={{opacity: viewMode === "expand" ? 1 : 0}}
       >
         {Array.from(entriesByMonth.entries()).map(
           ([monthKey, _], monthIndex) => {
@@ -564,7 +564,7 @@ export default function HomeClient({entries}: HomeClientProps) {
       {/* Calendar Mode Month Labels (Grid Background) */}
       <div
         className="pt-32 pb-16 px-8 md:px-48 relative pointer-events-none transition-opacity duration-700"
-        style={{opacity: viewMode === "calendar" ? 1 : 0}}
+        style={{opacity: viewMode === "compact" ? 1 : 0}}
       >
         <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-2">
           {Array.from(entriesByMonth.entries()).map(([monthKey, _]) => {
@@ -586,9 +586,9 @@ export default function HomeClient({entries}: HomeClientProps) {
       {/* Interactive Node Layer */}
       <div className="absolute top-0 left-0 w-full h-full" style={{zIndex: 2}}>
         {nodes.map((node) => {
-          const x = viewMode === "network" ? node.networkX : node.calendarX;
-          const y = viewMode === "network" ? node.networkY : node.calendarY;
-          const fontSize = viewMode === "network" ? "1.5rem" : "0.8rem";
+          const x = viewMode === "expand" ? node.networkX : node.calendarX;
+          const y = viewMode === "expand" ? node.networkY : node.calendarY;
+          const fontSize = viewMode === "expand" ? "1.5rem" : "0.8rem";
 
           return (
             <Link
