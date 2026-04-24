@@ -270,7 +270,7 @@ export default function DiaryFrame({children}: {children: ReactNode}) {
   const [isMobile, setIsMobile] = useState(false);
 
   const {canvasRef, show, textChars} = useTitleAnimation(isRoot, isMobile);
-  const [viewMode, setViewMode] = useState<"expand" | "compact" | "list">("expand");
+  const [viewMode, setViewMode] = useState<"expand" | "compact" | "list" | "network">("expand");
   const [entries, setEntries] = useState<Record<EntryRole, DiaryEntry | null>>({
     current: null,
     prev: null,
@@ -298,7 +298,7 @@ export default function DiaryFrame({children}: {children: ReactNode}) {
   }, []);
 
   useEffect(() => {
-    const h = (e: CustomEvent<"expand" | "compact" | "list">) => setViewMode(e.detail);
+    const h = (e: CustomEvent<"expand" | "compact" | "list" | "network">) => setViewMode(e.detail);
     window.addEventListener("viewModeChange", h as EventListener);
     return () =>
       window.removeEventListener("viewModeChange", h as EventListener);
@@ -425,15 +425,23 @@ export default function DiaryFrame({children}: {children: ReactNode}) {
             </span>
           </button>
         )}
-        {(isRoot || pathname === "/network") && (
-          <Link
-            href="/network"
+        {isRoot && (
+          <button
+            onClick={() => {
+              const next = viewMode === "network" ? "expand" : "network";
+              setViewMode(next as "expand" | "compact" | "list");
+              window.dispatchEvent(
+                new CustomEvent("viewModeChange", {detail: next})
+              );
+            }}
             className="group relative flex flex-col items-center justify-center text-gray-500 hover:text-black transition-colors"
           >
             <div
               className={`rounded-full border border-current flex items-center justify-center ${styles.button}`}
             >
-              <span className={isMobile ? "text-base" : "text-xl"}>繋</span>
+              <span className={isMobile ? "text-base" : "text-xl"}>
+                {viewMode === "network" ? "戻" : "繋"}
+              </span>
             </div>
             <span
               className={`absolute top-full mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-xl whitespace-nowrap ${
@@ -441,9 +449,9 @@ export default function DiaryFrame({children}: {children: ReactNode}) {
               }`}
               style={{writingMode: "vertical-rl"}}
             >
-              がりを見る
+              {viewMode === "network" ? "る" : "がりを見る"}
             </span>
-          </Link>
+          </button>
         )}
         {pathname !== "/statement" && (
           <Link

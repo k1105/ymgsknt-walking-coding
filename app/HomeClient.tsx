@@ -2,9 +2,14 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import dynamic from "next/dynamic";
 import {useEffect, useRef, useState, useMemo, useCallback} from "react";
 import {DiaryEntry} from "@/lib/types";
 import {drawRoughCurve} from "@/lib/canvas";
+
+const NetworkClient = dynamic(() => import("./network/NetworkClient"), {
+  ssr: false,
+});
 
 // --- Constants & Config ---
 const LAYOUT_CONFIG = {
@@ -411,7 +416,7 @@ interface HomeClientProps {
 }
 
 export default function HomeClient({entries}: HomeClientProps) {
-  const [viewMode, setViewMode] = useState<"expand" | "compact" | "list">("expand");
+  const [viewMode, setViewMode] = useState<"expand" | "compact" | "list" | "network">("expand");
   const [showDateTexts, setShowDateTexts] = useState(false);
 
   // Use Custom Hook logic
@@ -437,7 +442,7 @@ export default function HomeClient({entries}: HomeClientProps) {
 
   // Listen for viewMode changes from DiaryFrame
   useEffect(() => {
-    const handleViewModeChange = (e: CustomEvent<"expand" | "compact" | "list">) => {
+    const handleViewModeChange = (e: CustomEvent<"expand" | "compact" | "list" | "network">) => {
       setViewMode(e.detail);
     };
 
@@ -467,6 +472,14 @@ export default function HomeClient({entries}: HomeClientProps) {
 
   const currentPageHeight =
     viewMode === "list" ? undefined : (viewMode === "expand" ? networkHeight : calendarHeight);
+
+  if (viewMode === "network") {
+    return (
+      <div className="w-full h-screen">
+        <NetworkClient />
+      </div>
+    );
+  }
 
   if (viewMode === "list") {
     return (
