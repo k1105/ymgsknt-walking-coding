@@ -229,7 +229,7 @@ function ConnectingLines({
   onAnimationComplete,
 }: {
   nodes: DateNode[];
-  viewMode: "network" | "calendar";
+  viewMode: "network" | "calendar" | "list";
   containerHeight: number;
   onAnimationComplete?: () => void;
 }) {
@@ -243,7 +243,7 @@ function ConnectingLines({
     isInitialLoad: boolean;
     initialStrokeProgress: number;
     viewModeChanged: boolean;
-    prevViewMode: "network" | "calendar";
+    prevViewMode: "network" | "calendar" | "list";
   }>({
     startTime: null,
     startNodes: null,
@@ -411,7 +411,7 @@ interface HomeClientProps {
 }
 
 export default function HomeClient({entries}: HomeClientProps) {
-  const [viewMode, setViewMode] = useState<"network" | "calendar">("network");
+  const [viewMode, setViewMode] = useState<"network" | "calendar" | "list">("network");
   const [showDateTexts, setShowDateTexts] = useState(false);
 
   // Use Custom Hook logic
@@ -437,7 +437,7 @@ export default function HomeClient({entries}: HomeClientProps) {
 
   // Listen for viewMode changes from DiaryFrame
   useEffect(() => {
-    const handleViewModeChange = (e: CustomEvent<"network" | "calendar">) => {
+    const handleViewModeChange = (e: CustomEvent<"network" | "calendar" | "list">) => {
       setViewMode(e.detail);
     };
 
@@ -458,14 +458,68 @@ export default function HomeClient({entries}: HomeClientProps) {
       );
   }, [viewMode]);
 
+  // sortedEntries for list view (newest first)
+  const sortedEntries = useMemo(() => {
+    return [...entries].sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+    );
+  }, [entries]);
+
   const currentPageHeight =
-    viewMode === "network" ? networkHeight : calendarHeight;
+    viewMode === "list" ? undefined : (viewMode === "network" ? networkHeight : calendarHeight);
+
+  if (viewMode === "list") {
+    return (
+      <div className="w-full max-w-2xl mx-auto px-6 pt-32 pb-16">
+        {sortedEntries.map((entry) => {
+          const date = new Date(entry.date);
+          const dateStr = `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, "0")}.${String(date.getDate()).padStart(2, "0")}`;
+          const excerpt = entry.rawContent
+            ? entry.rawContent.slice(0, 120).replace(/[#\[\]()]/g, "").trim()
+            : "";
+          return (
+            <Link
+              key={entry.id}
+              href={`/diary/${entry.id}`}
+              className="block mb-8 group"
+            >
+              <div className="flex gap-4 items-start">
+                {entry.thumbnailUrl ? (
+                  <Image
+                    src={entry.thumbnailUrl}
+                    alt=""
+                    width={120}
+                    height={80}
+                    className="w-[120px] h-[80px] object-cover flex-shrink-0 border border-gray-200 group-hover:border-black transition-colors"
+                    unoptimized
+                  />
+                ) : (
+                  <div className="w-[120px] h-[80px] flex-shrink-0 bg-gray-100 border border-gray-200" />
+                )}
+                <div className="flex-1 min-w-0">
+                  <div
+                    className="text-xs text-gray-400 mb-1"
+                    style={{fontFamily: "var(--font-doto)"}}
+                  >
+                    {dateStr}
+                  </div>
+                  <p className="text-xs text-gray-600 leading-relaxed line-clamp-3">
+                    {excerpt || "(no diary)"}
+                  </p>
+                </div>
+              </div>
+            </Link>
+          );
+        })}
+      </div>
+    );
+  }
 
   return (
     <div
       className="relative w-full overflow-hidden transition-all ease-in-out"
       style={{
-        height: currentPageHeight > 0 ? `${currentPageHeight}px` : "100vh",
+        height: currentPageHeight && currentPageHeight > 0 ? `${currentPageHeight}px` : "100vh",
         transitionDuration: `${TRANSITION_DURATION}ms`,
       }}
     >
@@ -473,7 +527,7 @@ export default function HomeClient({entries}: HomeClientProps) {
       <ConnectingLines
         nodes={nodes}
         viewMode={viewMode}
-        containerHeight={currentPageHeight}
+        containerHeight={currentPageHeight || 0}
         onAnimationComplete={handleAnimationComplete}
       />
 

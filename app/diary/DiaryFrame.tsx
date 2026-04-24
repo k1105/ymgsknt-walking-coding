@@ -270,7 +270,7 @@ export default function DiaryFrame({children}: {children: ReactNode}) {
   const [isMobile, setIsMobile] = useState(false);
 
   const {canvasRef, show, textChars} = useTitleAnimation(isRoot, isMobile);
-  const [viewMode, setViewMode] = useState<"network" | "calendar">("network");
+  const [viewMode, setViewMode] = useState<"network" | "calendar" | "list">("network");
   const [entries, setEntries] = useState<Record<EntryRole, DiaryEntry | null>>({
     current: null,
     prev: null,
@@ -298,7 +298,7 @@ export default function DiaryFrame({children}: {children: ReactNode}) {
   }, []);
 
   useEffect(() => {
-    const h = (e: CustomEvent) => setViewMode(e.detail);
+    const h = (e: CustomEvent<"network" | "calendar" | "list">) => setViewMode(e.detail);
     window.addEventListener("viewModeChange", h as EventListener);
     return () =>
       window.removeEventListener("viewModeChange", h as EventListener);
@@ -395,7 +395,12 @@ export default function DiaryFrame({children}: {children: ReactNode}) {
         {isRoot && (
           <button
             onClick={() => {
-              const next = viewMode === "network" ? "calendar" : "network";
+              const cycle: Record<string, "network" | "calendar" | "list"> = {
+                network: "calendar",
+                calendar: "list",
+                list: "network",
+              };
+              const next = cycle[viewMode] || "network";
               setViewMode(next);
               window.dispatchEvent(
                 new CustomEvent("viewModeChange", {detail: next})
@@ -407,7 +412,7 @@ export default function DiaryFrame({children}: {children: ReactNode}) {
               className={`rounded-full border border-current flex items-center justify-center ${styles.button}`}
             >
               <span className={isMobile ? "text-base" : "text-xl"}>
-                {viewMode === "network" ? "狭" : "広"}
+                {viewMode === "network" ? "狭" : viewMode === "calendar" ? "整" : "広"}
               </span>
             </div>
             <span
@@ -416,7 +421,7 @@ export default function DiaryFrame({children}: {children: ReactNode}) {
               }`}
               style={{writingMode: "vertical-rl"}}
             >
-              く並べる
+              {viewMode === "network" ? "く並べる" : viewMode === "calendar" ? "列する" : "く並べる"}
             </span>
           </button>
         )}
