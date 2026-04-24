@@ -37,6 +37,8 @@
     { "id": "2026-04-18", "type": "sketch", "tags": ["pixel", "sort", "threshold", "vertical", "image"], "label": "閾値付き縦方向ピクセルソート" },
     { "id": "2026-04-19", "type": "sketch", "tags": ["pixel", "sort", "noise", "angle", "direction"], "label": "noiseベース斜めピクセルソート" },
     { "id": "2026-04-20", "type": "sketch", "tags": ["pixel", "image", "colormap", "noise", "threshold"], "label": "サーモフィルター+noiseアニメ" },
+    { "id": "2026-04-21", "type": "sketch", "tags": ["shader", "glsl", "colormap", "thermal", "threshold"], "label": "サーモシェーダー（GPU版）" },
+    { "id": "2026-04-24", "type": "sketch", "tags": ["voronoi", "d3-delaunay", "noise", "color", "distribution"], "label": "Voronoi再訪+確率的色制御" },
 
     { "id": "2026-01-07", "type": "sketch", "tags": ["noise", "organic", "particle", "color", "trail"], "label": "火花のような軌跡" },
     { "id": "2026-01-12", "type": "sketch", "tags": ["webgl", "3d", "camera", "ground-plane"], "label": "カメラワーク地面制約" },
@@ -202,6 +204,11 @@
     { "source": "2026-04-19", "target": "pixel-sort-directions", "type": "D", "reason": "粗密問題のさらなる解決" },
     { "source": "2026-04-16", "target": "2026-04-20", "type": "B", "reason": "loadPixels/ピクセル操作" },
     { "source": "2026-04-20", "target": "shader-colormap", "type": "D", "reason": "日記で「shaderベースでやったら軽量」" },
-    { "source": "2026-04-13", "target": "shader-colormap", "type": "B", "reason": "同じcreateGraphics→shaderパイプライン" }
+    { "source": "2026-04-13", "target": "shader-colormap", "type": "B", "reason": "同じcreateGraphics→shaderパイプライン" },
+    { "source": "2026-04-20", "target": "2026-04-21", "type": "A", "reason": "CPU版サーモをGPUシェーダーに移植" },
+    { "source": "2026-04-13", "target": "2026-04-21", "type": "B", "reason": "同じcreateGraphics→shaderパイプライン" },
+    { "source": "2026-04-21", "target": "shader-colormap", "type": "D", "reason": "カラーマップのバリエーション" },
+    { "source": "2026-04-09", "target": "2026-04-24", "type": "A", "reason": "4/9のVoronoiスケッチの再訪" },
+    { "source": "2026-04-24", "target": "voronoi-stippling", "type": "D", "reason": "Voronoi色制御の延長としてのstippling" }
   ]
 }
