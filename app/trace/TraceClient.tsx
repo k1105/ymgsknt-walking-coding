@@ -83,11 +83,14 @@ export default function TraceClient() {
 
   // Sync scroll between layers
   const ghostRef = useRef<HTMLPreElement>(null);
+  const highlightRef = useRef<HTMLPreElement>(null);
   const handleScroll = useCallback(() => {
-    if (textareaRef.current && ghostRef.current) {
-      ghostRef.current.scrollTop = textareaRef.current.scrollTop;
-      ghostRef.current.scrollLeft = textareaRef.current.scrollLeft;
-    }
+    if (!textareaRef.current) return;
+    const top = textareaRef.current.scrollTop;
+    const left = textareaRef.current.scrollLeft;
+    const transform = `translate(${-left}px, ${-top}px)`;
+    if (ghostRef.current) ghostRef.current.style.transform = transform;
+    if (highlightRef.current) highlightRef.current.style.transform = transform;
   }, []);
 
   // Calculate progress
@@ -202,28 +205,15 @@ export default function TraceClient() {
       </div>
 
       {/* Editor */}
-      <div className="flex-1 relative overflow-hidden">
-        {/* Ghost layer: original code as faint background */}
-        <pre
-          ref={ghostRef}
-          className="absolute inset-0 p-4 overflow-auto pointer-events-none whitespace-pre"
-          style={{
-            fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
-            fontSize: "13px",
-            lineHeight: "1.6",
-            tabSize: 2,
-          }}
-          dangerouslySetInnerHTML={{ __html: buildGhostHtml() }}
-        />
-
-        {/* Typing layer */}
+      <div className="flex-1 relative">
+        {/* Typing layer — this is the scroll master */}
         <textarea
           ref={textareaRef}
           value={typed}
           onChange={handleInput}
           onKeyDown={handleKeyDown}
           onScroll={handleScroll}
-          className="absolute inset-0 w-full h-full p-4 bg-transparent text-transparent caret-[#58a6ff] resize-none focus:outline-none"
+          className="absolute inset-0 w-full h-full p-4 bg-transparent text-transparent caret-[#58a6ff] resize-none focus:outline-none overflow-auto z-10"
           style={{
             fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
             fontSize: "13px",
@@ -237,14 +227,30 @@ export default function TraceClient() {
           autoComplete="off"
         />
 
-        {/* Typed text with syntax highlighting (visible layer) */}
+        {/* Ghost layer: original code as faint background */}
         <pre
-          className="absolute inset-0 p-4 overflow-auto pointer-events-none whitespace-pre"
+          ref={ghostRef}
+          className="absolute top-0 left-0 right-0 p-4 pointer-events-none whitespace-pre"
           style={{
             fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
             fontSize: "13px",
             lineHeight: "1.6",
             tabSize: 2,
+            minHeight: "100%",
+          }}
+          dangerouslySetInnerHTML={{ __html: buildGhostHtml() }}
+        />
+
+        {/* Typed text with syntax highlighting (visible layer) */}
+        <pre
+          ref={highlightRef}
+          className="absolute top-0 left-0 right-0 p-4 pointer-events-none whitespace-pre"
+          style={{
+            fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+            fontSize: "13px",
+            lineHeight: "1.6",
+            tabSize: 2,
+            minHeight: "100%",
           }}
           dangerouslySetInnerHTML={{ __html: highlightCode(typed) }}
         />
