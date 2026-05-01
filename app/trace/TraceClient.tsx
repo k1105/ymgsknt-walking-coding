@@ -169,7 +169,7 @@ export default function TraceClient() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0d1117] text-gray-300 flex flex-col">
+    <div className="h-screen bg-[#0d1117] text-gray-300 flex flex-col">
       {/* Header */}
       <div
         className="flex items-center justify-between px-4 py-2 border-b border-[#30363d]"
@@ -213,7 +213,7 @@ export default function TraceClient() {
           onChange={handleInput}
           onKeyDown={handleKeyDown}
           onScroll={handleScroll}
-          className="absolute inset-0 w-full h-full p-4 bg-transparent text-transparent caret-[#58a6ff] resize-none focus:outline-none overflow-auto z-10"
+          className="absolute inset-0 w-full h-full p-4 bg-[#0d1117] text-transparent caret-[#58a6ff] resize-none focus:outline-none overflow-auto z-10"
           style={{
             fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
             fontSize: "13px",
