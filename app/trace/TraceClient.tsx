@@ -46,18 +46,35 @@ export default function TraceClient() {
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      const ta = textareaRef.current;
+      if (!ta) return;
+      const start = ta.selectionStart;
+      const end = ta.selectionEnd;
+
       // Tab key inserts 2 spaces
       if (e.key === "Tab") {
         e.preventDefault();
-        const ta = textareaRef.current;
-        if (!ta) return;
-        const start = ta.selectionStart;
-        const end = ta.selectionEnd;
         const newVal = typed.slice(0, start) + "  " + typed.slice(end);
         setTyped(newVal);
         setCursorPos(start + 2);
         setTimeout(() => {
           ta.selectionStart = ta.selectionEnd = start + 2;
+        }, 0);
+      }
+
+      // Enter key: auto-indent (carry over leading whitespace from current line)
+      if (e.key === "Enter") {
+        e.preventDefault();
+        const before = typed.slice(0, start);
+        const after = typed.slice(end);
+        const lastLine = before.split("\n").pop() || "";
+        const indent = lastLine.match(/^(\s*)/)?.[1] || "";
+        const newVal = before + "\n" + indent + after;
+        const newPos = start + 1 + indent.length;
+        setTyped(newVal);
+        setCursorPos(newPos);
+        setTimeout(() => {
+          ta.selectionStart = ta.selectionEnd = newPos;
         }, 0);
       }
     },
