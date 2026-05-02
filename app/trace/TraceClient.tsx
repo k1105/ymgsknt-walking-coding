@@ -230,7 +230,7 @@ export default function TraceClient() {
       </div>
 
       {/* Editor */}
-      <div className="flex-1 relative">
+      <div className="flex-1 relative bg-[#0d1117]">
         {/* Typing layer — this is the scroll master */}
         <textarea
           ref={textareaRef}
@@ -238,7 +238,7 @@ export default function TraceClient() {
           onChange={handleInput}
           onKeyDown={handleKeyDown}
           onScroll={handleScroll}
-          className="absolute inset-0 w-full h-full p-4 bg-[#0d1117] text-transparent caret-[#58a6ff] resize-none focus:outline-none overflow-auto z-10"
+          className="absolute inset-0 w-full h-full p-4 bg-transparent text-transparent caret-[#58a6ff] resize-none focus:outline-none overflow-auto z-10"
           style={{
             fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
             fontSize: "13px",
