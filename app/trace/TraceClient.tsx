@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
 
 // Simple syntax highlighting
 function highlightCode(code: string): string {
@@ -26,6 +27,23 @@ export default function TraceClient() {
   const [typed, setTyped] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [cursorPos, setCursorPos] = useState(0);
+  const searchParams = useSearchParams();
+
+  // Auto-load code from URL query parameter
+  useEffect(() => {
+    const codeUrl = searchParams.get("code");
+    if (codeUrl) {
+      fetch(codeUrl)
+        .then((res) => res.ok ? res.text() : null)
+        .then((text) => {
+          if (text) {
+            setOriginalCode(text);
+            setIsTracing(true);
+            setTimeout(() => textareaRef.current?.focus(), 100);
+          }
+        });
+    }
+  }, [searchParams]);
 
   const startTracing = useCallback(() => {
     if (!originalCode.trim()) return;

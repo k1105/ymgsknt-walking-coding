@@ -1,5 +1,10 @@
+import { Suspense } from "react";
 import TraceClient from "./TraceClient";
 
 export default function TracePage() {
-  return <TraceClient />;
+  return (
+    <Suspense>
+      <TraceClient />
+    </Suspense>
+  );
 }
