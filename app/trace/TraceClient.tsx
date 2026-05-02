@@ -34,14 +34,21 @@ export default function TraceClient() {
     const codeUrl = searchParams.get("code");
     if (codeUrl) {
       fetch(codeUrl)
-        .then((res) => res.ok ? res.text() : null)
+        .then((res) => {
+          if (!res.ok) throw new Error(`fetch failed: ${res.status}`);
+          return res.text();
+        })
         .then((text) => {
-          if (text) {
+          if (text && text.trim()) {
             setOriginalCode(text);
-            setIsTracing(true);
-            setTimeout(() => textareaRef.current?.focus(), 100);
+            // Delay entering trace mode to ensure originalCode is set
+            setTimeout(() => {
+              setIsTracing(true);
+              setTimeout(() => textareaRef.current?.focus(), 100);
+            }, 50);
           }
-        });
+        })
+        .catch((err) => console.error("Code load error:", err));
     }
   }, [searchParams]);
 
@@ -152,7 +159,7 @@ export default function TraceClient() {
     return lines.join("\n");
   };
 
-  if (!isTracing) {
+  if (!isTracing || !originalCode) {
     return (
       <div className="min-h-screen bg-[#0d1117] text-gray-300 flex flex-col items-center justify-center p-8">
         <div className="max-w-xl w-full">
