@@ -113,20 +113,61 @@ function highlightCode(code: string): string {
 
 // Highlight with wobble on diverged characters
 function highlightWithDivergence(code: string, diverged: boolean[]): string {
+  // First apply syntax highlighting on raw code
+  const highlighted = highlightCode(code);
+
+  // Then wrap diverged characters with wobble spans
+  // We need to map original char positions through the HTML tags
+  let origIdx = 0;
   let result = "";
-  for (let i = 0; i < code.length; i++) {
-    const ch = code[i]
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;");
-    if (diverged[i] && code[i] !== "\n") {
-      result += `<span class="trace-diverged" style="display:inline-block;animation:wobble 0.8s ease-in-out infinite;animation-delay:${(i * 0.05) % 2}s">${ch}</span>`;
+  let inTag = false;
+
+  for (let i = 0; i < highlighted.length; i++) {
+    const ch = highlighted[i];
+
+    if (ch === "<") {
+      inTag = true;
+      result += ch;
+      continue;
+    }
+    if (ch === ">") {
+      inTag = false;
+      result += ch;
+      continue;
+    }
+    if (inTag) {
+      result += ch;
+      continue;
+    }
+
+    // Decode HTML entities to count original chars
+    let entityLen = 0;
+    if (highlighted.slice(i).startsWith("&amp;")) entityLen = 5;
+    else if (highlighted.slice(i).startsWith("&lt;")) entityLen = 4;
+    else if (highlighted.slice(i).startsWith("&gt;")) entityLen = 4;
+
+    if (entityLen > 0) {
+      const entity = highlighted.slice(i, i + entityLen);
+      if (diverged[origIdx] && code[origIdx] !== "\n") {
+        result += `<span style="display:inline-block;animation:wobble 0.8s ease-in-out infinite;animation-delay:${(origIdx * 0.05) % 2}s">${entity}</span>`;
+      } else {
+        result += entity;
+      }
+      origIdx++;
+      i += entityLen - 1;
+      continue;
+    }
+
+    // Regular character
+    if (diverged[origIdx] && code[origIdx] !== "\n") {
+      result += `<span style="display:inline-block;animation:wobble 0.8s ease-in-out infinite;animation-delay:${(origIdx * 0.05) % 2}s">${ch}</span>`;
     } else {
       result += ch;
     }
+    origIdx++;
   }
-  // Apply syntax highlighting on top
-  return highlightCode(result);
+
+  return result;
 }
 
 export default function TraceClient() {
