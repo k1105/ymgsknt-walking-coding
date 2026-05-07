@@ -62,6 +62,10 @@ const EDGE_TYPE_LABELS: Record<string, string> = {
   D: "未踏への推測",
 };
 
+function getId(s: string | GraphNode): string {
+  return typeof s === "string" ? s : s.id;
+}
+
 export default function NetworkClient() {
   const svgRef = useRef<SVGSVGElement>(null);
   const router = useRouter();
@@ -70,6 +74,9 @@ export default function NetworkClient() {
   const [hoveredEdge, setHoveredEdge] = useState<GraphEdge | null>(null);
   const [researchContent, setResearchContent] = useState<string | null>(null);
   const [researchNode, setResearchNode] = useState<GraphNode | null>(null);
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const selectedNodeIdRef = useRef<string | null>(null);
+  const applyStateRef = useRef<((id: string | null) => void) | null>(null);
 
   useEffect(() => {
     fetch("/graph.json")
@@ -105,6 +112,19 @@ export default function NetworkClient() {
     // Deep copy
     const nodes: GraphNode[] = graphData.nodes.map((n) => ({...n}));
     const edges: GraphEdge[] = graphData.edges.map((e) => ({...e}));
+
+    // Adjacency and type lookup
+    const neighborMap = new Map<string, Set<string>>();
+    const nodeTypeMap = new Map<string, "sketch" | "unexplored">();
+    nodes.forEach((n) => nodeTypeMap.set(n.id, n.type));
+    edges.forEach((e) => {
+      const src = getId(e.source);
+      const tgt = getId(e.target);
+      if (!neighborMap.has(src)) neighborMap.set(src, new Set());
+      if (!neighborMap.has(tgt)) neighborMap.set(tgt, new Set());
+      neighborMap.get(src)!.add(tgt);
+      neighborMap.get(tgt)!.add(src);
+    });
 
     // Calculate date range for radial layout
     const sketchDates = nodes
@@ -175,6 +195,7 @@ export default function NetworkClient() {
       .selectAll<SVGGElement, GraphNode>("g")
       .data(nodes)
       .join("g")
+      .attr("class", "graph-node")
       .call(
         d3
           .drag<SVGGElement, GraphNode>()
@@ -196,17 +217,23 @@ export default function NetworkClient() {
               const dx = event.x - dragStartPos.x;
               const dy = event.y - dragStartPos.y;
               if (Math.sqrt(dx * dx + dy * dy) < 5) {
-                if (d.type === "sketch") {
-                  router.push(`/diary/${d.id}`);
-                } else if (d.type === "unexplored" && d.research) {
-                  fetch(d.research)
-                    .then((res) => (res.ok ? res.text() : null))
-                    .then((text) => {
-                      if (text) {
-                        setResearchNode(d);
-                        setResearchContent(text);
-                      }
-                    });
+                if (selectedNodeIdRef.current === d.id) {
+                  // Stage 2: navigate / open research
+                  if (d.type === "sketch") {
+                    router.push(`/diary/${d.id}`);
+                  } else if (d.type === "unexplored" && d.research) {
+                    fetch(d.research)
+                      .then((res) => (res.ok ? res.text() : null))
+                      .then((text) => {
+                        if (text) {
+                          setResearchNode(d);
+                          setResearchContent(text);
+                        }
+                      });
+                  }
+                } else {
+                  // Stage 1: select
+                  setSelectedNodeId(d.id);
                 }
               }
             }
@@ -215,28 +242,26 @@ export default function NetworkClient() {
       )
       .on("mouseenter", (_, d) => {
         setHoveredNode(d);
-        // Show only edge labels connected to this node
-        edgeLabels.style("opacity", (e) => {
-          const src = (e.source as GraphNode).id ?? e.source;
-          const tgt = (e.target as GraphNode).id ?? e.target;
-          return src === d.id || tgt === d.id ? 1 : 0;
-        });
-        // Highlight connected edges too
-        link.attr("stroke-opacity", (e) => {
-          const src = (e.source as GraphNode).id ?? e.source;
-          const tgt = (e.target as GraphNode).id ?? e.target;
-          const isConnected = src === d.id || tgt === d.id;
-          return isConnected
-            ? Math.max(getEdgeStyle(e.type).opacity, 0.8)
-            : getEdgeStyle(e.type).opacity * 0.3;
-        });
+        // Hover highlight only when nothing is selected
+        if (selectedNodeIdRef.current === null) {
+          link.attr("stroke-opacity", (e) => {
+            const src = getId(e.source);
+            const tgt = getId(e.target);
+            const srcType = nodeTypeMap.get(src);
+            const tgtType = nodeTypeMap.get(tgt);
+            if (srcType === "unexplored" || tgtType === "unexplored") return 0;
+            const isConnected = src === d.id || tgt === d.id;
+            return isConnected
+              ? Math.max(getEdgeStyle(e.type).opacity, 0.8)
+              : getEdgeStyle(e.type).opacity * 0.3;
+          });
+        }
       })
       .on("mouseleave", () => {
         setHoveredNode(null);
-        edgeLabels.style("opacity", 0);
-        link.attr("stroke-opacity", (e) => getEdgeStyle(e.type).opacity);
+        applyStateRef.current?.(selectedNodeIdRef.current);
       })
-      .style("cursor", (d) => (d.type === "sketch" ? "pointer" : "grab"));
+      .style("cursor", "pointer");
 
     // Circle
     node
@@ -268,6 +293,71 @@ export default function NetworkClient() {
         d.type === "unexplored" ? "italic" : "normal",
       );
 
+    // Apply opacity / visibility based on selection state
+    const applyVisualState = (selectedId: string | null) => {
+      const focusSet = selectedId
+        ? new Set<string>([
+            selectedId,
+            ...(neighborMap.get(selectedId) ?? []),
+          ])
+        : null;
+
+      node.style("opacity", (d) => {
+        if (focusSet) {
+          if (d.id === selectedId) return 1;
+          if (focusSet.has(d.id)) return 0.7;
+          if (d.type === "unexplored") return 0;
+          return 0.3;
+        }
+        return d.type === "unexplored" ? 0 : 1;
+      });
+
+      node.style("pointer-events", (d) => {
+        if (focusSet) {
+          if (focusSet.has(d.id)) return "auto";
+          if (d.type === "unexplored") return "none";
+          return "auto";
+        }
+        return d.type === "unexplored" ? "none" : "auto";
+      });
+
+      link.attr("stroke-opacity", (e) => {
+        const src = getId(e.source);
+        const tgt = getId(e.target);
+        const srcType = nodeTypeMap.get(src);
+        const tgtType = nodeTypeMap.get(tgt);
+
+        if (focusSet) {
+          const isConnectedToSelected =
+            src === selectedId || tgt === selectedId;
+          if (isConnectedToSelected) {
+            return Math.max(getEdgeStyle(e.type).opacity, 0.7);
+          }
+          if (srcType === "unexplored" || tgtType === "unexplored") return 0;
+          return getEdgeStyle(e.type).opacity * 0.2;
+        }
+        if (srcType === "unexplored" || tgtType === "unexplored") return 0;
+        return getEdgeStyle(e.type).opacity;
+      });
+
+      edgeLabels.style("opacity", (e) => {
+        if (!selectedId) return 0;
+        const src = getId(e.source);
+        const tgt = getId(e.target);
+        return src === selectedId || tgt === selectedId ? 1 : 0;
+      });
+    };
+
+    applyStateRef.current = applyVisualState;
+    applyVisualState(selectedNodeIdRef.current);
+
+    // Background click clears selection
+    svg.on("click", (event) => {
+      const target = event.target as Element | null;
+      if (target && target.closest && target.closest(".graph-node")) return;
+      setSelectedNodeId(null);
+    });
+
     // Tick
     simulation.on("tick", () => {
       link
@@ -291,8 +381,14 @@ export default function NetworkClient() {
 
     return () => {
       simulation.stop();
+      svg.on("click", null);
     };
   }, [graphData, router]);
+
+  useEffect(() => {
+    selectedNodeIdRef.current = selectedNodeId;
+    applyStateRef.current?.(selectedNodeId);
+  }, [selectedNodeId]);
 
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-white">
