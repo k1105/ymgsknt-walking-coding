@@ -11,9 +11,10 @@ import {useSearchParams} from "next/navigation";
 function alignTyped(
   original: string,
   typed: string,
-): {matched: boolean[]; wrong: boolean[]} {
+): {matched: boolean[]; wrong: boolean[]; typedDiverged: boolean[]} {
   const matched = new Array(original.length).fill(false);
   const wrong = new Array(original.length).fill(false);
+  const typedDiverged = new Array(typed.length).fill(false);
   const NON_WS_LOOKAHEAD = 5;
   const isWs = (c: string) => c === " " || c === "\t" || c === "\n" || c === "\r";
 
@@ -67,49 +68,65 @@ function alignTyped(
         for (let k = 0; k < skipOrig; k++) wrong[oi + k] = true;
         oi += skipOrig;
       } else {
+        for (let k = 0; k < skipTyped; k++) typedDiverged[ti + k] = true;
         ti += skipTyped;
       }
     } else if (skipOrig !== -1) {
       for (let k = 0; k < skipOrig; k++) wrong[oi + k] = true;
       oi += skipOrig;
     } else if (skipTyped !== -1) {
+      for (let k = 0; k < skipTyped; k++) typedDiverged[ti + k] = true;
       ti += skipTyped;
     } else {
       wrong[oi++] = true;
+      typedDiverged[ti] = true;
       ti++;
     }
   }
 
-  return {matched, wrong};
+  return {matched, wrong, typedDiverged};
 }
 
-// Simple syntax highlighting
+// Simple syntax highlighting (without divergence info)
 function highlightCode(code: string): string {
   return (
     code
       .replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")
       .replace(/>/g, "&gt;")
-      // strings
       .replace(
         /(["'`])(?:(?!\1|\\).|\\.)*\1/g,
         '<span style="color:#a5d6ff">$&</span>',
       )
-      // comments
       .replace(/(\/\/.*$)/gm, '<span style="color:#6a737d">$&</span>')
-      // keywords
       .replace(
         /\b(function|const|let|var|if|else|for|while|return|new|class|import|export|from|default|true|false|null|undefined|this|void|typeof)\b/g,
         '<span style="color:#ff7b72">$&</span>',
       )
-      // numbers
       .replace(/\b(\d+\.?\d*)\b/g, '<span style="color:#79c0ff">$&</span>')
-      // functions
       .replace(
         /\b([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\(/g,
         '<span style="color:#d2a8ff">$1</span>(',
       )
   );
+}
+
+// Highlight with wobble on diverged characters
+function highlightWithDivergence(code: string, diverged: boolean[]): string {
+  let result = "";
+  for (let i = 0; i < code.length; i++) {
+    const ch = code[i]
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+    if (diverged[i] && code[i] !== "\n") {
+      result += `<span class="trace-diverged" style="display:inline-block;animation:wobble 0.8s ease-in-out infinite;animation-delay:${(i * 0.05) % 2}s">${ch}</span>`;
+    } else {
+      result += ch;
+    }
+  }
+  // Apply syntax highlighting on top
+  return highlightCode(result);
 }
 
 export default function TraceClient() {
@@ -244,7 +261,7 @@ export default function TraceClient() {
       if (alignment.matched[i]) {
         currentLine += `<span style="color:rgba(100,200,100,0.5)">${escaped}</span>`;
       } else if (alignment.wrong[i]) {
-        currentLine += `<span class="trace-diverged" style="display:inline-block;color:rgba(200,200,200,0.7);animation:wobble 0.8s ease-in-out infinite;animation-delay:${(i * 0.05) % 2}s">${escaped}</span>`;
+        currentLine += `<span style="color:rgba(150,150,150,0.15)">${escaped}</span>`;
       } else {
         // Not yet reached / not aligned to anything
         currentLine += `<span style="color:rgba(150,150,150,0.25)">${escaped}</span>`;
@@ -378,7 +395,7 @@ export default function TraceClient() {
             tabSize: 2,
             minHeight: "100%",
           }}
-          dangerouslySetInnerHTML={{__html: highlightCode(typed)}}
+          dangerouslySetInnerHTML={{__html: highlightWithDivergence(typed, alignment.typedDiverged)}}
         />
       </div>
       </div>
