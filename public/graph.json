@@ -42,6 +42,7 @@
     { "id": "2026-04-25", "type": "sketch", "tags": ["shader", "thermal", "blend-mode", "rotation", "glyph"], "label": "サーモフィルター+グリフ変形" },
     { "id": "2026-04-30", "type": "sketch", "tags": ["webgl", "3d", "box", "brightness", "vj"], "label": "明るさの探究+VJ考察" },
     { "id": "2026-05-02", "type": "sketch", "tags": ["reaction-diffusion", "cellular", "growth", "pattern"], "label": "反応拡散系" },
+    { "id": "2026-05-07", "type": "sketch", "tags": ["boids", "flocking", "trace-editor", "wobble"], "label": "Boid写経+揺れる脱線文字" },
 
     { "id": "2026-01-07", "type": "sketch", "tags": ["noise", "organic", "particle", "color", "trail"], "label": "火花のような軌跡" },
     { "id": "2026-01-12", "type": "sketch", "tags": ["webgl", "3d", "camera", "ground-plane"], "label": "カメラワーク地面制約" },
@@ -217,6 +218,8 @@
     { "source": "2026-01-28", "target": "2026-04-30", "type": "C", "reason": "VJ実践の振り返りと明るさの探究" },
     { "source": "2026-01-03", "target": "2026-04-30", "type": "B", "reason": "WEBGLモードでのBox表現" },
     { "source": "2026-04-30", "target": "audio-reactive", "type": "D", "reason": "VJ体験から音と映像の連携へ" },
-    { "source": "2026-05-02", "target": "reaction-diffusion", "type": "B", "reason": "reaction-diffusion未踏ノードの実装" }
+    { "source": "2026-05-02", "target": "reaction-diffusion", "type": "B", "reason": "reaction-diffusion未踏ノードの実装" },
+    { "source": "2026-05-07", "target": "boids", "type": "B", "reason": "boids未踏ノードを写経で実装" },
+    { "source": "2026-01-11", "target": "2026-05-07", "type": "C", "reason": "打鍵の身体性を可視化する関心" }
   ]
 }
