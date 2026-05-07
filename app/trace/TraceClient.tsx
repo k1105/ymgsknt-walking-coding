@@ -244,7 +244,7 @@ export default function TraceClient() {
       if (alignment.matched[i]) {
         currentLine += `<span style="color:rgba(100,200,100,0.5)">${escaped}</span>`;
       } else if (alignment.wrong[i]) {
-        currentLine += `<span style="color:rgba(255,100,100,0.6);text-decoration:underline">${escaped}</span>`;
+        currentLine += `<span class="trace-diverged" style="display:inline-block;color:rgba(200,200,200,0.7);animation:wobble 0.8s ease-in-out infinite;animation-delay:${(i * 0.05) % 2}s">${escaped}</span>`;
       } else {
         // Not yet reached / not aligned to anything
         currentLine += `<span style="color:rgba(150,150,150,0.25)">${escaped}</span>`;
@@ -253,6 +253,14 @@ export default function TraceClient() {
     lines.push(currentLine);
     return lines.join("\n");
   };
+
+  const wobbleStyle = `
+    @keyframes wobble {
+      0%, 100% { transform: translateY(0); }
+      25% { transform: translateY(-2px); }
+      75% { transform: translateY(2px); }
+    }
+  `;
 
   if (!isTracing || !originalCode) {
     return (
@@ -289,6 +297,7 @@ export default function TraceClient() {
 
   return (
     <>
+      <style dangerouslySetInnerHTML={{ __html: wobbleStyle }} />
       {/* Fixed background — stays put even when the page body scrolls */}
       <div className="fixed inset-0 bg-[#0d1117] -z-10" />
       <div className="h-screen bg-[#0d1117] text-gray-300 flex flex-col">
