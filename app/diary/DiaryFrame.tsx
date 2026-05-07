@@ -366,7 +366,7 @@ export default function DiaryFrame({children}: {children: ReactNode}) {
       <div
         className="fixed inset-0 z-[100] pointer-events-none"
         style={{
-          opacity: (show ? 1 : 0) * uiOpacity,
+          opacity: pathname.startsWith("/trace") ? 0 : (show ? 1 : 0) * uiOpacity,
           transition: "opacity 150ms linear",
         }}
       >

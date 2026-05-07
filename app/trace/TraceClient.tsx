@@ -1,24 +1,115 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
-import { useSearchParams } from "next/navigation";
+import {useState, useRef, useEffect, useCallback, useMemo} from "react";
+import {useSearchParams} from "next/navigation";
+
+// Forward streaming alignment with whitespace-tolerant lookahead.
+// Whitespace runs don't count toward the lookahead budget, so indent/newline
+// differences can be absorbed without painting the rest of the file red.
+// Tie-breaks prefer treating extra typed chars as insertions over marking
+// original chars as deletions.
+function alignTyped(
+  original: string,
+  typed: string,
+): {matched: boolean[]; wrong: boolean[]} {
+  const matched = new Array(original.length).fill(false);
+  const wrong = new Array(original.length).fill(false);
+  const NON_WS_LOOKAHEAD = 5;
+  const isWs = (c: string) => c === " " || c === "\t" || c === "\n" || c === "\r";
+
+  let oi = 0;
+  let ti = 0;
+  while (ti < typed.length && oi < original.length) {
+    if (typed[ti] === original[oi]) {
+      matched[oi++] = true;
+      ti++;
+      continue;
+    }
+
+    // Look ahead in original for typed[ti]. Whitespace is "free" — only
+    // non-whitespace chars consume the lookahead budget.
+    let skipOrig = -1;
+    {
+      let nonWs = 0;
+      for (let k = 1; oi + k < original.length; k++) {
+        const c = original[oi + k];
+        if (c === typed[ti]) {
+          skipOrig = k;
+          break;
+        }
+        if (!isWs(c)) {
+          nonWs++;
+          if (nonWs > NON_WS_LOOKAHEAD) break;
+        }
+      }
+    }
+
+    let skipTyped = -1;
+    {
+      let nonWs = 0;
+      for (let k = 1; ti + k < typed.length; k++) {
+        const c = typed[ti + k];
+        if (c === original[oi]) {
+          skipTyped = k;
+          break;
+        }
+        if (!isWs(c)) {
+          nonWs++;
+          if (nonWs > NON_WS_LOOKAHEAD) break;
+        }
+      }
+    }
+
+    // Prefer the smaller skip. On ties, prefer skipTyped (treat typed as
+    // having an insertion) — that leaves original chars a chance to match.
+    if (skipOrig !== -1 && skipTyped !== -1) {
+      if (skipOrig < skipTyped) {
+        for (let k = 0; k < skipOrig; k++) wrong[oi + k] = true;
+        oi += skipOrig;
+      } else {
+        ti += skipTyped;
+      }
+    } else if (skipOrig !== -1) {
+      for (let k = 0; k < skipOrig; k++) wrong[oi + k] = true;
+      oi += skipOrig;
+    } else if (skipTyped !== -1) {
+      ti += skipTyped;
+    } else {
+      wrong[oi++] = true;
+      ti++;
+    }
+  }
+
+  return {matched, wrong};
+}
 
 // Simple syntax highlighting
 function highlightCode(code: string): string {
-  return code
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    // strings
-    .replace(/(["'`])(?:(?!\1|\\).|\\.)*\1/g, '<span style="color:#a5d6ff">$&</span>')
-    // comments
-    .replace(/(\/\/.*$)/gm, '<span style="color:#6a737d">$&</span>')
-    // keywords
-    .replace(/\b(function|const|let|var|if|else|for|while|return|new|class|import|export|from|default|true|false|null|undefined|this|void|typeof)\b/g, '<span style="color:#ff7b72">$&</span>')
-    // numbers
-    .replace(/\b(\d+\.?\d*)\b/g, '<span style="color:#79c0ff">$&</span>')
-    // functions
-    .replace(/\b([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\(/g, '<span style="color:#d2a8ff">$1</span>(');
+  return (
+    code
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      // strings
+      .replace(
+        /(["'`])(?:(?!\1|\\).|\\.)*\1/g,
+        '<span style="color:#a5d6ff">$&</span>',
+      )
+      // comments
+      .replace(/(\/\/.*$)/gm, '<span style="color:#6a737d">$&</span>')
+      // keywords
+      .replace(
+        /\b(function|const|let|var|if|else|for|while|return|new|class|import|export|from|default|true|false|null|undefined|this|void|typeof)\b/g,
+        '<span style="color:#ff7b72">$&</span>',
+      )
+      // numbers
+      .replace(/\b(\d+\.?\d*)\b/g, '<span style="color:#79c0ff">$&</span>')
+      // functions
+      .replace(
+        /\b([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\(/g,
+        '<span style="color:#d2a8ff">$1</span>(',
+      )
+  );
 }
 
 export default function TraceClient() {
@@ -66,7 +157,7 @@ export default function TraceClient() {
       setTyped(value);
       setCursorPos(value.length);
     },
-    []
+    [],
   );
 
   const handleKeyDown = useCallback(
@@ -103,7 +194,7 @@ export default function TraceClient() {
         }, 0);
       }
     },
-    [typed]
+    [typed],
   );
 
   // Sync scroll between layers
@@ -118,18 +209,26 @@ export default function TraceClient() {
     if (highlightRef.current) highlightRef.current.style.transform = transform;
   }, []);
 
-  // Calculate progress
-  const matchCount = typed.split("").filter((c, i) => originalCode[i] === c).length;
-  const progress = originalCode.length > 0 ? Math.round((matchCount / originalCode.length) * 100) : 0;
+  // Streaming alignment (memoized to avoid recompute on every render)
+  const alignment = useMemo(
+    () => alignTyped(originalCode, typed),
+    [originalCode, typed],
+  );
 
-  // Build the ghost layer: matched chars are dim, unmatched original chars are very faint
+  // Calculate progress
+  const matchCount = alignment.matched.filter(Boolean).length;
+  const progress =
+    originalCode.length > 0
+      ? Math.round((matchCount / originalCode.length) * 100)
+      : 0;
+
+  // Build the ghost layer using alignment result
   const buildGhostHtml = () => {
     const lines: string[] = [];
     let currentLine = "";
 
     for (let i = 0; i < originalCode.length; i++) {
       const origChar = originalCode[i];
-      const typedChar = typed[i];
 
       if (origChar === "\n") {
         lines.push(currentLine);
@@ -142,16 +241,12 @@ export default function TraceClient() {
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;");
 
-      if (i < typed.length) {
-        if (typedChar === origChar) {
-          // Matched — show as confirmed (green-ish)
-          currentLine += `<span style="color:rgba(100,200,100,0.5)">${escaped}</span>`;
-        } else {
-          // Wrong character — show original in red
-          currentLine += `<span style="color:rgba(255,100,100,0.6);text-decoration:underline">${escaped}</span>`;
-        }
+      if (alignment.matched[i]) {
+        currentLine += `<span style="color:rgba(100,200,100,0.5)">${escaped}</span>`;
+      } else if (alignment.wrong[i]) {
+        currentLine += `<span style="color:rgba(255,100,100,0.6);text-decoration:underline">${escaped}</span>`;
       } else {
-        // Not yet typed — faint ghost
+        // Not yet reached / not aligned to anything
         currentLine += `<span style="color:rgba(150,150,150,0.25)">${escaped}</span>`;
       }
     }
@@ -163,13 +258,10 @@ export default function TraceClient() {
     return (
       <div className="min-h-screen bg-[#0d1117] text-gray-300 flex flex-col items-center justify-center p-8">
         <div className="max-w-xl w-full">
-          <h1
-            className="text-sm uppercase tracking-widest text-gray-500 mb-6"
-            style={{ fontFamily: "ui-monospace, monospace" }}
+          <p
+            className="text-xs text-gray-500 mb-4"
+            style={{fontFamily: "ui-monospace, monospace"}}
           >
-            Trace Editor
-          </h1>
-          <p className="text-xs text-gray-500 mb-4" style={{ fontFamily: "ui-monospace, monospace" }}>
             Paste code below, then trace over it by typing.
           </p>
           <textarea
@@ -177,14 +269,16 @@ export default function TraceClient() {
             onChange={(e) => setOriginalCode(e.target.value)}
             placeholder="Paste code here..."
             className="w-full h-64 bg-[#161b22] border border-[#30363d] rounded-md p-4 text-sm text-gray-300 resize-none focus:outline-none focus:border-[#58a6ff]"
-            style={{ fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace" }}
+            style={{
+              fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+            }}
             spellCheck={false}
           />
           <button
             onClick={startTracing}
             disabled={!originalCode.trim()}
             className="mt-4 px-6 py-2 bg-[#238636] text-white text-sm rounded-md hover:bg-[#2ea043] disabled:bg-[#21262d] disabled:text-gray-600 transition-colors"
-            style={{ fontFamily: "ui-monospace, monospace" }}
+            style={{fontFamily: "ui-monospace, monospace"}}
           >
             Start Tracing
           </button>
@@ -194,27 +288,25 @@ export default function TraceClient() {
   }
 
   return (
-    <div className="h-screen bg-[#0d1117] text-gray-300 flex flex-col">
-      {/* Header */}
+    <>
+      {/* Fixed background — stays put even when the page body scrolls */}
+      <div className="fixed inset-0 bg-[#0d1117] -z-10" />
+      <div className="h-screen bg-[#0d1117] text-gray-300 flex flex-col">
+        {/* Header */}
       <div
         className="flex items-center justify-between px-4 py-2 border-b border-[#30363d]"
-        style={{ fontFamily: "ui-monospace, monospace" }}
+        style={{fontFamily: "ui-monospace, monospace"}}
       >
         <div className="flex items-center gap-4">
-          <span className="text-xs text-gray-500 uppercase tracking-widest">
-            Trace Editor
-          </span>
           <span className="text-xs text-gray-600">
             {progress}% ({matchCount}/{originalCode.length})
           </span>
         </div>
         <div className="flex items-center gap-3">
-          <div
-            className="h-1 w-32 bg-[#21262d] rounded-full overflow-hidden"
-          >
+          <div className="h-1 w-32 bg-[#21262d] rounded-full overflow-hidden">
             <div
               className="h-full bg-[#238636] transition-all duration-300"
-              style={{ width: `${progress}%` }}
+              style={{width: `${progress}%`}}
             />
           </div>
           <button
@@ -255,7 +347,7 @@ export default function TraceClient() {
         {/* Ghost layer: original code as faint background */}
         <pre
           ref={ghostRef}
-          className="absolute top-0 left-0 right-0 p-4 pointer-events-none whitespace-pre"
+          className="absolute top-0 left-0 right-0 p-4 pointer-events-none whitespace-pre z-20"
           style={{
             fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
             fontSize: "13px",
@@ -263,13 +355,13 @@ export default function TraceClient() {
             tabSize: 2,
             minHeight: "100%",
           }}
-          dangerouslySetInnerHTML={{ __html: buildGhostHtml() }}
+          dangerouslySetInnerHTML={{__html: buildGhostHtml()}}
         />
 
         {/* Typed text with syntax highlighting (visible layer) */}
         <pre
           ref={highlightRef}
-          className="absolute top-0 left-0 right-0 p-4 pointer-events-none whitespace-pre"
+          className="absolute top-0 left-0 right-0 p-4 pointer-events-none whitespace-pre z-20"
           style={{
             fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
             fontSize: "13px",
@@ -277,9 +369,10 @@ export default function TraceClient() {
             tabSize: 2,
             minHeight: "100%",
           }}
-          dangerouslySetInnerHTML={{ __html: highlightCode(typed) }}
+          dangerouslySetInnerHTML={{__html: highlightCode(typed)}}
         />
       </div>
-    </div>
+      </div>
+    </>
   );
 }
