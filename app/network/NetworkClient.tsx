@@ -217,11 +217,9 @@ export default function NetworkClient() {
               const dx = event.x - dragStartPos.x;
               const dy = event.y - dragStartPos.y;
               if (Math.sqrt(dx * dx + dy * dy) < 5) {
-                if (selectedNodeIdRef.current === d.id) {
-                  // Stage 2: navigate / open research
-                  if (d.type === "sketch") {
-                    router.push(`/diary/${d.id}`);
-                  } else if (d.type === "unexplored" && d.research) {
+                if (d.type === "unexplored") {
+                  // Unexplored: open research immediately
+                  if (d.research) {
                     fetch(d.research)
                       .then((res) => (res.ok ? res.text() : null))
                       .then((text) => {
@@ -231,6 +229,9 @@ export default function NetworkClient() {
                         }
                       });
                   }
+                } else if (selectedNodeIdRef.current === d.id) {
+                  // Stage 2: navigate
+                  router.push(`/diary/${d.id}`);
                 } else {
                   // Stage 1: select
                   setSelectedNodeId(d.id);
@@ -263,6 +264,14 @@ export default function NetworkClient() {
       })
       .style("cursor", "pointer");
 
+    // Invisible hit area (only needed for unexplored, whose visible circle is border-only)
+    node
+      .filter((d) => d.type === "unexplored")
+      .append("circle")
+      .attr("r", 12)
+      .attr("fill", "transparent")
+      .attr("stroke", "none");
+
     // Circle
     node
       .append("circle")
@@ -286,12 +295,13 @@ export default function NetworkClient() {
       })
       .attr("x", 12)
       .attr("y", 4)
-      .attr("font-size", (d) => (d.type === "sketch" ? "11px" : "10px"))
+      .attr("font-size", (d) => (d.type === "sketch" ? "8.8px" : "10px"))
       .attr("font-family", "var(--font-geist-mono), monospace")
       .attr("fill", (d) => (d.type === "sketch" ? "#000" : "#666"))
       .attr("font-style", (d) =>
         d.type === "unexplored" ? "italic" : "normal",
-      );
+      )
+      .style("pointer-events", "none");
 
     // Apply opacity / visibility based on selection state
     const applyVisualState = (selectedId: string | null) => {
