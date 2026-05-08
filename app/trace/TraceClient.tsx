@@ -252,8 +252,7 @@ export default function TraceClient() {
     setCurrentStep(stepIdx);
     const code = stepsData.steps[stepIdx]?.files?.["sketch.js"] || "";
     setOriginalCode(code);
-    setTyped("");
-    setCursorPos(0);
+    // Keep typed text — don't clear it
     setTimeout(() => textareaRef.current?.focus(), 50);
   }, [stepsData]);
 
