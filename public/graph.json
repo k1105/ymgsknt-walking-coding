@@ -75,7 +75,7 @@
     { "id": "2026-03-19", "type": "sketch", "tags": ["webgl", "3d", "box", "approach"], "label": "迫ってくるBox列" },
     { "id": "2026-03-20", "type": "sketch", "tags": ["webgl", "3d", "box", "rotation"], "label": "WEBGL回転スタディ" },
 
-    { "id": "curl-noise", "type": "unexplored", "tags": ["noise", "flow-field", "curl", "math"], "label": "Curl Noise", "research": "/research/curl-noise.md", "code": "/research/code/curl-noise.js" },
+    { "id": "curl-noise", "type": "unexplored", "tags": ["noise", "flow-field", "curl", "math"], "label": "Curl Noise", "research": "/research/curl-noise.md", "code": "/research/code/curl-noise.js", "steps": "/research/steps/curl-noise.json" },
     { "id": "domain-warping", "type": "unexplored", "tags": ["noise", "texture", "recursive"], "label": "Domain Warping", "research": "/research/domain-warping.md" },
     { "id": "delaunay", "type": "unexplored", "tags": ["neighbor", "mesh", "triangulation"], "label": "Delaunay三角形分割", "research": "/research/delaunay.md" },
     { "id": "texture-mapping", "type": "unexplored", "tags": ["webgl", "3d", "texture", "vj", "uv"], "label": "テクスチャマッピング", "research": "/research/texture-mapping.md" },

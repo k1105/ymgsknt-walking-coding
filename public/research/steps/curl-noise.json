@@ -1,0 +1,34 @@
+{
+  "id": "curl-noise",
+  "title": "Curl Noise — 渦を巻くフローフィールド",
+  "steps": [
+    {
+      "title": "パーティクルの初期化",
+      "description": "canvasを作って、200個のパーティクルをランダムに配置する。background(0)で黒背景。これは4/7のフローフィールドと同じ出発点。",
+      "files": {
+        "sketch.js": "let particles = [];\n\nfunction setup() {\n  createCanvas(windowWidth, windowHeight);\n  for (let i = 0; i < 200; i++) {\n    particles.push(createVector(random(width), random(height)));\n  }\n  background(0);\n}\n\nfunction draw() {\n  background(0, 1);\n  noStroke();\n  fill(255, 80);\n\n  for (let p of particles) {\n    ellipse(p.x, p.y, 3);\n  }\n}"
+      }
+    },
+    {
+      "title": "curlNoise関数を書く",
+      "description": "curl noiseの核心。noiseの偏微分を数値的に計算して、90度回転させる。\n\n普通のnoiseだと粒子は「谷に溜まる」けど、curlは「渦を巻く」。発散ゼロ（divergence-free）だから粒子の密度が保たれる。\n\neps（イプシロン）は微小な差分。小さいほど正確だけど、0.0001くらいで十分。",
+      "files": {
+        "sketch.js": "let particles = [];\n\nfunction setup() {\n  createCanvas(windowWidth, windowHeight);\n  for (let i = 0; i < 200; i++) {\n    particles.push(createVector(random(width), random(height)));\n  }\n  background(0);\n}\n\nfunction curlNoise(x, y) {\n  let eps = 0.0001;\n  let n1 = noise(x, y + eps);\n  let n2 = noise(x, y - eps);\n  let n3 = noise(x + eps, y);\n  let n4 = noise(x - eps, y);\n  let dx = (n1 - n2) / (2 * eps);\n  let dy = (n3 - n4) / (2 * eps);\n  return [dy, -dx];\n}\n\nfunction draw() {\n  background(0, 1);\n  noStroke();\n  fill(255, 80);\n\n  for (let p of particles) {\n    ellipse(p.x, p.y, 3);\n  }\n}"
+      }
+    },
+    {
+      "title": "パーティクルをcurl noiseで動かす",
+      "description": "draw()の中で、各パーティクルにcurlNoiseの速度を加える。\n\nscale(0.005)はnoiseの「地形」のスケール。小さいと大きな渦、大きいと細かい渦になる。\n\n30はスピード。curlNoiseの戻り値は微小な値だから、掛け算で大きくする。\n\n4/7のフローフィールドでは `noise() → angle → cos/sin` だったけど、curlは直接 `[vx, vy]` が返ってくる。",
+      "files": {
+        "sketch.js": "let particles = [];\n\nfunction setup() {\n  createCanvas(windowWidth, windowHeight);\n  for (let i = 0; i < 200; i++) {\n    particles.push(createVector(random(width), random(height)));\n  }\n  background(0);\n}\n\nfunction curlNoise(x, y) {\n  let eps = 0.0001;\n  let n1 = noise(x, y + eps);\n  let n2 = noise(x, y - eps);\n  let n3 = noise(x + eps, y);\n  let n4 = noise(x - eps, y);\n  let dx = (n1 - n2) / (2 * eps);\n  let dy = (n3 - n4) / (2 * eps);\n  return [dy, -dx];\n}\n\nfunction draw() {\n  background(0, 1);\n  noStroke();\n  fill(255, 80);\n\n  for (let p of particles) {\n    let scale = 0.005;\n    let [vx, vy] = curlNoise(p.x * scale, p.y * scale);\n    p.x += vx * 30;\n    p.y += vy * 30;\n\n    ellipse(p.x, p.y, 3);\n  }\n}"
+      }
+    },
+    {
+      "title": "画面外に出たら再配置",
+      "description": "パーティクルが画面外に出たら、ランダムな位置に戻す。これがないとパーティクルが全員いなくなる。\n\n4/7のフローフィールドと同じ処理。ここまでで完成。\n\nここから先は自由に改変してみて。scaleを変えると渦のサイズが変わる。パーティクル数を増やすと密度が上がる。background(0, 1)の1を変えると軌跡の残り方が変わる。",
+      "files": {
+        "sketch.js": "let particles = [];\n\nfunction setup() {\n  createCanvas(windowWidth, windowHeight);\n  for (let i = 0; i < 200; i++) {\n    particles.push(createVector(random(width), random(height)));\n  }\n  background(0);\n}\n\nfunction curlNoise(x, y) {\n  let eps = 0.0001;\n  let n1 = noise(x, y + eps);\n  let n2 = noise(x, y - eps);\n  let n3 = noise(x + eps, y);\n  let n4 = noise(x - eps, y);\n  let dx = (n1 - n2) / (2 * eps);\n  let dy = (n3 - n4) / (2 * eps);\n  return [dy, -dx];\n}\n\nfunction draw() {\n  background(0, 1);\n  noStroke();\n  fill(255, 80);\n\n  for (let p of particles) {\n    let scale = 0.005;\n    let [vx, vy] = curlNoise(p.x * scale, p.y * scale);\n    p.x += vx * 30;\n    p.y += vy * 30;\n\n    if (p.x < 0 || p.x > width || p.y < 0 || p.y > height) {\n      p.set(random(width), random(height));\n    }\n    ellipse(p.x, p.y, 3);\n  }\n}"
+      }
+    }
+  ]
+}

@@ -170,6 +170,18 @@ function highlightWithDivergence(code: string, diverged: boolean[]): string {
   return result;
 }
 
+interface Step {
+  title: string;
+  description: string;
+  files: Record<string, string>;
+}
+
+interface StepsData {
+  id: string;
+  title: string;
+  steps: Step[];
+}
+
 export default function TraceClient() {
   const [originalCode, setOriginalCode] = useState("");
   const [isTracing, setIsTracing] = useState(false);
@@ -178,8 +190,33 @@ export default function TraceClient() {
   const [cursorPos, setCursorPos] = useState(0);
   const searchParams = useSearchParams();
 
-  // Auto-load code from URL query parameter
+  // Step mode
+  const [stepsData, setStepsData] = useState<StepsData | null>(null);
+  const [currentStep, setCurrentStep] = useState(0);
+
+  // Auto-load steps from URL query parameter
   useEffect(() => {
+    const stepsUrl = searchParams.get("steps");
+    if (stepsUrl) {
+      fetch(stepsUrl)
+        .then((res) => {
+          if (!res.ok) throw new Error(`fetch failed: ${res.status}`);
+          return res.json();
+        })
+        .then((data: StepsData) => {
+          setStepsData(data);
+          setCurrentStep(0);
+          const firstCode = data.steps[0]?.files?.["sketch.js"] || "";
+          setOriginalCode(firstCode);
+          setTimeout(() => {
+            setIsTracing(true);
+            setTimeout(() => textareaRef.current?.focus(), 100);
+          }, 50);
+        })
+        .catch((err) => console.error("Steps load error:", err));
+      return;
+    }
+
     const codeUrl = searchParams.get("code");
     if (codeUrl) {
       fetch(codeUrl)
@@ -208,6 +245,16 @@ export default function TraceClient() {
     setCursorPos(0);
     setTimeout(() => textareaRef.current?.focus(), 50);
   }, [originalCode]);
+
+  const goToStep = useCallback((stepIdx: number) => {
+    if (!stepsData || stepIdx < 0 || stepIdx >= stepsData.steps.length) return;
+    setCurrentStep(stepIdx);
+    const code = stepsData.steps[stepIdx]?.files?.["sketch.js"] || "";
+    setOriginalCode(code);
+    setTyped("");
+    setCursorPos(0);
+    setTimeout(() => textareaRef.current?.focus(), 50);
+  }, [stepsData]);
 
   const handleInput = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -361,31 +408,68 @@ export default function TraceClient() {
       <div className="h-screen bg-[#0d1117] text-gray-300 flex flex-col">
         {/* Header */}
       <div
-        className="flex items-center justify-between px-4 py-2 border-b border-[#30363d]"
+        className="px-4 py-2 border-b border-[#30363d]"
         style={{fontFamily: "ui-monospace, monospace"}}
       >
-        <div className="flex items-center gap-4">
-          <span className="text-xs text-gray-600">
-            {progress}% ({matchCount}/{originalCode.length})
-          </span>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="h-1 w-32 bg-[#21262d] rounded-full overflow-hidden">
-            <div
-              className="h-full bg-[#238636] transition-all duration-300"
-              style={{width: `${progress}%`}}
-            />
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            {stepsData && (
+              <span className="text-xs text-gray-400">
+                Step {currentStep + 1}/{stepsData.steps.length}
+              </span>
+            )}
+            <span className="text-xs text-gray-600">
+              {progress}% ({matchCount}/{originalCode.length})
+            </span>
           </div>
-          <button
-            onClick={() => {
-              setIsTracing(false);
-              setTyped("");
-            }}
-            className="text-xs text-gray-500 hover:text-gray-300 transition-colors"
-          >
-            Reset
-          </button>
+          <div className="flex items-center gap-3">
+            <div className="h-1 w-32 bg-[#21262d] rounded-full overflow-hidden">
+              <div
+                className="h-full bg-[#238636] transition-all duration-300"
+                style={{width: `${progress}%`}}
+              />
+            </div>
+            {stepsData && (
+              <>
+                <button
+                  onClick={() => goToStep(currentStep - 1)}
+                  disabled={currentStep === 0}
+                  className="text-xs text-gray-500 hover:text-gray-300 disabled:text-gray-700 transition-colors"
+                >
+                  ← prev
+                </button>
+                <button
+                  onClick={() => goToStep(currentStep + 1)}
+                  disabled={currentStep === stepsData.steps.length - 1}
+                  className="text-xs text-gray-500 hover:text-gray-300 disabled:text-gray-700 transition-colors"
+                >
+                  next →
+                </button>
+              </>
+            )}
+            <button
+              onClick={() => {
+                setIsTracing(false);
+                setTyped("");
+                setStepsData(null);
+              }}
+              className="text-xs text-gray-500 hover:text-gray-300 transition-colors"
+            >
+              Reset
+            </button>
+          </div>
         </div>
+        {/* Step description */}
+        {stepsData && stepsData.steps[currentStep] && (
+          <div className="mt-2 pb-1">
+            <div className="text-xs text-[#58a6ff] font-bold mb-1">
+              {stepsData.steps[currentStep].title}
+            </div>
+            <div className="text-xs text-gray-500 leading-relaxed whitespace-pre-wrap max-h-24 overflow-y-auto">
+              {stepsData.steps[currentStep].description}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Editor */}

@@ -14,6 +14,7 @@ interface GraphNode extends d3.SimulationNodeDatum {
   label: string;
   research?: string;
   code?: string;
+  steps?: string;
 }
 
 interface GraphEdge extends d3.SimulationLinkDatum<GraphNode> {
@@ -514,9 +515,9 @@ export default function NetworkClient() {
             </button>
             <div className="text-xs text-gray-400 mb-1 italic">unexplored</div>
             <div className="text-sm font-bold mb-2">{researchNode.label}</div>
-            {researchNode.code && process.env.NODE_ENV === "development" && (
+            {(researchNode.steps || researchNode.code) && process.env.NODE_ENV === "development" && (
               <a
-                href={`/trace?code=${researchNode.code}`}
+                href={researchNode.steps ? `/trace?steps=${researchNode.steps}` : `/trace?code=${researchNode.code}`}
                 className="inline-block mb-4 px-3 py-1 bg-[#238636] text-white text-xs rounded hover:bg-[#2ea043] transition-colors"
               >
                 ここから始める
