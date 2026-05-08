@@ -193,6 +193,7 @@ export default function TraceClient() {
   // Step mode
   const [stepsData, setStepsData] = useState<StepsData | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
+  const [showPreview, setShowPreview] = useState(false);
 
   // Auto-load steps from URL query parameter
   useEffect(() => {
@@ -448,10 +449,17 @@ export default function TraceClient() {
               </>
             )}
             <button
+              onClick={() => setShowPreview(!showPreview)}
+              className={`text-xs transition-colors ${showPreview ? "text-[#58a6ff]" : "text-gray-500 hover:text-gray-300"}`}
+            >
+              {showPreview ? "▶ Preview" : "▷ Preview"}
+            </button>
+            <button
               onClick={() => {
                 setIsTracing(false);
                 setTyped("");
                 setStepsData(null);
+                setShowPreview(false);
               }}
               className="text-xs text-gray-500 hover:text-gray-300 transition-colors"
             >
@@ -472,8 +480,9 @@ export default function TraceClient() {
         )}
       </div>
 
-      {/* Editor */}
-      <div className="flex-1 relative bg-[#0d1117]">
+      {/* Editor + Preview */}
+      <div className="flex-1 flex">
+      <div className={`relative bg-[#0d1117] ${showPreview ? "w-1/2" : "w-full"}`}>
         {/* Typing layer — this is the scroll master */}
         <textarea
           ref={textareaRef}
@@ -522,6 +531,22 @@ export default function TraceClient() {
           }}
           dangerouslySetInnerHTML={{__html: highlightWithDivergence(typed, alignment.typedDiverged)}}
         />
+      </div>
+
+      {/* Preview iframe */}
+      {showPreview && (
+        <div className="w-1/2 border-l border-[#30363d] bg-white">
+          <iframe
+            srcDoc={`<!DOCTYPE html>
+<html><head>
+<style>body{margin:0;overflow:hidden;}canvas{display:block;}</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.3/p5.min.js"></script>
+</head><body><script>${typed}</script></body></html>`}
+            className="w-full h-full border-0"
+            sandbox="allow-scripts"
+          />
+        </div>
+      )}
       </div>
       </div>
     </>

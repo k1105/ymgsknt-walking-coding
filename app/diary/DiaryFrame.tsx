@@ -390,6 +390,7 @@ export default function DiaryFrame({children}: {children: ReactNode}) {
           opacity: uiOpacity,
           pointerEvents: uiOpacity < 0.05 ? "none" : "auto",
           transition: "opacity 150ms linear",
+          display: pathname === "/trace" || pathname === "/network" ? "none" : undefined,
         }}
       >
         {isRoot && (
