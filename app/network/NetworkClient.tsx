@@ -399,7 +399,61 @@ export default function NetworkClient() {
   useEffect(() => {
     selectedNodeIdRef.current = selectedNodeId;
     applyStateRef.current?.(selectedNodeId);
-  }, [selectedNodeId]);
+
+    // Add/remove "+" node for creating new sketch (dev only)
+    if (process.env.NODE_ENV !== "development") return;
+    const svg = svgRef.current;
+    if (!svg) return;
+    const gEl = svg.querySelector("g");
+    if (!gEl) return;
+
+    // Remove existing "+" node
+    d3.select(gEl).selectAll(".create-node").remove();
+
+    if (selectedNodeId && graphData) {
+      const selectedNode = graphData.nodes.find(n => n.id === selectedNodeId);
+      if (selectedNode && selectedNode.type === "sketch") {
+        // Find the D3 node element to get position
+        const nodeEls = d3.select(gEl).selectAll<SVGGElement, GraphNode>("g").filter(d => d.id === selectedNodeId);
+        if (!nodeEls.empty()) {
+          const d = nodeEls.datum();
+          const createGroup = d3.select(gEl).append("g")
+            .attr("class", "create-node")
+            .attr("transform", `translate(${(d.x || 0) + 40},${d.y || 0})`)
+            .style("cursor", "pointer");
+
+          createGroup.append("circle")
+            .attr("r", 12)
+            .attr("fill", "#238636")
+            .attr("stroke", "none");
+
+          createGroup.append("text")
+            .text("+")
+            .attr("text-anchor", "middle")
+            .attr("dy", "0.35em")
+            .attr("fill", "white")
+            .attr("font-size", "16px")
+            .attr("font-weight", "bold")
+            .style("pointer-events", "none");
+
+          createGroup.on("click", async () => {
+            const res = await fetch("/api/create-sketch", {
+              method: "POST",
+              headers: {"Content-Type": "application/json"},
+              body: JSON.stringify({sourceId: selectedNodeId, parentId: selectedNodeId}),
+            });
+            const data = await res.json();
+            if (res.ok) {
+              alert(`${data.date} のスケッチを作成しました（${selectedNodeId}からコピー）`);
+              window.location.reload();
+            } else {
+              alert(data.error === "Already exists" ? `${data.date} は既に存在します` : data.error);
+            }
+          });
+        }
+      }
+    }
+  }, [selectedNodeId, graphData]);
 
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-white">
@@ -431,28 +485,6 @@ export default function NetworkClient() {
           <div className="text-xs mt-1 text-gray-500">
             {hoveredNode.tags.join(", ")}
           </div>
-          {hoveredNode.type === "sketch" && process.env.NODE_ENV === "development" && (
-            <button
-              onClick={async (e) => {
-                e.stopPropagation();
-                const res = await fetch("/api/create-sketch", {
-                  method: "POST",
-                  headers: {"Content-Type": "application/json"},
-                  body: JSON.stringify({sourceId: hoveredNode.id, parentId: hoveredNode.id}),
-                });
-                const data = await res.json();
-                if (res.ok) {
-                  alert(`${data.date} のスケッチを作成しました（${hoveredNode.id}からコピー）`);
-                  window.location.reload();
-                } else {
-                  alert(data.error === "Already exists" ? `${data.date} は既に存在します` : data.error);
-                }
-              }}
-              className="mt-2 w-full px-3 py-1 bg-black text-white text-xs rounded hover:bg-gray-800 transition-colors"
-            >
-              + 続きを書く
-            </button>
-          )}
           {hoveredNode.type === "unexplored" && (
             <div className="text-xs mt-1 italic text-gray-400">
               {hoveredNode.research ? "click → research" : "未踏（調査なし）"}
