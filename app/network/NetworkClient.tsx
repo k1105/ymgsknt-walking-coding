@@ -431,6 +431,28 @@ export default function NetworkClient() {
           <div className="text-xs mt-1 text-gray-500">
             {hoveredNode.tags.join(", ")}
           </div>
+          {hoveredNode.type === "sketch" && process.env.NODE_ENV === "development" && (
+            <button
+              onClick={async (e) => {
+                e.stopPropagation();
+                const res = await fetch("/api/create-sketch", {
+                  method: "POST",
+                  headers: {"Content-Type": "application/json"},
+                  body: JSON.stringify({sourceId: hoveredNode.id, parentId: hoveredNode.id}),
+                });
+                const data = await res.json();
+                if (res.ok) {
+                  alert(`${data.date} のスケッチを作成しました（${hoveredNode.id}からコピー）`);
+                  window.location.reload();
+                } else {
+                  alert(data.error === "Already exists" ? `${data.date} は既に存在します` : data.error);
+                }
+              }}
+              className="mt-2 w-full px-3 py-1 bg-black text-white text-xs rounded hover:bg-gray-800 transition-colors"
+            >
+              + 続きを書く
+            </button>
+          )}
           {hoveredNode.type === "unexplored" && (
             <div className="text-xs mt-1 italic text-gray-400">
               {hoveredNode.research ? "click → research" : "未踏（調査なし）"}
