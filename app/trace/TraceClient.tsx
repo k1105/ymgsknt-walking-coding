@@ -194,6 +194,24 @@ export default function TraceClient() {
   const [stepsData, setStepsData] = useState<StepsData | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
   const [showPreview, setShowPreview] = useState(false);
+  const saveTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Auto-save to sketch.js (debounced, dev only)
+  const sketchDate = searchParams.get("date");
+  useEffect(() => {
+    if (!sketchDate || !typed || process.env.NODE_ENV !== "development") return;
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(() => {
+      fetch("/api/save-sketch", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({date: sketchDate, filename: "sketch.js", content: typed}),
+      }).catch(() => {});
+    }, 1000);
+    return () => {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    };
+  }, [typed, sketchDate]);
 
   // Auto-load steps from URL query parameter
   useEffect(() => {

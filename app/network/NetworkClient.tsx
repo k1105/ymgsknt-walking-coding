@@ -538,12 +538,37 @@ export default function NetworkClient() {
             <div className="text-xs text-gray-400 mb-1 italic">unexplored</div>
             <div className="text-sm font-bold mb-2">{researchNode.label}</div>
             {(researchNode.steps || researchNode.code) && process.env.NODE_ENV === "development" && (
-              <a
-                href={researchNode.steps ? `/trace?steps=${researchNode.steps}` : `/trace?code=${researchNode.code}`}
+              <button
+                onClick={async () => {
+                  const res = await fetch("/api/create-sketch", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({
+                      sourceId: researchNode.id,
+                      parentId: researchNode.id,
+                      fromUnexplored: true,
+                      codeUrl: researchNode.code,
+                    }),
+                  });
+                  const data = await res.json();
+                  if (res.ok) {
+                    const traceParam = researchNode.steps
+                      ? `steps=${researchNode.steps}`
+                      : `code=${researchNode.code}`;
+                    window.location.href = `/trace?${traceParam}&date=${data.date}`;
+                  } else if (data.error === "Already exists") {
+                    const traceParam = researchNode.steps
+                      ? `steps=${researchNode.steps}`
+                      : `code=${researchNode.code}`;
+                    window.location.href = `/trace?${traceParam}&date=${data.date}`;
+                  } else {
+                    alert(data.error);
+                  }
+                }}
                 className="inline-block mb-4 px-3 py-1 bg-[#238636] text-white text-xs rounded hover:bg-[#2ea043] transition-colors"
               >
                 ここから始める
-              </a>
+              </button>
             )}
             <div className="text-xs leading-relaxed research-md">
               <ReactMarkdown

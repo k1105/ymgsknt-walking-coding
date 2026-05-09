@@ -8,10 +8,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Dev only" }, { status: 403 });
   }
 
-  const { sourceId, parentId } = await req.json();
+  const { sourceId, parentId, fromUnexplored, codeUrl } = await req.json();
 
   const sketchesDir = path.join(process.cwd(), "public", "sketches");
   const sourceDir = path.join(sketchesDir, sourceId);
+  const templateDir = path.join(sketchesDir, "_template");
 
   // Today's date as YYYY-MM-DD
   const now = new Date();
@@ -22,12 +23,28 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Already exists", date: today }, { status: 409 });
   }
 
-  if (!fs.existsSync(sourceDir)) {
-    return NextResponse.json({ error: "Source not found" }, { status: 404 });
-  }
+  if (fromUnexplored) {
+    // Copy from _template
+    if (!fs.existsSync(templateDir)) {
+      return NextResponse.json({ error: "Template not found" }, { status: 404 });
+    }
+    fs.cpSync(templateDir, targetDir, { recursive: true });
 
-  // Copy directory
-  fs.cpSync(sourceDir, targetDir, { recursive: true });
+    // If codeUrl provided, read and write as sketch.js
+    if (codeUrl) {
+      const codePath = path.join(process.cwd(), "public", codeUrl);
+      if (fs.existsSync(codePath)) {
+        const code = fs.readFileSync(codePath, "utf-8");
+        fs.writeFileSync(path.join(targetDir, "sketch.js"), code);
+      }
+    }
+  } else {
+    if (!fs.existsSync(sourceDir)) {
+      return NextResponse.json({ error: "Source not found" }, { status: 404 });
+    }
+    // Copy directory
+    fs.cpSync(sourceDir, targetDir, { recursive: true });
+  }
 
   // Clear diary.md
   const diaryPath = path.join(targetDir, "diary.md");
@@ -67,15 +84,15 @@ export async function POST(req: NextRequest) {
           id: today,
           type: "sketch",
           tags: sourceNode?.tags || [],
-          label: `${sourceId}の続き`,
+          label: fromUnexplored ? `${sourceId}の写経` : `${sourceId}の続き`,
         });
 
         // Add edge
         graph.edges.push({
           source: parentId || sourceId,
           target: today,
-          type: "A",
-          reason: `${sourceId}からの続き`,
+          type: fromUnexplored ? "B" : "A",
+          reason: fromUnexplored ? `${sourceId}未踏ノードからの写経` : `${sourceId}からの続き`,
         });
 
         fs.writeFileSync(graphPath, JSON.stringify(graph, null, 2));
