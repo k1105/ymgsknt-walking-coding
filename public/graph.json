@@ -1,225 +1,1873 @@
 {
   "nodes": [
-    { "id": "2026-01-03", "type": "sketch", "tags": ["webgl", "3d", "rotation", "box"], "label": "回転するBoxの配列" },
-    { "id": "2026-01-04", "type": "sketch", "tags": ["webgl", "3d", "sphere", "trigonometry"], "label": "球面上の点群" },
-    { "id": "2026-01-05", "type": "sketch", "tags": ["webgl", "3d", "class", "edge-tracing"], "label": "立方体辺上のパーティクル" },
-    { "id": "2026-01-06", "type": "sketch", "tags": ["noise", "organic", "lifecycle", "class"], "label": "分裂増殖する生物" },
-    { "id": "2026-01-08", "type": "sketch", "tags": ["noise", "organic", "line", "neighbor"], "label": "有機的な線の接続" },
-    { "id": "2026-01-09", "type": "sketch", "tags": ["webgl", "3d", "camera"], "label": "カメラワーク実験" },
-    { "id": "2026-01-11", "type": "sketch", "tags": ["text", "input", "dom", "pressure"], "label": "打鍵強度テキストエディタ" },
-    { "id": "2026-01-14", "type": "sketch", "tags": ["text", "typography", "animation"], "label": "踊る文字" },
-    { "id": "2026-01-17", "type": "sketch", "tags": ["noise", "filter", "blur", "depth"], "label": "木漏れ日とBLURの深度" },
-    { "id": "2026-01-20", "type": "sketch", "tags": ["bezier", "text", "brush"], "label": "ベジェ曲線上の文字ブラシ" },
-    { "id": "2026-01-22", "type": "sketch", "tags": ["bezier", "text", "brush", "filter", "threshold"], "label": "複数ベジェ+文字ブラシ" },
-    { "id": "2026-01-24", "type": "sketch", "tags": ["packing", "circle", "generative-design"], "label": "円の充填" },
-    { "id": "2026-01-27", "type": "sketch", "tags": ["webgl", "3d", "filter", "blur", "threshold"], "label": "BLUR+THRESHOLDの予想外" },
-    { "id": "2026-01-28", "type": "sketch", "tags": ["vj", "bpm", "d3-ease", "performance"], "label": "VJ初パフォーマンス" },
-    { "id": "2026-02-04", "type": "sketch", "tags": ["network", "graph", "polar", "noise"], "label": "放射状ネットワーク" },
-    { "id": "2026-02-07", "type": "sketch", "tags": ["webgl", "shader", "glsl", "post-process"], "label": "初シェーダーパイプライン" },
-    { "id": "2026-02-08", "type": "sketch", "tags": ["network", "graph", "d3-ease", "filter", "blur", "threshold"], "label": "ネットワーク+波伝播" },
-    { "id": "2026-02-09", "type": "sketch", "tags": ["network", "graph", "spring-layout", "physics", "vector"], "label": "Spring-layout写経" },
-    { "id": "2026-02-11", "type": "sketch", "tags": ["network", "graph", "webcola", "library"], "label": "WebCola制約レイアウト" },
-    { "id": "2026-02-12", "type": "sketch", "tags": ["physics", "matter-js", "d3-ease"], "label": "Matter.js + D3 ease" },
-    { "id": "2026-02-13", "type": "sketch", "tags": ["noise", "particle", "fire", "color-gradient"], "label": "炎パーティクル" },
-    { "id": "2026-02-18", "type": "sketch", "tags": ["physics", "matter-js", "text", "instability"], "label": "消える地面+文字物理" },
-    { "id": "2026-02-23", "type": "sketch", "tags": ["bezier", "animation", "loop", "blend-mode"], "label": "ベジェ閉路アニメーション" },
-    { "id": "2026-03-01", "type": "sketch", "tags": ["bezier", "line", "surface", "thick-stroke"], "label": "線→面の変換" },
-    { "id": "2026-03-04", "type": "sketch", "tags": ["network", "graph", "webcola", "screen-blend", "thick-stroke"], "label": "ネットワーク+SCREEN合成" },
-    { "id": "2026-03-14", "type": "sketch", "tags": ["network", "graph", "webcola", "grow-shrink", "blur"], "label": "ネットワーク成長と収縮" },
-    { "id": "2026-03-16", "type": "sketch", "tags": ["bezier", "stroke-width", "d3-ease", "phase"], "label": "ベジェ太さアニメーション" },
-    { "id": "2026-04-02", "type": "sketch", "tags": ["webgl", "shader", "glsl", "fractal", "copycat"], "label": "フラクタル万華鏡シェーダー" },
-    { "id": "2026-04-07", "type": "sketch", "tags": ["noise", "flow-field", "2d", "particle"], "label": "フローフィールド（2D）" },
-    { "id": "2026-04-08", "type": "sketch", "tags": ["noise", "flow-field", "3d", "webgl", "particle", "neighbor"], "label": "3Dフローフィールド+近接結線" },
-    { "id": "2026-04-09", "type": "sketch", "tags": ["noise", "flow-field", "voronoi", "d3-delaunay"], "label": "Voronoi+noiseフローフィールド" },
-    { "id": "2026-04-13", "type": "sketch", "tags": ["shader", "glsl", "bloom", "post-process", "webgl"], "label": "Bloomシェーダー+グリッドマスク" },
-    { "id": "2026-04-14", "type": "sketch", "tags": ["shader", "glsl", "bloom", "radial", "inverse"], "label": "放射状bloom+逆bloom実験" },
-    { "id": "2026-04-16", "type": "sketch", "tags": ["pixel", "sort", "image", "loadPixels", "animation"], "label": "ピクセルソート+sin波アニメ" },
-    { "id": "2026-04-18", "type": "sketch", "tags": ["pixel", "sort", "threshold", "vertical", "image"], "label": "閾値付き縦方向ピクセルソート" },
-    { "id": "2026-04-19", "type": "sketch", "tags": ["pixel", "sort", "noise", "angle", "direction"], "label": "noiseベース斜めピクセルソート" },
-    { "id": "2026-04-20", "type": "sketch", "tags": ["pixel", "image", "colormap", "noise", "threshold"], "label": "サーモフィルター+noiseアニメ" },
-    { "id": "2026-04-21", "type": "sketch", "tags": ["shader", "glsl", "colormap", "thermal", "threshold"], "label": "サーモシェーダー（GPU版）" },
-    { "id": "2026-04-24", "type": "sketch", "tags": ["voronoi", "d3-delaunay", "noise", "color", "distribution"], "label": "Voronoi再訪+確率的色制御" },
-    { "id": "2026-04-25", "type": "sketch", "tags": ["shader", "thermal", "blend-mode", "rotation", "glyph"], "label": "サーモフィルター+グリフ変形" },
-    { "id": "2026-04-30", "type": "sketch", "tags": ["webgl", "3d", "box", "brightness", "vj"], "label": "明るさの探究+VJ考察" },
-    { "id": "2026-05-02", "type": "sketch", "tags": ["reaction-diffusion", "cellular", "growth", "pattern"], "label": "反応拡散系" },
-    { "id": "2026-05-07", "type": "sketch", "tags": ["boids", "flocking", "trace-editor", "wobble"], "label": "Boid写経+揺れる脱線文字" },
-
-    { "id": "2026-01-07", "type": "sketch", "tags": ["noise", "organic", "particle", "color", "trail"], "label": "火花のような軌跡" },
-    { "id": "2026-01-12", "type": "sketch", "tags": ["webgl", "3d", "camera", "ground-plane"], "label": "カメラワーク地面制約" },
-    { "id": "2026-01-16", "type": "sketch", "tags": ["text", "typography", "noise", "class"], "label": "じんわり揺れる文字" },
-    { "id": "2026-01-21", "type": "sketch", "tags": ["bezier", "text", "interactive", "drag"], "label": "ベジェ制御点ドラッグ" },
-    { "id": "2026-01-25", "type": "sketch", "tags": ["text", "noise", "d3-ease", "filter", "blur"], "label": "散らばるPACK文字" },
-    { "id": "2026-02-05", "type": "sketch", "tags": ["network", "graph", "polar", "noise", "lerp"], "label": "ネットワーク内側拡大" },
-    { "id": "2026-02-06", "type": "sketch", "tags": ["bezier", "d3-ease", "radial", "symmetry"], "label": "放射状ベジェ+ease" },
-    { "id": "2026-02-10", "type": "sketch", "tags": ["network", "graph", "spring-layout", "weight"], "label": "重み付きSpring-layout" },
-    { "id": "2026-02-15", "type": "sketch", "tags": ["noise", "particle", "fire", "blend-mode", "screen"], "label": "炎+SCREEN合成" },
-    { "id": "2026-03-29", "type": "sketch", "tags": ["physics", "matter-js", "text", "gravity"], "label": "落下する文字" },
-
-    { "id": "2026-01-13", "type": "sketch", "tags": ["noise", "circle", "interpolation", "bounce"], "label": "パチンコライティング" },
-    { "id": "2026-01-19", "type": "sketch", "tags": ["noise", "text", "filter", "blur"], "label": "ぼかし+テキスト深度" },
-    { "id": "2026-01-23", "type": "sketch", "tags": ["noise", "circle", "trail", "bounce"], "label": "みかんネットの軌跡" },
-    { "id": "2026-01-26", "type": "sketch", "tags": ["noise", "ellipse", "trail", "rotation"], "label": "回転楕円の軌跡" },
-    { "id": "2026-01-29", "type": "sketch", "tags": ["webgl", "image", "d3-ease", "bpm"], "label": "画像+BPMバウンス" },
-    { "id": "2026-02-01", "type": "sketch", "tags": ["d3-ease", "bpm", "circle", "trail"], "label": "d3 ease関数のスタディ" },
-    { "id": "2026-02-16", "type": "sketch", "tags": ["noise", "particle", "fire", "circle"], "label": "炎の精緻化" },
-    { "id": "2026-02-17", "type": "sketch", "tags": ["network", "graph", "spring-layout", "bezier"], "label": "ネットワーク+ベジェ線" },
-    { "id": "2026-02-20", "type": "sketch", "tags": ["physics", "matter-js", "circle", "text"], "label": "Matter.js円+テキスト" },
-    { "id": "2026-02-28", "type": "sketch", "tags": ["bezier", "animation", "loop", "blend-mode", "noise"], "label": "ベジェ閉路の精緻化" },
-
-    { "id": "2026-01-18", "type": "sketch", "tags": ["image", "svg", "resize"], "label": "SVGロゴのアニメーション" },
-    { "id": "2026-02-14", "type": "sketch", "tags": ["noise", "particle", "fire", "filter", "blur"], "label": "炎+BLUR" },
-    { "id": "2026-02-22", "type": "sketch", "tags": ["sin", "circle", "grid", "wave"], "label": "サイン波グリッド" },
-    { "id": "2026-02-26", "type": "sketch", "tags": ["bezier", "animation", "noise", "color", "blend-mode"], "label": "ベジェ閉路+色変化" },
-    { "id": "2026-03-13", "type": "sketch", "tags": ["noise", "circle", "line-replacement"], "label": "円で線を置換" },
-    { "id": "2026-03-18", "type": "sketch", "tags": ["bpm", "noise", "circle", "grid", "rotation"], "label": "BPM+noiseグリッド" },
-    { "id": "2026-03-19", "type": "sketch", "tags": ["webgl", "3d", "box", "approach"], "label": "迫ってくるBox列" },
-    { "id": "2026-03-20", "type": "sketch", "tags": ["webgl", "3d", "box", "rotation"], "label": "WEBGL回転スタディ" },
-
-    { "id": "curl-noise", "type": "unexplored", "tags": ["noise", "flow-field", "curl", "math"], "label": "Curl Noise", "research": "/research/curl-noise.md", "code": "/research/code/curl-noise.js", "steps": "/research/steps/curl-noise.json" },
-    { "id": "domain-warping", "type": "unexplored", "tags": ["noise", "texture", "recursive"], "label": "Domain Warping", "research": "/research/domain-warping.md" },
-    { "id": "delaunay", "type": "unexplored", "tags": ["neighbor", "mesh", "triangulation"], "label": "Delaunay三角形分割", "research": "/research/delaunay.md" },
-    { "id": "texture-mapping", "type": "unexplored", "tags": ["webgl", "3d", "texture", "vj", "uv"], "label": "テクスチャマッピング", "research": "/research/texture-mapping.md" },
-    { "id": "differential-growth", "type": "unexplored", "tags": ["organic", "growth", "physics", "constraint"], "label": "Differential Growth", "research": "/research/differential-growth.md", "code": "/research/code/differential-growth.js" },
-    { "id": "verlet-integration", "type": "unexplored", "tags": ["physics", "constraint", "simulation"], "label": "Verlet Integration", "research": "/research/verlet-integration.md" },
-    { "id": "sdf-2d", "type": "unexplored", "tags": ["shader", "math", "shape", "glsl"], "label": "2D SDF", "research": "/research/sdf-2d.md" },
-    { "id": "strange-attractors", "type": "unexplored", "tags": ["math", "chaos", "3d", "differential-eq"], "label": "ストレンジアトラクター", "research": "/research/strange-attractors.md" },
-    { "id": "shader-post-process", "type": "unexplored", "tags": ["shader", "glsl", "post-process", "vj"], "label": "シェーダーポストプロセス" },
-    { "id": "voronoi-stippling", "type": "unexplored", "tags": ["voronoi", "image", "lloyd", "stippling"], "label": "Weighted Voronoi Stippling", "research": "/research/voronoi-stippling.md" },
-    { "id": "lloyd-relaxation", "type": "unexplored", "tags": ["voronoi", "centroid", "relaxation", "balance"], "label": "Lloyd's Relaxation", "research": "/research/lloyd-relaxation.md" },
-    { "id": "biological-motion", "type": "unexplored", "tags": ["perception", "psychology", "motion", "animation"], "label": "Biological Motion Perception", "research": "/research/biological-motion.md" },
-    { "id": "ribbon-trails", "type": "unexplored", "tags": ["3d", "mesh", "trail", "ribbon", "vj"], "label": "Ribbon Trails", "research": "/research/ribbon-trails.md" },
-    { "id": "worley-noise", "type": "unexplored", "tags": ["noise", "texture", "cellular", "voronoi"], "label": "Worley Noise", "research": "/research/worley-noise.md" },
-    { "id": "variable-fonts", "type": "unexplored", "tags": ["text", "typography", "font", "css"], "label": "Variable Fonts", "research": "/research/variable-fonts.md" },
-    { "id": "80s-mv-grade", "type": "unexplored", "tags": ["shader", "post-process", "vj", "bloom", "glint", "grade"], "label": "80s MV Grade", "research": "/research/80s-mv-grade.md" },
-    { "id": "wave-propagation", "type": "unexplored", "tags": ["network", "graph", "wave", "bfs", "propagation"], "label": "Wave Propagation on Graphs", "research": "/research/wave-propagation.md" },
-    { "id": "boids", "type": "unexplored", "tags": ["particle", "flocking", "self-organization", "agent"], "label": "Boids (Flocking)", "research": "/research/boids.md", "code": "/research/code/boids.js" },
-    { "id": "moire-patterns", "type": "unexplored", "tags": ["pattern", "interference", "math", "visual"], "label": "Moiré Patterns", "research": "/research/moire-patterns.md" },
-    { "id": "cinematic-camera", "type": "unexplored", "tags": ["camera", "3d", "webgl", "vj", "cinematic"], "label": "Cinematic Camera", "research": "/research/cinematic-camera.md" },
-    { "id": "reaction-diffusion", "type": "unexplored", "tags": ["organic", "growth", "pattern", "cellular", "turing"], "label": "Reaction-Diffusion", "research": "/research/reaction-diffusion.md" },
-    { "id": "audio-reactive", "type": "unexplored", "tags": ["audio", "vj", "fft", "bpm", "interaction"], "label": "Audio Reactive", "research": "/research/audio-reactive.md" },
-    { "id": "bloom-variations", "type": "unexplored", "tags": ["shader", "bloom", "post-process", "anamorphic", "radial"], "label": "Bloom Variations", "research": "/research/bloom-variations.md" },
-    { "id": "pixel-sort-directions", "type": "unexplored", "tags": ["pixel", "sort", "direction", "curve", "radial"], "label": "ピクセルソート方向制御", "research": "/research/pixel-sort-directions.md" },
-    { "id": "glitch-art", "type": "unexplored", "tags": ["glitch", "databend", "pixel", "corruption"], "label": "Glitch Art / Databending", "research": "/research/glitch-art.md" },
-    { "id": "shader-colormap", "type": "unexplored", "tags": ["shader", "colormap", "thermal", "gpu", "palette"], "label": "Shader Colormap", "research": "/research/shader-colormap.md" }
+    {
+      "id": "2026-01-03",
+      "type": "sketch",
+      "tags": [
+        "webgl",
+        "3d",
+        "rotation",
+        "box"
+      ],
+      "label": "回転するBoxの配列"
+    },
+    {
+      "id": "2026-01-04",
+      "type": "sketch",
+      "tags": [
+        "webgl",
+        "3d",
+        "sphere",
+        "trigonometry"
+      ],
+      "label": "球面上の点群"
+    },
+    {
+      "id": "2026-01-05",
+      "type": "sketch",
+      "tags": [
+        "webgl",
+        "3d",
+        "class",
+        "edge-tracing"
+      ],
+      "label": "立方体辺上のパーティクル"
+    },
+    {
+      "id": "2026-01-06",
+      "type": "sketch",
+      "tags": [
+        "noise",
+        "organic",
+        "lifecycle",
+        "class"
+      ],
+      "label": "分裂増殖する生物"
+    },
+    {
+      "id": "2026-01-08",
+      "type": "sketch",
+      "tags": [
+        "noise",
+        "organic",
+        "line",
+        "neighbor"
+      ],
+      "label": "有機的な線の接続"
+    },
+    {
+      "id": "2026-01-09",
+      "type": "sketch",
+      "tags": [
+        "webgl",
+        "3d",
+        "camera"
+      ],
+      "label": "カメラワーク実験"
+    },
+    {
+      "id": "2026-01-11",
+      "type": "sketch",
+      "tags": [
+        "text",
+        "input",
+        "dom",
+        "pressure"
+      ],
+      "label": "打鍵強度テキストエディタ"
+    },
+    {
+      "id": "2026-01-14",
+      "type": "sketch",
+      "tags": [
+        "text",
+        "typography",
+        "animation"
+      ],
+      "label": "踊る文字"
+    },
+    {
+      "id": "2026-01-17",
+      "type": "sketch",
+      "tags": [
+        "noise",
+        "filter",
+        "blur",
+        "depth"
+      ],
+      "label": "木漏れ日とBLURの深度"
+    },
+    {
+      "id": "2026-01-20",
+      "type": "sketch",
+      "tags": [
+        "bezier",
+        "text",
+        "brush"
+      ],
+      "label": "ベジェ曲線上の文字ブラシ"
+    },
+    {
+      "id": "2026-01-22",
+      "type": "sketch",
+      "tags": [
+        "bezier",
+        "text",
+        "brush",
+        "filter",
+        "threshold"
+      ],
+      "label": "複数ベジェ+文字ブラシ"
+    },
+    {
+      "id": "2026-01-24",
+      "type": "sketch",
+      "tags": [
+        "packing",
+        "circle",
+        "generative-design"
+      ],
+      "label": "円の充填"
+    },
+    {
+      "id": "2026-01-27",
+      "type": "sketch",
+      "tags": [
+        "webgl",
+        "3d",
+        "filter",
+        "blur",
+        "threshold"
+      ],
+      "label": "BLUR+THRESHOLDの予想外"
+    },
+    {
+      "id": "2026-01-28",
+      "type": "sketch",
+      "tags": [
+        "vj",
+        "bpm",
+        "d3-ease",
+        "performance"
+      ],
+      "label": "VJ初パフォーマンス"
+    },
+    {
+      "id": "2026-02-04",
+      "type": "sketch",
+      "tags": [
+        "network",
+        "graph",
+        "polar",
+        "noise"
+      ],
+      "label": "放射状ネットワーク"
+    },
+    {
+      "id": "2026-02-07",
+      "type": "sketch",
+      "tags": [
+        "webgl",
+        "shader",
+        "glsl",
+        "post-process"
+      ],
+      "label": "初シェーダーパイプライン"
+    },
+    {
+      "id": "2026-02-08",
+      "type": "sketch",
+      "tags": [
+        "network",
+        "graph",
+        "d3-ease",
+        "filter",
+        "blur",
+        "threshold"
+      ],
+      "label": "ネットワーク+波伝播"
+    },
+    {
+      "id": "2026-02-09",
+      "type": "sketch",
+      "tags": [
+        "network",
+        "graph",
+        "spring-layout",
+        "physics",
+        "vector"
+      ],
+      "label": "Spring-layout写経"
+    },
+    {
+      "id": "2026-02-11",
+      "type": "sketch",
+      "tags": [
+        "network",
+        "graph",
+        "webcola",
+        "library"
+      ],
+      "label": "WebCola制約レイアウト"
+    },
+    {
+      "id": "2026-02-12",
+      "type": "sketch",
+      "tags": [
+        "physics",
+        "matter-js",
+        "d3-ease"
+      ],
+      "label": "Matter.js + D3 ease"
+    },
+    {
+      "id": "2026-02-13",
+      "type": "sketch",
+      "tags": [
+        "noise",
+        "particle",
+        "fire",
+        "color-gradient"
+      ],
+      "label": "炎パーティクル"
+    },
+    {
+      "id": "2026-02-18",
+      "type": "sketch",
+      "tags": [
+        "physics",
+        "matter-js",
+        "text",
+        "instability"
+      ],
+      "label": "消える地面+文字物理"
+    },
+    {
+      "id": "2026-02-23",
+      "type": "sketch",
+      "tags": [
+        "bezier",
+        "animation",
+        "loop",
+        "blend-mode"
+      ],
+      "label": "ベジェ閉路アニメーション"
+    },
+    {
+      "id": "2026-03-01",
+      "type": "sketch",
+      "tags": [
+        "bezier",
+        "line",
+        "surface",
+        "thick-stroke"
+      ],
+      "label": "線→面の変換"
+    },
+    {
+      "id": "2026-03-04",
+      "type": "sketch",
+      "tags": [
+        "network",
+        "graph",
+        "webcola",
+        "screen-blend",
+        "thick-stroke"
+      ],
+      "label": "ネットワーク+SCREEN合成"
+    },
+    {
+      "id": "2026-03-14",
+      "type": "sketch",
+      "tags": [
+        "network",
+        "graph",
+        "webcola",
+        "grow-shrink",
+        "blur"
+      ],
+      "label": "ネットワーク成長と収縮"
+    },
+    {
+      "id": "2026-03-16",
+      "type": "sketch",
+      "tags": [
+        "bezier",
+        "stroke-width",
+        "d3-ease",
+        "phase"
+      ],
+      "label": "ベジェ太さアニメーション"
+    },
+    {
+      "id": "2026-04-02",
+      "type": "sketch",
+      "tags": [
+        "webgl",
+        "shader",
+        "glsl",
+        "fractal",
+        "copycat"
+      ],
+      "label": "フラクタル万華鏡シェーダー"
+    },
+    {
+      "id": "2026-04-07",
+      "type": "sketch",
+      "tags": [
+        "noise",
+        "flow-field",
+        "2d",
+        "particle"
+      ],
+      "label": "フローフィールド（2D）"
+    },
+    {
+      "id": "2026-04-08",
+      "type": "sketch",
+      "tags": [
+        "noise",
+        "flow-field",
+        "3d",
+        "webgl",
+        "particle",
+        "neighbor"
+      ],
+      "label": "3Dフローフィールド+近接結線"
+    },
+    {
+      "id": "2026-04-09",
+      "type": "sketch",
+      "tags": [
+        "noise",
+        "flow-field",
+        "voronoi",
+        "d3-delaunay"
+      ],
+      "label": "Voronoi+noiseフローフィールド"
+    },
+    {
+      "id": "2026-04-13",
+      "type": "sketch",
+      "tags": [
+        "shader",
+        "glsl",
+        "bloom",
+        "post-process",
+        "webgl"
+      ],
+      "label": "Bloomシェーダー+グリッドマスク"
+    },
+    {
+      "id": "2026-04-14",
+      "type": "sketch",
+      "tags": [
+        "shader",
+        "glsl",
+        "bloom",
+        "radial",
+        "inverse"
+      ],
+      "label": "放射状bloom+逆bloom実験"
+    },
+    {
+      "id": "2026-04-16",
+      "type": "sketch",
+      "tags": [
+        "pixel",
+        "sort",
+        "image",
+        "loadPixels",
+        "animation"
+      ],
+      "label": "ピクセルソート+sin波アニメ"
+    },
+    {
+      "id": "2026-04-18",
+      "type": "sketch",
+      "tags": [
+        "pixel",
+        "sort",
+        "threshold",
+        "vertical",
+        "image"
+      ],
+      "label": "閾値付き縦方向ピクセルソート"
+    },
+    {
+      "id": "2026-04-19",
+      "type": "sketch",
+      "tags": [
+        "pixel",
+        "sort",
+        "noise",
+        "angle",
+        "direction"
+      ],
+      "label": "noiseベース斜めピクセルソート"
+    },
+    {
+      "id": "2026-04-20",
+      "type": "sketch",
+      "tags": [
+        "pixel",
+        "image",
+        "colormap",
+        "noise",
+        "threshold"
+      ],
+      "label": "サーモフィルター+noiseアニメ"
+    },
+    {
+      "id": "2026-04-21",
+      "type": "sketch",
+      "tags": [
+        "shader",
+        "glsl",
+        "colormap",
+        "thermal",
+        "threshold"
+      ],
+      "label": "サーモシェーダー（GPU版）"
+    },
+    {
+      "id": "2026-04-24",
+      "type": "sketch",
+      "tags": [
+        "voronoi",
+        "d3-delaunay",
+        "noise",
+        "color",
+        "distribution"
+      ],
+      "label": "Voronoi再訪+確率的色制御"
+    },
+    {
+      "id": "2026-04-25",
+      "type": "sketch",
+      "tags": [
+        "shader",
+        "thermal",
+        "blend-mode",
+        "rotation",
+        "glyph"
+      ],
+      "label": "サーモフィルター+グリフ変形"
+    },
+    {
+      "id": "2026-04-30",
+      "type": "sketch",
+      "tags": [
+        "webgl",
+        "3d",
+        "box",
+        "brightness",
+        "vj"
+      ],
+      "label": "明るさの探究+VJ考察"
+    },
+    {
+      "id": "2026-05-02",
+      "type": "sketch",
+      "tags": [
+        "reaction-diffusion",
+        "cellular",
+        "growth",
+        "pattern"
+      ],
+      "label": "反応拡散系"
+    },
+    {
+      "id": "2026-05-07",
+      "type": "sketch",
+      "tags": [
+        "boids",
+        "flocking",
+        "trace-editor",
+        "wobble"
+      ],
+      "label": "Boid写経+揺れる脱線文字"
+    },
+    {
+      "id": "2026-01-07",
+      "type": "sketch",
+      "tags": [
+        "noise",
+        "organic",
+        "particle",
+        "color",
+        "trail"
+      ],
+      "label": "火花のような軌跡"
+    },
+    {
+      "id": "2026-01-12",
+      "type": "sketch",
+      "tags": [
+        "webgl",
+        "3d",
+        "camera",
+        "ground-plane"
+      ],
+      "label": "カメラワーク地面制約"
+    },
+    {
+      "id": "2026-01-16",
+      "type": "sketch",
+      "tags": [
+        "text",
+        "typography",
+        "noise",
+        "class"
+      ],
+      "label": "じんわり揺れる文字"
+    },
+    {
+      "id": "2026-01-21",
+      "type": "sketch",
+      "tags": [
+        "bezier",
+        "text",
+        "interactive",
+        "drag"
+      ],
+      "label": "ベジェ制御点ドラッグ"
+    },
+    {
+      "id": "2026-01-25",
+      "type": "sketch",
+      "tags": [
+        "text",
+        "noise",
+        "d3-ease",
+        "filter",
+        "blur"
+      ],
+      "label": "散らばるPACK文字"
+    },
+    {
+      "id": "2026-02-05",
+      "type": "sketch",
+      "tags": [
+        "network",
+        "graph",
+        "polar",
+        "noise",
+        "lerp"
+      ],
+      "label": "ネットワーク内側拡大"
+    },
+    {
+      "id": "2026-02-06",
+      "type": "sketch",
+      "tags": [
+        "bezier",
+        "d3-ease",
+        "radial",
+        "symmetry"
+      ],
+      "label": "放射状ベジェ+ease"
+    },
+    {
+      "id": "2026-02-10",
+      "type": "sketch",
+      "tags": [
+        "network",
+        "graph",
+        "spring-layout",
+        "weight"
+      ],
+      "label": "重み付きSpring-layout"
+    },
+    {
+      "id": "2026-02-15",
+      "type": "sketch",
+      "tags": [
+        "noise",
+        "particle",
+        "fire",
+        "blend-mode",
+        "screen"
+      ],
+      "label": "炎+SCREEN合成"
+    },
+    {
+      "id": "2026-03-29",
+      "type": "sketch",
+      "tags": [
+        "physics",
+        "matter-js",
+        "text",
+        "gravity"
+      ],
+      "label": "落下する文字"
+    },
+    {
+      "id": "2026-01-13",
+      "type": "sketch",
+      "tags": [
+        "noise",
+        "circle",
+        "interpolation",
+        "bounce"
+      ],
+      "label": "パチンコライティング"
+    },
+    {
+      "id": "2026-01-19",
+      "type": "sketch",
+      "tags": [
+        "noise",
+        "text",
+        "filter",
+        "blur"
+      ],
+      "label": "ぼかし+テキスト深度"
+    },
+    {
+      "id": "2026-01-23",
+      "type": "sketch",
+      "tags": [
+        "noise",
+        "circle",
+        "trail",
+        "bounce"
+      ],
+      "label": "みかんネットの軌跡"
+    },
+    {
+      "id": "2026-01-26",
+      "type": "sketch",
+      "tags": [
+        "noise",
+        "ellipse",
+        "trail",
+        "rotation"
+      ],
+      "label": "回転楕円の軌跡"
+    },
+    {
+      "id": "2026-01-29",
+      "type": "sketch",
+      "tags": [
+        "webgl",
+        "image",
+        "d3-ease",
+        "bpm"
+      ],
+      "label": "画像+BPMバウンス"
+    },
+    {
+      "id": "2026-02-01",
+      "type": "sketch",
+      "tags": [
+        "d3-ease",
+        "bpm",
+        "circle",
+        "trail"
+      ],
+      "label": "d3 ease関数のスタディ"
+    },
+    {
+      "id": "2026-02-16",
+      "type": "sketch",
+      "tags": [
+        "noise",
+        "particle",
+        "fire",
+        "circle"
+      ],
+      "label": "炎の精緻化"
+    },
+    {
+      "id": "2026-02-17",
+      "type": "sketch",
+      "tags": [
+        "network",
+        "graph",
+        "spring-layout",
+        "bezier"
+      ],
+      "label": "ネットワーク+ベジェ線"
+    },
+    {
+      "id": "2026-02-20",
+      "type": "sketch",
+      "tags": [
+        "physics",
+        "matter-js",
+        "circle",
+        "text"
+      ],
+      "label": "Matter.js円+テキスト"
+    },
+    {
+      "id": "2026-02-28",
+      "type": "sketch",
+      "tags": [
+        "bezier",
+        "animation",
+        "loop",
+        "blend-mode",
+        "noise"
+      ],
+      "label": "ベジェ閉路の精緻化"
+    },
+    {
+      "id": "2026-01-18",
+      "type": "sketch",
+      "tags": [
+        "image",
+        "svg",
+        "resize"
+      ],
+      "label": "SVGロゴのアニメーション"
+    },
+    {
+      "id": "2026-02-14",
+      "type": "sketch",
+      "tags": [
+        "noise",
+        "particle",
+        "fire",
+        "filter",
+        "blur"
+      ],
+      "label": "炎+BLUR"
+    },
+    {
+      "id": "2026-02-22",
+      "type": "sketch",
+      "tags": [
+        "sin",
+        "circle",
+        "grid",
+        "wave"
+      ],
+      "label": "サイン波グリッド"
+    },
+    {
+      "id": "2026-02-26",
+      "type": "sketch",
+      "tags": [
+        "bezier",
+        "animation",
+        "noise",
+        "color",
+        "blend-mode"
+      ],
+      "label": "ベジェ閉路+色変化"
+    },
+    {
+      "id": "2026-03-13",
+      "type": "sketch",
+      "tags": [
+        "noise",
+        "circle",
+        "line-replacement"
+      ],
+      "label": "円で線を置換"
+    },
+    {
+      "id": "2026-03-18",
+      "type": "sketch",
+      "tags": [
+        "bpm",
+        "noise",
+        "circle",
+        "grid",
+        "rotation"
+      ],
+      "label": "BPM+noiseグリッド"
+    },
+    {
+      "id": "2026-03-19",
+      "type": "sketch",
+      "tags": [
+        "webgl",
+        "3d",
+        "box",
+        "approach"
+      ],
+      "label": "迫ってくるBox列"
+    },
+    {
+      "id": "2026-03-20",
+      "type": "sketch",
+      "tags": [
+        "webgl",
+        "3d",
+        "box",
+        "rotation"
+      ],
+      "label": "WEBGL回転スタディ"
+    },
+    {
+      "id": "curl-noise",
+      "type": "unexplored",
+      "tags": [
+        "noise",
+        "flow-field",
+        "curl",
+        "math"
+      ],
+      "label": "Curl Noise",
+      "research": "/research/curl-noise.md",
+      "code": "/research/code/curl-noise.js",
+      "steps": "/research/steps/curl-noise.json"
+    },
+    {
+      "id": "domain-warping",
+      "type": "unexplored",
+      "tags": [
+        "noise",
+        "texture",
+        "recursive"
+      ],
+      "label": "Domain Warping",
+      "research": "/research/domain-warping.md"
+    },
+    {
+      "id": "delaunay",
+      "type": "unexplored",
+      "tags": [
+        "neighbor",
+        "mesh",
+        "triangulation"
+      ],
+      "label": "Delaunay三角形分割",
+      "research": "/research/delaunay.md"
+    },
+    {
+      "id": "texture-mapping",
+      "type": "unexplored",
+      "tags": [
+        "webgl",
+        "3d",
+        "texture",
+        "vj",
+        "uv"
+      ],
+      "label": "テクスチャマッピング",
+      "research": "/research/texture-mapping.md"
+    },
+    {
+      "id": "differential-growth",
+      "type": "unexplored",
+      "tags": [
+        "organic",
+        "growth",
+        "physics",
+        "constraint"
+      ],
+      "label": "Differential Growth",
+      "research": "/research/differential-growth.md",
+      "code": "/research/code/differential-growth.js"
+    },
+    {
+      "id": "verlet-integration",
+      "type": "unexplored",
+      "tags": [
+        "physics",
+        "constraint",
+        "simulation"
+      ],
+      "label": "Verlet Integration",
+      "research": "/research/verlet-integration.md"
+    },
+    {
+      "id": "sdf-2d",
+      "type": "unexplored",
+      "tags": [
+        "shader",
+        "math",
+        "shape",
+        "glsl"
+      ],
+      "label": "2D SDF",
+      "research": "/research/sdf-2d.md"
+    },
+    {
+      "id": "strange-attractors",
+      "type": "unexplored",
+      "tags": [
+        "math",
+        "chaos",
+        "3d",
+        "differential-eq"
+      ],
+      "label": "ストレンジアトラクター",
+      "research": "/research/strange-attractors.md"
+    },
+    {
+      "id": "shader-post-process",
+      "type": "unexplored",
+      "tags": [
+        "shader",
+        "glsl",
+        "post-process",
+        "vj"
+      ],
+      "label": "シェーダーポストプロセス"
+    },
+    {
+      "id": "voronoi-stippling",
+      "type": "unexplored",
+      "tags": [
+        "voronoi",
+        "image",
+        "lloyd",
+        "stippling"
+      ],
+      "label": "Weighted Voronoi Stippling",
+      "research": "/research/voronoi-stippling.md"
+    },
+    {
+      "id": "lloyd-relaxation",
+      "type": "unexplored",
+      "tags": [
+        "voronoi",
+        "centroid",
+        "relaxation",
+        "balance"
+      ],
+      "label": "Lloyd's Relaxation",
+      "research": "/research/lloyd-relaxation.md"
+    },
+    {
+      "id": "biological-motion",
+      "type": "unexplored",
+      "tags": [
+        "perception",
+        "psychology",
+        "motion",
+        "animation"
+      ],
+      "label": "Biological Motion Perception",
+      "research": "/research/biological-motion.md"
+    },
+    {
+      "id": "ribbon-trails",
+      "type": "unexplored",
+      "tags": [
+        "3d",
+        "mesh",
+        "trail",
+        "ribbon",
+        "vj"
+      ],
+      "label": "Ribbon Trails",
+      "research": "/research/ribbon-trails.md"
+    },
+    {
+      "id": "worley-noise",
+      "type": "unexplored",
+      "tags": [
+        "noise",
+        "texture",
+        "cellular",
+        "voronoi"
+      ],
+      "label": "Worley Noise",
+      "research": "/research/worley-noise.md"
+    },
+    {
+      "id": "variable-fonts",
+      "type": "unexplored",
+      "tags": [
+        "text",
+        "typography",
+        "font",
+        "css"
+      ],
+      "label": "Variable Fonts",
+      "research": "/research/variable-fonts.md"
+    },
+    {
+      "id": "80s-mv-grade",
+      "type": "unexplored",
+      "tags": [
+        "shader",
+        "post-process",
+        "vj",
+        "bloom",
+        "glint",
+        "grade"
+      ],
+      "label": "80s MV Grade",
+      "research": "/research/80s-mv-grade.md"
+    },
+    {
+      "id": "wave-propagation",
+      "type": "unexplored",
+      "tags": [
+        "network",
+        "graph",
+        "wave",
+        "bfs",
+        "propagation"
+      ],
+      "label": "Wave Propagation on Graphs",
+      "research": "/research/wave-propagation.md"
+    },
+    {
+      "id": "boids",
+      "type": "unexplored",
+      "tags": [
+        "particle",
+        "flocking",
+        "self-organization",
+        "agent"
+      ],
+      "label": "Boids (Flocking)",
+      "research": "/research/boids.md",
+      "code": "/research/code/boids.js"
+    },
+    {
+      "id": "moire-patterns",
+      "type": "unexplored",
+      "tags": [
+        "pattern",
+        "interference",
+        "math",
+        "visual"
+      ],
+      "label": "Moiré Patterns",
+      "research": "/research/moire-patterns.md"
+    },
+    {
+      "id": "cinematic-camera",
+      "type": "unexplored",
+      "tags": [
+        "camera",
+        "3d",
+        "webgl",
+        "vj",
+        "cinematic"
+      ],
+      "label": "Cinematic Camera",
+      "research": "/research/cinematic-camera.md"
+    },
+    {
+      "id": "reaction-diffusion",
+      "type": "unexplored",
+      "tags": [
+        "organic",
+        "growth",
+        "pattern",
+        "cellular",
+        "turing"
+      ],
+      "label": "Reaction-Diffusion",
+      "research": "/research/reaction-diffusion.md"
+    },
+    {
+      "id": "audio-reactive",
+      "type": "unexplored",
+      "tags": [
+        "audio",
+        "vj",
+        "fft",
+        "bpm",
+        "interaction"
+      ],
+      "label": "Audio Reactive",
+      "research": "/research/audio-reactive.md"
+    },
+    {
+      "id": "bloom-variations",
+      "type": "unexplored",
+      "tags": [
+        "shader",
+        "bloom",
+        "post-process",
+        "anamorphic",
+        "radial"
+      ],
+      "label": "Bloom Variations",
+      "research": "/research/bloom-variations.md"
+    },
+    {
+      "id": "pixel-sort-directions",
+      "type": "unexplored",
+      "tags": [
+        "pixel",
+        "sort",
+        "direction",
+        "curve",
+        "radial"
+      ],
+      "label": "ピクセルソート方向制御",
+      "research": "/research/pixel-sort-directions.md"
+    },
+    {
+      "id": "glitch-art",
+      "type": "unexplored",
+      "tags": [
+        "glitch",
+        "databend",
+        "pixel",
+        "corruption"
+      ],
+      "label": "Glitch Art / Databending",
+      "research": "/research/glitch-art.md"
+    },
+    {
+      "id": "shader-colormap",
+      "type": "unexplored",
+      "tags": [
+        "shader",
+        "colormap",
+        "thermal",
+        "gpu",
+        "palette"
+      ],
+      "label": "Shader Colormap",
+      "research": "/research/shader-colormap.md"
+    },
+    {
+      "id": "2026-05-09",
+      "type": "sketch",
+      "tags": [
+        "webgl",
+        "3d",
+        "box",
+        "brightness",
+        "vj"
+      ],
+      "label": "2026-04-30の続き"
+    },
+    {
+      "id": "2026-05-10",
+      "type": "sketch",
+      "tags": [
+        "packing",
+        "circle",
+        "generative-design"
+      ],
+      "label": "2026-01-24の続き"
+    }
   ],
   "edges": [
-    { "source": "2026-01-03", "target": "2026-01-04", "type": "A", "reason": "WEBGLでの3D点群表現の連続" },
-    { "source": "2026-01-04", "target": "2026-01-05", "type": "A", "reason": "日記で「つづきをしてみたくなった」" },
-    { "source": "2026-01-03", "target": "2026-01-27", "type": "A", "reason": "日記で「一番最初に作ったやつをいじってみた」" },
-    { "source": "2026-01-06", "target": "2026-01-08", "type": "A", "reason": "Snakeクラスの継続、線で接続する試み" },
-    { "source": "2026-01-14", "target": "2026-01-20", "type": "A", "reason": "日記で文字の動きをベジェ曲線に発展" },
-    { "source": "2026-01-20", "target": "2026-01-22", "type": "A", "reason": "ベジェ文字ブラシの複数化" },
-    { "source": "2026-01-22", "target": "2026-02-23", "type": "C", "reason": "ベジェ曲線の探究の継続" },
-    { "source": "2026-02-23", "target": "2026-03-01", "type": "A", "reason": "線の太さを極端に上げて面に変換" },
-    { "source": "2026-03-01", "target": "2026-03-16", "type": "C", "reason": "太いストロークの表現の精緻化" },
-    { "source": "2026-01-17", "target": "2026-01-27", "type": "B", "reason": "filter(BLUR)の使用" },
-    { "source": "2026-01-27", "target": "2026-02-08", "type": "B", "reason": "BLUR+THRESHOLDフィルタの組み合わせ" },
-    { "source": "2026-01-11", "target": "2026-01-14", "type": "C", "reason": "テキスト表現への関心" },
-    { "source": "2026-01-28", "target": "2026-02-12", "type": "B", "reason": "d3-easeライブラリの使用" },
-    { "source": "2026-02-04", "target": "2026-02-08", "type": "A", "reason": "ネットワーク表現の発展" },
-    { "source": "2026-02-08", "target": "2026-02-09", "type": "A", "reason": "ライブラリ依存→自前の力学実装へ" },
-    { "source": "2026-02-09", "target": "2026-02-11", "type": "A", "reason": "自前実装→WebColaライブラリへ" },
-    { "source": "2026-02-11", "target": "2026-03-04", "type": "B", "reason": "WebColaの使用" },
-    { "source": "2026-03-04", "target": "2026-03-14", "type": "A", "reason": "ネットワークに成長/収縮サイクルを追加" },
-    { "source": "2026-02-09", "target": "2026-02-12", "type": "B", "reason": "力学シミュレーション（Spring→Matter.js）" },
-    { "source": "2026-02-12", "target": "2026-02-18", "type": "B", "reason": "Matter.jsの使用" },
-    { "source": "2026-02-13", "target": "2026-04-07", "type": "B", "reason": "noiseパーティクルシステム" },
-    { "source": "2026-02-07", "target": "2026-04-02", "type": "B", "reason": "GLSLシェーダーの使用" },
-    { "source": "2026-04-07", "target": "2026-04-08", "type": "A", "reason": "日記で「昨日やった、noiseを使った配置」" },
-    { "source": "2026-01-08", "target": "2026-04-08", "type": "C", "reason": "近傍ノードの接続という問題意識" },
-    { "source": "2026-01-09", "target": "2026-04-08", "type": "B", "reason": "WEBGLモードの活用" },
-    { "source": "2026-04-07", "target": "curl-noise", "type": "D", "reason": "noiseの傾きを使う次のステップ" },
-    { "source": "2026-04-07", "target": "domain-warping", "type": "D", "reason": "noiseの出力を別のnoiseの入力にする" },
-    { "source": "2026-04-08", "target": "delaunay", "type": "D", "reason": "日記で「隣接するノード同士をうまく繋げたら」" },
-    { "source": "2026-04-08", "target": "texture-mapping", "type": "D", "reason": "日記で「テクスチャマッピングをする」" },
-    { "source": "2026-04-08", "target": "strange-attractors", "type": "D", "reason": "noiseの代わりに微分方程式で流れを定義" },
-    { "source": "2026-01-24", "target": "differential-growth", "type": "D", "reason": "空間充填→有機的成長アルゴリズムへ" },
-    { "source": "2026-01-06", "target": "differential-growth", "type": "D", "reason": "増殖・分裂→ノード間力学による形態生成" },
-    { "source": "2026-02-12", "target": "verlet-integration", "type": "D", "reason": "物理エンジン→制約ベースの物理へ" },
-    { "source": "2026-02-18", "target": "differential-growth", "type": "D", "reason": "物理的不安定性→形態生成へ" },
-    { "source": "2026-04-02", "target": "sdf-2d", "type": "D", "reason": "GLSLでの数学的形状定義" },
-    { "source": "2026-04-02", "target": "shader-post-process", "type": "D", "reason": "シェーダー技術のVJ応用" },
-    { "source": "2026-01-28", "target": "texture-mapping", "type": "D", "reason": "VJ実践→映像歪みエフェクト" },
-    { "source": "2026-01-06", "target": "2026-01-07", "type": "A", "reason": "日記で「昨日のをコピーして書き換え」" },
-    { "source": "2026-01-09", "target": "2026-01-12", "type": "A", "reason": "カメラワーク実験の継続" },
-    { "source": "2026-01-14", "target": "2026-01-16", "type": "A", "reason": "踊る文字の一般化（DancingTextクラス）" },
-    { "source": "2026-01-20", "target": "2026-01-21", "type": "A", "reason": "ベジェ制御点のインタラクション追加" },
-    { "source": "2026-01-24", "target": "2026-01-25", "type": "A", "reason": "PACKテーマの継続" },
-    { "source": "2026-02-04", "target": "2026-02-05", "type": "A", "reason": "ネットワークのマイナーチェンジ" },
-    { "source": "2026-01-28", "target": "2026-02-06", "type": "B", "reason": "d3-easeの使用" },
-    { "source": "2026-02-06", "target": "2026-02-23", "type": "B", "reason": "ベジェ曲線+d3-easeの組み合わせ" },
-    { "source": "2026-02-09", "target": "2026-02-10", "type": "A", "reason": "Spring-layoutに重み付けを追加" },
-    { "source": "2026-02-13", "target": "2026-02-15", "type": "A", "reason": "炎エフェクトにSCREEN合成追加" },
-    { "source": "2026-02-15", "target": "2026-03-04", "type": "B", "reason": "blendMode(SCREEN)の使用" },
-    { "source": "2026-02-18", "target": "2026-03-29", "type": "B", "reason": "Matter.js+テキストの物理" },
-    { "source": "2026-01-17", "target": "2026-01-19", "type": "A", "reason": "BLURぼかし表現の継続" },
-    { "source": "2026-01-06", "target": "2026-01-23", "type": "C", "reason": "軌跡を残すパーティクル表現" },
-    { "source": "2026-01-28", "target": "2026-01-29", "type": "A", "reason": "VJイベント準備の継続" },
-    { "source": "2026-01-29", "target": "2026-02-01", "type": "A", "reason": "d3-easeのスタディ継続" },
-    { "source": "2026-02-13", "target": "2026-02-16", "type": "A", "reason": "炎パーティクルの精緻化" },
-    { "source": "2026-02-10", "target": "2026-02-17", "type": "A", "reason": "Spring-layout+ベジェ曲線で線を描画" },
-    { "source": "2026-02-18", "target": "2026-02-20", "type": "B", "reason": "Matter.js+テキスト" },
-    { "source": "2026-02-23", "target": "2026-02-28", "type": "A", "reason": "ベジェ閉路の動きの精緻化" },
-    { "source": "2026-02-28", "target": "2026-03-01", "type": "A", "reason": "線幅を太くして面に変換" },
-    { "source": "2026-02-13", "target": "2026-02-14", "type": "A", "reason": "炎エフェクトにBLUR追加" },
-    { "source": "2026-02-14", "target": "2026-02-15", "type": "A", "reason": "炎にSCREEN合成追加" },
-    { "source": "2026-02-23", "target": "2026-02-26", "type": "A", "reason": "ベジェ閉路に色変化を追加" },
-    { "source": "2026-02-26", "target": "2026-02-28", "type": "A", "reason": "シームレスな動きへの精緻化" },
-    { "source": "2026-01-28", "target": "2026-03-18", "type": "B", "reason": "BPM同期パターン" },
-    { "source": "2026-01-03", "target": "2026-03-19", "type": "B", "reason": "WEBGLでのBox表現" },
-    { "source": "2026-03-19", "target": "2026-03-20", "type": "A", "reason": "WEBGL Boxスタディの継続" },
-    { "source": "2026-04-07", "target": "2026-04-09", "type": "B", "reason": "noiseフローフィールドの活用" },
-    { "source": "2026-04-08", "target": "2026-04-09", "type": "A", "reason": "近接結線→Voronoiによる隣接構造" },
-    { "source": "2026-04-09", "target": "delaunay", "type": "B", "reason": "d3-delaunayの使用（Voronoiの双対）" },
-    { "source": "2026-04-09", "target": "voronoi-stippling", "type": "D", "reason": "Voronoi+画像→点描表現" },
-    { "source": "2026-04-09", "target": "lloyd-relaxation", "type": "D", "reason": "セルの均一化と「秩序vs混沌」のバランス" },
-    { "source": "2026-02-09", "target": "biological-motion", "type": "D", "reason": "「物理的な動きに惹かれる理由」の心理学的回答" },
-    { "source": "2026-04-08", "target": "biological-motion", "type": "D", "reason": "クラスタ知覚は同じ知覚機構（gestalt grouping by motion）" },
-    { "source": "2026-03-01", "target": "ribbon-trails", "type": "D", "reason": "「線→面」を3Dに拡張、軌跡をリボンとして描く" },
-    { "source": "2026-02-23", "target": "ribbon-trails", "type": "D", "reason": "ベジェ閉路の動きをリボンメッシュで描く" },
-    { "source": "2026-02-15", "target": "worley-noise", "type": "D", "reason": "デッサンの「肌理」を作るためのnoise" },
-    { "source": "2026-04-09", "target": "worley-noise", "type": "B", "reason": "Voronoiから連続的なテクスチャへ" },
-    { "source": "2026-01-11", "target": "variable-fonts", "type": "D", "reason": "「打鍵の強さで太さが変わる」の本格版" },
-    { "source": "2026-04-02", "target": "80s-mv-grade", "type": "D", "reason": "シェーダーを使ったポストプロセスの実用例（フライヤー作成中の話題から）" },
-    { "source": "shader-post-process", "target": "80s-mv-grade", "type": "D", "reason": "シェーダーポストプロセスの具体例" },
-    { "source": "2026-02-08", "target": "wave-propagation", "type": "D", "reason": "「順序ずらし」をネットワーク構造に基づく波伝播へ" },
-    { "source": "2026-04-07", "target": "boids", "type": "D", "reason": "「列をなして流れる」を意図的に作るアルゴリズム" },
-    { "source": "2026-01-08", "target": "boids", "type": "D", "reason": "有機的な動きを自己組織化で作る" },
-    { "source": "2026-02-22", "target": "moire-patterns", "type": "D", "reason": "サイン波グリッドを2枚重ねる→モアレへ" },
-    { "source": "2026-03-01", "target": "moire-patterns", "type": "D", "reason": "「ズラシで因数分解しづらくする」の数学的方法" },
-    { "source": "2026-01-09", "target": "cinematic-camera", "type": "D", "reason": "「カメラワークどうしてるんだろ」への回答" },
-    { "source": "2026-01-12", "target": "cinematic-camera", "type": "D", "reason": "「グシャっとしてくると面白い」を実現する技" },
-    { "source": "2026-03-13", "target": "reaction-diffusion", "type": "D", "reason": "「描く」を化学反応に置き換えるラディカルな代替" },
-    { "source": "2026-01-06", "target": "reaction-diffusion", "type": "D", "reason": "「分裂増殖」「死」を連続濃度で表現" },
-    { "source": "2026-01-28", "target": "audio-reactive", "type": "D", "reason": "「BPMで考える」「パラメータスライダー」の自動運転版" },
-    { "source": "2026-03-18", "target": "audio-reactive", "type": "D", "reason": "BPM同期の発展形" },
-    { "source": "2026-04-02", "target": "2026-04-13", "type": "B", "reason": "GLSLシェーダーの使用" },
-    { "source": "2026-02-07", "target": "2026-04-13", "type": "B", "reason": "シェーダーパイプラインの活用" },
-    { "source": "2026-04-13", "target": "bloom-variations", "type": "D", "reason": "bloomのoffset計算を変えて5つの表情" },
-    { "source": "2026-04-13", "target": "80s-mv-grade", "type": "D", "reason": "bloom→フルグレードパイプラインへ" },
-    { "source": "2026-04-13", "target": "2026-04-14", "type": "A", "reason": "bloomシェーダーの改変実験（radial+inverse）" },
-    { "source": "2026-04-14", "target": "bloom-variations", "type": "D", "reason": "bloom改変の体系化" },
-    { "source": "2026-04-13", "target": "2026-04-16", "type": "C", "reason": "シェーダー→ピクセル操作への展開" },
-    { "source": "2026-04-16", "target": "pixel-sort-directions", "type": "D", "reason": "日記で「ソートのベクトルを歪ませたい」" },
-    { "source": "2026-04-16", "target": "glitch-art", "type": "D", "reason": "ピクセルソートの延長としてのグリッチ全般" },
-    { "source": "2026-04-16", "target": "2026-04-18", "type": "A", "reason": "ピクセルソートに閾値+縦方向を追加" },
-    { "source": "2026-04-18", "target": "pixel-sort-directions", "type": "D", "reason": "さらなる方向制御の発展" },
-    { "source": "2026-04-18", "target": "2026-04-19", "type": "A", "reason": "縦ソートにnoiseベースの角度制御を追加" },
-    { "source": "2026-04-19", "target": "pixel-sort-directions", "type": "D", "reason": "粗密問題のさらなる解決" },
-    { "source": "2026-04-16", "target": "2026-04-20", "type": "B", "reason": "loadPixels/ピクセル操作" },
-    { "source": "2026-04-20", "target": "shader-colormap", "type": "D", "reason": "日記で「shaderベースでやったら軽量」" },
-    { "source": "2026-04-13", "target": "shader-colormap", "type": "B", "reason": "同じcreateGraphics→shaderパイプライン" },
-    { "source": "2026-04-20", "target": "2026-04-21", "type": "A", "reason": "CPU版サーモをGPUシェーダーに移植" },
-    { "source": "2026-04-13", "target": "2026-04-21", "type": "B", "reason": "同じcreateGraphics→shaderパイプライン" },
-    { "source": "2026-04-21", "target": "shader-colormap", "type": "D", "reason": "カラーマップのバリエーション" },
-    { "source": "2026-04-09", "target": "2026-04-24", "type": "A", "reason": "4/9のVoronoiスケッチの再訪" },
-    { "source": "2026-04-24", "target": "voronoi-stippling", "type": "D", "reason": "Voronoi色制御の延長としてのstippling" },
-    { "source": "2026-04-21", "target": "2026-04-25", "type": "A", "reason": "サーモフィルターにグリフ変形+mixBlendMode追加" },
-    { "source": "2026-01-28", "target": "2026-04-30", "type": "C", "reason": "VJ実践の振り返りと明るさの探究" },
-    { "source": "2026-01-03", "target": "2026-04-30", "type": "B", "reason": "WEBGLモードでのBox表現" },
-    { "source": "2026-04-30", "target": "audio-reactive", "type": "D", "reason": "VJ体験から音と映像の連携へ" },
-    { "source": "2026-05-02", "target": "reaction-diffusion", "type": "B", "reason": "reaction-diffusion未踏ノードの実装" },
-    { "source": "2026-05-07", "target": "boids", "type": "B", "reason": "boids未踏ノードを写経で実装" },
-    { "source": "2026-01-11", "target": "2026-05-07", "type": "C", "reason": "打鍵の身体性を可視化する関心" }
+    {
+      "source": "2026-01-03",
+      "target": "2026-01-04",
+      "type": "A",
+      "reason": "WEBGLでの3D点群表現の連続"
+    },
+    {
+      "source": "2026-01-04",
+      "target": "2026-01-05",
+      "type": "A",
+      "reason": "日記で「つづきをしてみたくなった」"
+    },
+    {
+      "source": "2026-01-03",
+      "target": "2026-01-27",
+      "type": "A",
+      "reason": "日記で「一番最初に作ったやつをいじってみた」"
+    },
+    {
+      "source": "2026-01-06",
+      "target": "2026-01-08",
+      "type": "A",
+      "reason": "Snakeクラスの継続、線で接続する試み"
+    },
+    {
+      "source": "2026-01-14",
+      "target": "2026-01-20",
+      "type": "A",
+      "reason": "日記で文字の動きをベジェ曲線に発展"
+    },
+    {
+      "source": "2026-01-20",
+      "target": "2026-01-22",
+      "type": "A",
+      "reason": "ベジェ文字ブラシの複数化"
+    },
+    {
+      "source": "2026-01-22",
+      "target": "2026-02-23",
+      "type": "C",
+      "reason": "ベジェ曲線の探究の継続"
+    },
+    {
+      "source": "2026-02-23",
+      "target": "2026-03-01",
+      "type": "A",
+      "reason": "線の太さを極端に上げて面に変換"
+    },
+    {
+      "source": "2026-03-01",
+      "target": "2026-03-16",
+      "type": "C",
+      "reason": "太いストロークの表現の精緻化"
+    },
+    {
+      "source": "2026-01-17",
+      "target": "2026-01-27",
+      "type": "B",
+      "reason": "filter(BLUR)の使用"
+    },
+    {
+      "source": "2026-01-27",
+      "target": "2026-02-08",
+      "type": "B",
+      "reason": "BLUR+THRESHOLDフィルタの組み合わせ"
+    },
+    {
+      "source": "2026-01-11",
+      "target": "2026-01-14",
+      "type": "C",
+      "reason": "テキスト表現への関心"
+    },
+    {
+      "source": "2026-01-28",
+      "target": "2026-02-12",
+      "type": "B",
+      "reason": "d3-easeライブラリの使用"
+    },
+    {
+      "source": "2026-02-04",
+      "target": "2026-02-08",
+      "type": "A",
+      "reason": "ネットワーク表現の発展"
+    },
+    {
+      "source": "2026-02-08",
+      "target": "2026-02-09",
+      "type": "A",
+      "reason": "ライブラリ依存→自前の力学実装へ"
+    },
+    {
+      "source": "2026-02-09",
+      "target": "2026-02-11",
+      "type": "A",
+      "reason": "自前実装→WebColaライブラリへ"
+    },
+    {
+      "source": "2026-02-11",
+      "target": "2026-03-04",
+      "type": "B",
+      "reason": "WebColaの使用"
+    },
+    {
+      "source": "2026-03-04",
+      "target": "2026-03-14",
+      "type": "A",
+      "reason": "ネットワークに成長/収縮サイクルを追加"
+    },
+    {
+      "source": "2026-02-09",
+      "target": "2026-02-12",
+      "type": "B",
+      "reason": "力学シミュレーション（Spring→Matter.js）"
+    },
+    {
+      "source": "2026-02-12",
+      "target": "2026-02-18",
+      "type": "B",
+      "reason": "Matter.jsの使用"
+    },
+    {
+      "source": "2026-02-13",
+      "target": "2026-04-07",
+      "type": "B",
+      "reason": "noiseパーティクルシステム"
+    },
+    {
+      "source": "2026-02-07",
+      "target": "2026-04-02",
+      "type": "B",
+      "reason": "GLSLシェーダーの使用"
+    },
+    {
+      "source": "2026-04-07",
+      "target": "2026-04-08",
+      "type": "A",
+      "reason": "日記で「昨日やった、noiseを使った配置」"
+    },
+    {
+      "source": "2026-01-08",
+      "target": "2026-04-08",
+      "type": "C",
+      "reason": "近傍ノードの接続という問題意識"
+    },
+    {
+      "source": "2026-01-09",
+      "target": "2026-04-08",
+      "type": "B",
+      "reason": "WEBGLモードの活用"
+    },
+    {
+      "source": "2026-04-07",
+      "target": "curl-noise",
+      "type": "D",
+      "reason": "noiseの傾きを使う次のステップ"
+    },
+    {
+      "source": "2026-04-07",
+      "target": "domain-warping",
+      "type": "D",
+      "reason": "noiseの出力を別のnoiseの入力にする"
+    },
+    {
+      "source": "2026-04-08",
+      "target": "delaunay",
+      "type": "D",
+      "reason": "日記で「隣接するノード同士をうまく繋げたら」"
+    },
+    {
+      "source": "2026-04-08",
+      "target": "texture-mapping",
+      "type": "D",
+      "reason": "日記で「テクスチャマッピングをする」"
+    },
+    {
+      "source": "2026-04-08",
+      "target": "strange-attractors",
+      "type": "D",
+      "reason": "noiseの代わりに微分方程式で流れを定義"
+    },
+    {
+      "source": "2026-01-24",
+      "target": "differential-growth",
+      "type": "D",
+      "reason": "空間充填→有機的成長アルゴリズムへ"
+    },
+    {
+      "source": "2026-01-06",
+      "target": "differential-growth",
+      "type": "D",
+      "reason": "増殖・分裂→ノード間力学による形態生成"
+    },
+    {
+      "source": "2026-02-12",
+      "target": "verlet-integration",
+      "type": "D",
+      "reason": "物理エンジン→制約ベースの物理へ"
+    },
+    {
+      "source": "2026-02-18",
+      "target": "differential-growth",
+      "type": "D",
+      "reason": "物理的不安定性→形態生成へ"
+    },
+    {
+      "source": "2026-04-02",
+      "target": "sdf-2d",
+      "type": "D",
+      "reason": "GLSLでの数学的形状定義"
+    },
+    {
+      "source": "2026-04-02",
+      "target": "shader-post-process",
+      "type": "D",
+      "reason": "シェーダー技術のVJ応用"
+    },
+    {
+      "source": "2026-01-28",
+      "target": "texture-mapping",
+      "type": "D",
+      "reason": "VJ実践→映像歪みエフェクト"
+    },
+    {
+      "source": "2026-01-06",
+      "target": "2026-01-07",
+      "type": "A",
+      "reason": "日記で「昨日のをコピーして書き換え」"
+    },
+    {
+      "source": "2026-01-09",
+      "target": "2026-01-12",
+      "type": "A",
+      "reason": "カメラワーク実験の継続"
+    },
+    {
+      "source": "2026-01-14",
+      "target": "2026-01-16",
+      "type": "A",
+      "reason": "踊る文字の一般化（DancingTextクラス）"
+    },
+    {
+      "source": "2026-01-20",
+      "target": "2026-01-21",
+      "type": "A",
+      "reason": "ベジェ制御点のインタラクション追加"
+    },
+    {
+      "source": "2026-01-24",
+      "target": "2026-01-25",
+      "type": "A",
+      "reason": "PACKテーマの継続"
+    },
+    {
+      "source": "2026-02-04",
+      "target": "2026-02-05",
+      "type": "A",
+      "reason": "ネットワークのマイナーチェンジ"
+    },
+    {
+      "source": "2026-01-28",
+      "target": "2026-02-06",
+      "type": "B",
+      "reason": "d3-easeの使用"
+    },
+    {
+      "source": "2026-02-06",
+      "target": "2026-02-23",
+      "type": "B",
+      "reason": "ベジェ曲線+d3-easeの組み合わせ"
+    },
+    {
+      "source": "2026-02-09",
+      "target": "2026-02-10",
+      "type": "A",
+      "reason": "Spring-layoutに重み付けを追加"
+    },
+    {
+      "source": "2026-02-13",
+      "target": "2026-02-15",
+      "type": "A",
+      "reason": "炎エフェクトにSCREEN合成追加"
+    },
+    {
+      "source": "2026-02-15",
+      "target": "2026-03-04",
+      "type": "B",
+      "reason": "blendMode(SCREEN)の使用"
+    },
+    {
+      "source": "2026-02-18",
+      "target": "2026-03-29",
+      "type": "B",
+      "reason": "Matter.js+テキストの物理"
+    },
+    {
+      "source": "2026-01-17",
+      "target": "2026-01-19",
+      "type": "A",
+      "reason": "BLURぼかし表現の継続"
+    },
+    {
+      "source": "2026-01-06",
+      "target": "2026-01-23",
+      "type": "C",
+      "reason": "軌跡を残すパーティクル表現"
+    },
+    {
+      "source": "2026-01-28",
+      "target": "2026-01-29",
+      "type": "A",
+      "reason": "VJイベント準備の継続"
+    },
+    {
+      "source": "2026-01-29",
+      "target": "2026-02-01",
+      "type": "A",
+      "reason": "d3-easeのスタディ継続"
+    },
+    {
+      "source": "2026-02-13",
+      "target": "2026-02-16",
+      "type": "A",
+      "reason": "炎パーティクルの精緻化"
+    },
+    {
+      "source": "2026-02-10",
+      "target": "2026-02-17",
+      "type": "A",
+      "reason": "Spring-layout+ベジェ曲線で線を描画"
+    },
+    {
+      "source": "2026-02-18",
+      "target": "2026-02-20",
+      "type": "B",
+      "reason": "Matter.js+テキスト"
+    },
+    {
+      "source": "2026-02-23",
+      "target": "2026-02-28",
+      "type": "A",
+      "reason": "ベジェ閉路の動きの精緻化"
+    },
+    {
+      "source": "2026-02-28",
+      "target": "2026-03-01",
+      "type": "A",
+      "reason": "線幅を太くして面に変換"
+    },
+    {
+      "source": "2026-02-13",
+      "target": "2026-02-14",
+      "type": "A",
+      "reason": "炎エフェクトにBLUR追加"
+    },
+    {
+      "source": "2026-02-14",
+      "target": "2026-02-15",
+      "type": "A",
+      "reason": "炎にSCREEN合成追加"
+    },
+    {
+      "source": "2026-02-23",
+      "target": "2026-02-26",
+      "type": "A",
+      "reason": "ベジェ閉路に色変化を追加"
+    },
+    {
+      "source": "2026-02-26",
+      "target": "2026-02-28",
+      "type": "A",
+      "reason": "シームレスな動きへの精緻化"
+    },
+    {
+      "source": "2026-01-28",
+      "target": "2026-03-18",
+      "type": "B",
+      "reason": "BPM同期パターン"
+    },
+    {
+      "source": "2026-01-03",
+      "target": "2026-03-19",
+      "type": "B",
+      "reason": "WEBGLでのBox表現"
+    },
+    {
+      "source": "2026-03-19",
+      "target": "2026-03-20",
+      "type": "A",
+      "reason": "WEBGL Boxスタディの継続"
+    },
+    {
+      "source": "2026-04-07",
+      "target": "2026-04-09",
+      "type": "B",
+      "reason": "noiseフローフィールドの活用"
+    },
+    {
+      "source": "2026-04-08",
+      "target": "2026-04-09",
+      "type": "A",
+      "reason": "近接結線→Voronoiによる隣接構造"
+    },
+    {
+      "source": "2026-04-09",
+      "target": "delaunay",
+      "type": "B",
+      "reason": "d3-delaunayの使用（Voronoiの双対）"
+    },
+    {
+      "source": "2026-04-09",
+      "target": "voronoi-stippling",
+      "type": "D",
+      "reason": "Voronoi+画像→点描表現"
+    },
+    {
+      "source": "2026-04-09",
+      "target": "lloyd-relaxation",
+      "type": "D",
+      "reason": "セルの均一化と「秩序vs混沌」のバランス"
+    },
+    {
+      "source": "2026-02-09",
+      "target": "biological-motion",
+      "type": "D",
+      "reason": "「物理的な動きに惹かれる理由」の心理学的回答"
+    },
+    {
+      "source": "2026-04-08",
+      "target": "biological-motion",
+      "type": "D",
+      "reason": "クラスタ知覚は同じ知覚機構（gestalt grouping by motion）"
+    },
+    {
+      "source": "2026-03-01",
+      "target": "ribbon-trails",
+      "type": "D",
+      "reason": "「線→面」を3Dに拡張、軌跡をリボンとして描く"
+    },
+    {
+      "source": "2026-02-23",
+      "target": "ribbon-trails",
+      "type": "D",
+      "reason": "ベジェ閉路の動きをリボンメッシュで描く"
+    },
+    {
+      "source": "2026-02-15",
+      "target": "worley-noise",
+      "type": "D",
+      "reason": "デッサンの「肌理」を作るためのnoise"
+    },
+    {
+      "source": "2026-04-09",
+      "target": "worley-noise",
+      "type": "B",
+      "reason": "Voronoiから連続的なテクスチャへ"
+    },
+    {
+      "source": "2026-01-11",
+      "target": "variable-fonts",
+      "type": "D",
+      "reason": "「打鍵の強さで太さが変わる」の本格版"
+    },
+    {
+      "source": "2026-04-02",
+      "target": "80s-mv-grade",
+      "type": "D",
+      "reason": "シェーダーを使ったポストプロセスの実用例（フライヤー作成中の話題から）"
+    },
+    {
+      "source": "shader-post-process",
+      "target": "80s-mv-grade",
+      "type": "D",
+      "reason": "シェーダーポストプロセスの具体例"
+    },
+    {
+      "source": "2026-02-08",
+      "target": "wave-propagation",
+      "type": "D",
+      "reason": "「順序ずらし」をネットワーク構造に基づく波伝播へ"
+    },
+    {
+      "source": "2026-04-07",
+      "target": "boids",
+      "type": "D",
+      "reason": "「列をなして流れる」を意図的に作るアルゴリズム"
+    },
+    {
+      "source": "2026-01-08",
+      "target": "boids",
+      "type": "D",
+      "reason": "有機的な動きを自己組織化で作る"
+    },
+    {
+      "source": "2026-02-22",
+      "target": "moire-patterns",
+      "type": "D",
+      "reason": "サイン波グリッドを2枚重ねる→モアレへ"
+    },
+    {
+      "source": "2026-03-01",
+      "target": "moire-patterns",
+      "type": "D",
+      "reason": "「ズラシで因数分解しづらくする」の数学的方法"
+    },
+    {
+      "source": "2026-01-09",
+      "target": "cinematic-camera",
+      "type": "D",
+      "reason": "「カメラワークどうしてるんだろ」への回答"
+    },
+    {
+      "source": "2026-01-12",
+      "target": "cinematic-camera",
+      "type": "D",
+      "reason": "「グシャっとしてくると面白い」を実現する技"
+    },
+    {
+      "source": "2026-03-13",
+      "target": "reaction-diffusion",
+      "type": "D",
+      "reason": "「描く」を化学反応に置き換えるラディカルな代替"
+    },
+    {
+      "source": "2026-01-06",
+      "target": "reaction-diffusion",
+      "type": "D",
+      "reason": "「分裂増殖」「死」を連続濃度で表現"
+    },
+    {
+      "source": "2026-01-28",
+      "target": "audio-reactive",
+      "type": "D",
+      "reason": "「BPMで考える」「パラメータスライダー」の自動運転版"
+    },
+    {
+      "source": "2026-03-18",
+      "target": "audio-reactive",
+      "type": "D",
+      "reason": "BPM同期の発展形"
+    },
+    {
+      "source": "2026-04-02",
+      "target": "2026-04-13",
+      "type": "B",
+      "reason": "GLSLシェーダーの使用"
+    },
+    {
+      "source": "2026-02-07",
+      "target": "2026-04-13",
+      "type": "B",
+      "reason": "シェーダーパイプラインの活用"
+    },
+    {
+      "source": "2026-04-13",
+      "target": "bloom-variations",
+      "type": "D",
+      "reason": "bloomのoffset計算を変えて5つの表情"
+    },
+    {
+      "source": "2026-04-13",
+      "target": "80s-mv-grade",
+      "type": "D",
+      "reason": "bloom→フルグレードパイプラインへ"
+    },
+    {
+      "source": "2026-04-13",
+      "target": "2026-04-14",
+      "type": "A",
+      "reason": "bloomシェーダーの改変実験（radial+inverse）"
+    },
+    {
+      "source": "2026-04-14",
+      "target": "bloom-variations",
+      "type": "D",
+      "reason": "bloom改変の体系化"
+    },
+    {
+      "source": "2026-04-13",
+      "target": "2026-04-16",
+      "type": "C",
+      "reason": "シェーダー→ピクセル操作への展開"
+    },
+    {
+      "source": "2026-04-16",
+      "target": "pixel-sort-directions",
+      "type": "D",
+      "reason": "日記で「ソートのベクトルを歪ませたい」"
+    },
+    {
+      "source": "2026-04-16",
+      "target": "glitch-art",
+      "type": "D",
+      "reason": "ピクセルソートの延長としてのグリッチ全般"
+    },
+    {
+      "source": "2026-04-16",
+      "target": "2026-04-18",
+      "type": "A",
+      "reason": "ピクセルソートに閾値+縦方向を追加"
+    },
+    {
+      "source": "2026-04-18",
+      "target": "pixel-sort-directions",
+      "type": "D",
+      "reason": "さらなる方向制御の発展"
+    },
+    {
+      "source": "2026-04-18",
+      "target": "2026-04-19",
+      "type": "A",
+      "reason": "縦ソートにnoiseベースの角度制御を追加"
+    },
+    {
+      "source": "2026-04-19",
+      "target": "pixel-sort-directions",
+      "type": "D",
+      "reason": "粗密問題のさらなる解決"
+    },
+    {
+      "source": "2026-04-16",
+      "target": "2026-04-20",
+      "type": "B",
+      "reason": "loadPixels/ピクセル操作"
+    },
+    {
+      "source": "2026-04-20",
+      "target": "shader-colormap",
+      "type": "D",
+      "reason": "日記で「shaderベースでやったら軽量」"
+    },
+    {
+      "source": "2026-04-13",
+      "target": "shader-colormap",
+      "type": "B",
+      "reason": "同じcreateGraphics→shaderパイプライン"
+    },
+    {
+      "source": "2026-04-20",
+      "target": "2026-04-21",
+      "type": "A",
+      "reason": "CPU版サーモをGPUシェーダーに移植"
+    },
+    {
+      "source": "2026-04-13",
+      "target": "2026-04-21",
+      "type": "B",
+      "reason": "同じcreateGraphics→shaderパイプライン"
+    },
+    {
+      "source": "2026-04-21",
+      "target": "shader-colormap",
+      "type": "D",
+      "reason": "カラーマップのバリエーション"
+    },
+    {
+      "source": "2026-04-09",
+      "target": "2026-04-24",
+      "type": "A",
+      "reason": "4/9のVoronoiスケッチの再訪"
+    },
+    {
+      "source": "2026-04-24",
+      "target": "voronoi-stippling",
+      "type": "D",
+      "reason": "Voronoi色制御の延長としてのstippling"
+    },
+    {
+      "source": "2026-04-21",
+      "target": "2026-04-25",
+      "type": "A",
+      "reason": "サーモフィルターにグリフ変形+mixBlendMode追加"
+    },
+    {
+      "source": "2026-01-28",
+      "target": "2026-04-30",
+      "type": "C",
+      "reason": "VJ実践の振り返りと明るさの探究"
+    },
+    {
+      "source": "2026-01-03",
+      "target": "2026-04-30",
+      "type": "B",
+      "reason": "WEBGLモードでのBox表現"
+    },
+    {
+      "source": "2026-04-30",
+      "target": "audio-reactive",
+      "type": "D",
+      "reason": "VJ体験から音と映像の連携へ"
+    },
+    {
+      "source": "2026-05-02",
+      "target": "reaction-diffusion",
+      "type": "B",
+      "reason": "reaction-diffusion未踏ノードの実装"
+    },
+    {
+      "source": "2026-05-07",
+      "target": "boids",
+      "type": "B",
+      "reason": "boids未踏ノードを写経で実装"
+    },
+    {
+      "source": "2026-01-11",
+      "target": "2026-05-07",
+      "type": "C",
+      "reason": "打鍵の身体性を可視化する関心"
+    },
+    {
+      "source": "2026-04-30",
+      "target": "2026-05-09",
+      "type": "A",
+      "reason": "2026-04-30からの続き"
+    },
+    {
+      "source": "2026-01-24",
+      "target": "2026-05-10",
+      "type": "A",
+      "reason": "2026-01-24からの続き"
+    }
   ]
 }

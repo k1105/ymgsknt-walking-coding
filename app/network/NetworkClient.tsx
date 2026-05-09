@@ -388,6 +388,26 @@ export default function NetworkClient() {
         );
 
       node.attr("transform", (d) => `translate(${d.x},${d.y})`);
+
+      // Keep "+" create-node attached to the selected node as it moves
+      const selId = selectedNodeIdRef.current;
+      if (selId) {
+        const sel = nodes.find((n) => n.id === selId);
+        if (sel && sel.x != null && sel.y != null) {
+          const sx = sel.x;
+          const sy = sel.y;
+          const tx = sx + 40;
+          const ty = sy;
+          const layer = g.select<SVGGElement>(".create-node");
+          if (!layer.empty()) {
+            layer.select("line")
+              .attr("x1", sx).attr("y1", sy)
+              .attr("x2", tx).attr("y2", ty);
+            layer.select<SVGGElement>("g")
+              .attr("transform", `translate(${tx},${ty})`);
+          }
+        }
+      }
     });
 
     return () => {
@@ -414,26 +434,47 @@ export default function NetworkClient() {
       const selectedNode = graphData.nodes.find(n => n.id === selectedNodeId);
       if (selectedNode && selectedNode.type === "sketch") {
         // Find the D3 node element to get position
-        const nodeEls = d3.select(gEl).selectAll<SVGGElement, GraphNode>("g").filter(d => d.id === selectedNodeId);
+        const nodeEls = d3.select(gEl).selectAll<SVGGElement, GraphNode>("g.graph-node").filter(d => d.id === selectedNodeId);
         if (!nodeEls.empty()) {
           const d = nodeEls.datum();
-          const createGroup = d3.select(gEl).append("g")
-            .attr("class", "create-node")
-            .attr("transform", `translate(${(d.x || 0) + 40},${d.y || 0})`)
+          const sx = d.x || 0;
+          const sy = d.y || 0;
+          const tx = sx + 40;
+          const ty = sy;
+
+          const createLayer = d3.select(gEl).append("g")
+            .attr("class", "create-node");
+
+          // Edge connecting selected node to "+" node
+          createLayer.append("line")
+            .attr("x1", sx)
+            .attr("y1", sy)
+            .attr("x2", tx)
+            .attr("y2", ty)
+            .attr("stroke", "#000")
+            .attr("stroke-width", 1)
+            .attr("stroke-dasharray", "3,2")
+            .attr("stroke-opacity", 0.5)
+            .style("pointer-events", "none");
+
+          const createGroup = createLayer.append("g")
+            .attr("transform", `translate(${tx},${ty})`)
             .style("cursor", "pointer");
 
           createGroup.append("circle")
-            .attr("r", 12)
-            .attr("fill", "#238636")
-            .attr("stroke", "none");
+            .attr("r", 7)
+            .attr("fill", "none")
+            .attr("stroke", "#000")
+            .attr("stroke-width", 1.5)
+            .attr("stroke-dasharray", "3,2");
 
           createGroup.append("text")
             .text("+")
             .attr("text-anchor", "middle")
-            .attr("dy", "0.35em")
-            .attr("fill", "white")
-            .attr("font-size", "16px")
-            .attr("font-weight", "bold")
+            .attr("dy", "0.32em")
+            .attr("fill", "#000")
+            .attr("font-size", "11px")
+            .attr("font-family", "var(--font-geist-mono), monospace")
             .style("pointer-events", "none");
 
           createGroup.on("click", async () => {
