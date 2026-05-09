@@ -1133,9 +1133,9 @@
         "3d",
         "box",
         "brightness",
-        "vj"
+        "parameter-space"
       ],
-      "label": "2026-04-30の続き"
+      "label": "パラメータ近傍の質的差異"
     },
     {
       "id": "2026-05-10",
@@ -1143,9 +1143,11 @@
       "tags": [
         "packing",
         "circle",
-        "generative-design"
+        "generative-design",
+        "parameter-space",
+        "motion"
       ],
-      "label": "2026-01-24の続き"
+      "label": "円充填の近傍探索+はみ出し"
     }
   ],
   "edges": [
@@ -1868,6 +1870,12 @@
       "target": "2026-05-10",
       "type": "A",
       "reason": "2026-01-24からの続き"
+    },
+    {
+      "source": "2026-05-09",
+      "target": "2026-05-10",
+      "type": "C",
+      "reason": "パラメータ近傍の質的差異という共通テーマ"
     }
   ]
 }
