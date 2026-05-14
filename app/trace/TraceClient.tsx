@@ -196,7 +196,35 @@ export default function TraceClient() {
   const [showPreview, setShowPreview] = useState(false);
   const saveTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Auto-save to sketch.js (debounced, dev only)
+  // Multi-file support
+  const [activeFile, setActiveFile] = useState("sketch.js");
+  const [fileContents, setFileContents] = useState<Record<string, string>>({});
+
+  // Get list of files for current step
+  const currentFiles = useMemo(() => {
+    if (stepsData && stepsData.steps[currentStep]?.files) {
+      return Object.keys(stepsData.steps[currentStep].files);
+    }
+    return ["sketch.js"];
+  }, [stepsData, currentStep]);
+
+  // Switch active file: save current typed, restore new file's typed
+  const switchFile = useCallback((filename: string) => {
+    // Save current
+    setFileContents(prev => ({...prev, [activeFile]: typed}));
+    // Restore target
+    const savedTyped = fileContents[filename] || "";
+    setTyped(savedTyped);
+    // Update originalCode for the new file
+    if (stepsData && stepsData.steps[currentStep]?.files?.[filename]) {
+      setOriginalCode(stepsData.steps[currentStep].files[filename]);
+    }
+    setActiveFile(filename);
+    setCursorPos(savedTyped.length);
+    setTimeout(() => textareaRef.current?.focus(), 50);
+  }, [activeFile, typed, fileContents, stepsData, currentStep]);
+
+  // Auto-save (debounced, dev only)
   const sketchDate = searchParams.get("date");
   useEffect(() => {
     if (!sketchDate || !typed || process.env.NODE_ENV !== "development") return;
@@ -205,13 +233,13 @@ export default function TraceClient() {
       fetch("/api/save-sketch", {
         method: "POST",
         headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({date: sketchDate, filename: "sketch.js", content: typed}),
+        body: JSON.stringify({date: sketchDate, filename: activeFile, content: typed}),
       }).catch(() => {});
     }, 1000);
     return () => {
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     };
-  }, [typed, sketchDate]);
+  }, [typed, sketchDate, activeFile]);
 
   // Auto-load steps from URL query parameter
   useEffect(() => {
@@ -225,7 +253,12 @@ export default function TraceClient() {
         .then((data: StepsData) => {
           setStepsData(data);
           setCurrentStep(0);
-          const firstCode = data.steps[0]?.files?.["sketch.js"] || "";
+          setFileContents({});
+          // Pick first file from first step
+          const files = data.steps[0]?.files || {};
+          const firstFileName = Object.keys(files)[0] || "sketch.js";
+          setActiveFile(firstFileName);
+          const firstCode = files[firstFileName] || "";
           setOriginalCode(firstCode);
           setTimeout(() => {
             setIsTracing(true);
@@ -267,12 +300,15 @@ export default function TraceClient() {
 
   const goToStep = useCallback((stepIdx: number) => {
     if (!stepsData || stepIdx < 0 || stepIdx >= stepsData.steps.length) return;
+    // Save current file's typed content
+    setFileContents(prev => ({...prev, [activeFile]: typed}));
     setCurrentStep(stepIdx);
-    const code = stepsData.steps[stepIdx]?.files?.["sketch.js"] || "";
+    const files = stepsData.steps[stepIdx]?.files || {};
+    const code = files[activeFile] || files[Object.keys(files)[0]] || "";
     setOriginalCode(code);
-    // Keep typed text — don't clear it
+    // Keep typed text
     setTimeout(() => textareaRef.current?.focus(), 50);
-  }, [stepsData]);
+  }, [stepsData, activeFile, typed]);
 
   const handleInput = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -496,6 +532,28 @@ export default function TraceClient() {
           </div>
         )}
       </div>
+
+      {/* File tabs */}
+      {currentFiles.length > 1 && (
+        <div
+          className="flex border-b border-[#30363d] px-2"
+          style={{fontFamily: "ui-monospace, monospace"}}
+        >
+          {currentFiles.map((f) => (
+            <button
+              key={f}
+              onClick={() => switchFile(f)}
+              className={`px-3 py-1.5 text-xs transition-colors border-b-2 ${
+                f === activeFile
+                  ? "text-gray-200 border-[#58a6ff]"
+                  : "text-gray-500 border-transparent hover:text-gray-300"
+              }`}
+            >
+              {f}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Editor + Preview */}
       <div className="flex-1 flex">
