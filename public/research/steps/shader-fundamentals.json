@@ -1,0 +1,51 @@
+{
+  "id": "shader-fundamentals",
+  "title": "Shader Fundamentals — フラグメントシェーダーの基礎",
+  "steps": [
+    {
+      "title": "UV座標でグラデーション",
+      "description": "フラグメントシェーダーの最小構成。全ピクセルが同時に実行される。\n\nvTexCoordは0〜1のUV座標。左上が(0,0)、右下が(1,1)。\nuv.xを赤に、uv.yを緑に割り当てると、画面が赤→黒→緑→黄のグラデーションになる。\n\ngl_FragColorがそのピクセルの最終的な色。",
+      "files": {
+        "sketch.js": "let sh;\n\nfunction preload() {\n  sh = loadShader('shader.vert', 'shader.frag');\n}\n\nfunction setup() {\n  createCanvas(windowWidth, windowHeight, WEBGL);\n  noStroke();\n}\n\nfunction draw() {\n  shader(sh);\n  rect(-width/2, -height/2, width, height);\n}",
+        "shader.vert": "attribute vec3 aPosition;\nattribute vec2 aTexCoord;\nvarying vec2 vTexCoord;\n\nvoid main() {\n  vTexCoord = aTexCoord;\n  vec4 positionVec4 = vec4(aPosition, 1.0);\n  positionVec4.xy = positionVec4.xy * 2.0 - 1.0;\n  gl_Position = positionVec4;\n}",
+        "shader.frag": "precision mediump float;\nvarying vec2 vTexCoord;\n\nvoid main() {\n  vec2 uv = vTexCoord;\n  gl_FragColor = vec4(uv.x, uv.y, 0.0, 1.0);\n}"
+      }
+    },
+    {
+      "title": "distance()で円を描く",
+      "description": "UVの中心(0.5, 0.5)からの距離を計算する。距離が小さい=中心に近い=円の内側。\n\nstep()は閾値関数。distance < 0.3なら白、そうでなければ黒。これで半径0.3の円が描ける。\n\nstep()をsmoothstep()に変えると、境界がぼやける。",
+      "files": {
+        "sketch.js": "let sh;\n\nfunction preload() {\n  sh = loadShader('shader.vert', 'shader.frag');\n}\n\nfunction setup() {\n  createCanvas(windowWidth, windowHeight, WEBGL);\n  noStroke();\n}\n\nfunction draw() {\n  shader(sh);\n  rect(-width/2, -height/2, width, height);\n}",
+        "shader.vert": "attribute vec3 aPosition;\nattribute vec2 aTexCoord;\nvarying vec2 vTexCoord;\n\nvoid main() {\n  vTexCoord = aTexCoord;\n  vec4 positionVec4 = vec4(aPosition, 1.0);\n  positionVec4.xy = positionVec4.xy * 2.0 - 1.0;\n  gl_Position = positionVec4;\n}",
+        "shader.frag": "precision mediump float;\nvarying vec2 vTexCoord;\n\nvoid main() {\n  vec2 uv = vTexCoord;\n  float d = distance(uv, vec2(0.5));\n  float circle = 1.0 - step(0.3, d);\n  gl_FragColor = vec4(vec3(circle), 1.0);\n}"
+      }
+    },
+    {
+      "title": "sin/cosでパターン",
+      "description": "UV座標にsin()をかけると縞模様が出る。\n\nuv.x * 20.0で周波数を上げると縞が細かくなる。\nsin()は-1〜1を返すから、* 0.5 + 0.5で0〜1に正規化する。\n\nsin(uv.x * 20.0) * sin(uv.y * 20.0)で格子パターンになる。",
+      "files": {
+        "sketch.js": "let sh;\n\nfunction preload() {\n  sh = loadShader('shader.vert', 'shader.frag');\n}\n\nfunction setup() {\n  createCanvas(windowWidth, windowHeight, WEBGL);\n  noStroke();\n}\n\nfunction draw() {\n  shader(sh);\n  rect(-width/2, -height/2, width, height);\n}",
+        "shader.vert": "attribute vec3 aPosition;\nattribute vec2 aTexCoord;\nvarying vec2 vTexCoord;\n\nvoid main() {\n  vTexCoord = aTexCoord;\n  vec4 positionVec4 = vec4(aPosition, 1.0);\n  positionVec4.xy = positionVec4.xy * 2.0 - 1.0;\n  gl_Position = positionVec4;\n}",
+        "shader.frag": "precision mediump float;\nvarying vec2 vTexCoord;\n\nvoid main() {\n  vec2 uv = vTexCoord;\n  float pattern = sin(uv.x * 20.0) * sin(uv.y * 20.0);\n  pattern = pattern * 0.5 + 0.5;\n  gl_FragColor = vec4(vec3(pattern), 1.0);\n}"
+      }
+    },
+    {
+      "title": "uniformで時間を渡す",
+      "description": "p5.jsからシェーダーにuniform変数を渡す。u_timeに経過時間を入れると、シェーダーが動く。\n\nsin(uv.x * 20.0 + u_time)で縞模様がスクロールする。\nu_timeを色や形の変化にも使える。",
+      "files": {
+        "sketch.js": "let sh;\n\nfunction preload() {\n  sh = loadShader('shader.vert', 'shader.frag');\n}\n\nfunction setup() {\n  createCanvas(windowWidth, windowHeight, WEBGL);\n  noStroke();\n}\n\nfunction draw() {\n  shader(sh);\n  sh.setUniform('u_time', millis() / 1000.0);\n  rect(-width/2, -height/2, width, height);\n}",
+        "shader.vert": "attribute vec3 aPosition;\nattribute vec2 aTexCoord;\nvarying vec2 vTexCoord;\n\nvoid main() {\n  vTexCoord = aTexCoord;\n  vec4 positionVec4 = vec4(aPosition, 1.0);\n  positionVec4.xy = positionVec4.xy * 2.0 - 1.0;\n  gl_Position = positionVec4;\n}",
+        "shader.frag": "precision mediump float;\nvarying vec2 vTexCoord;\nuniform float u_time;\n\nvoid main() {\n  vec2 uv = vTexCoord;\n  float d = distance(uv, vec2(0.5));\n  float ring = sin(d * 30.0 - u_time * 3.0) * 0.5 + 0.5;\n  vec3 col = vec3(ring * uv.x, ring * uv.y, ring);\n  gl_FragColor = vec4(col, 1.0);\n}"
+      }
+    },
+    {
+      "title": "smoothstepとmixで仕上げる",
+      "description": "smoothstep(edge0, edge1, x)は、xがedge0以下なら0、edge1以上なら1、間は滑らかに補間。step()の滑らか版。\n\nmix(a, b, t)はaとbをtで線形補間。色のブレンドに使う。\n\nこの2つを組み合わせると、滑らかなグラデーションと形が作れる。ここまでがシェーダーの基本要素。この先にSDF、bloom、カラーマップが全部乗る。",
+      "files": {
+        "sketch.js": "let sh;\n\nfunction preload() {\n  sh = loadShader('shader.vert', 'shader.frag');\n}\n\nfunction setup() {\n  createCanvas(windowWidth, windowHeight, WEBGL);\n  noStroke();\n}\n\nfunction draw() {\n  shader(sh);\n  sh.setUniform('u_time', millis() / 1000.0);\n  sh.setUniform('u_resolution', [width, height]);\n  rect(-width/2, -height/2, width, height);\n}",
+        "shader.vert": "attribute vec3 aPosition;\nattribute vec2 aTexCoord;\nvarying vec2 vTexCoord;\n\nvoid main() {\n  vTexCoord = aTexCoord;\n  vec4 positionVec4 = vec4(aPosition, 1.0);\n  positionVec4.xy = positionVec4.xy * 2.0 - 1.0;\n  gl_Position = positionVec4;\n}",
+        "shader.frag": "precision mediump float;\nvarying vec2 vTexCoord;\nuniform float u_time;\nuniform vec2 u_resolution;\n\nvoid main() {\n  vec2 uv = vTexCoord;\n  uv.x *= u_resolution.x / u_resolution.y;\n\n  float d = distance(uv, vec2(0.5 * u_resolution.x / u_resolution.y, 0.5));\n  float pulse = sin(u_time * 2.0) * 0.1 + 0.3;\n  float circle = smoothstep(pulse + 0.02, pulse, d);\n\n  vec3 colorA = vec3(0.1, 0.2, 0.5);\n  vec3 colorB = vec3(1.0, 0.4, 0.2);\n  vec3 bg = mix(colorA, colorB, uv.y);\n\n  vec3 col = mix(bg, vec3(1.0), circle);\n  gl_FragColor = vec4(col, 1.0);\n}"
+      }
+    }
+  ]
+}

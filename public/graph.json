@@ -1176,6 +1176,21 @@
       ],
       "label": "具象+パターン配置",
       "research": "/research/pattern-with-motif.md"
+    },
+    {
+      "id": "shader-fundamentals",
+      "type": "unexplored",
+      "tags": [
+        "shader",
+        "glsl",
+        "fundamentals",
+        "uv",
+        "distance",
+        "smoothstep"
+      ],
+      "label": "Shader Fundamentals",
+      "research": "/research/shader-fundamentals.md",
+      "steps": "/research/steps/shader-fundamentals.json"
     }
   ],
   "edges": [
@@ -1922,6 +1937,24 @@
       "target": "pattern-with-motif",
       "type": "D",
       "reason": "資生堂ギャラリーでの「具象+パターン配置」の発見"
+    },
+    {
+      "source": "2026-02-07",
+      "target": "shader-fundamentals",
+      "type": "D",
+      "reason": "初シェーダーパイプラインの基礎を体系化"
+    },
+    {
+      "source": "shader-fundamentals",
+      "target": "sdf-2d",
+      "type": "D",
+      "reason": "distance()の発展としてのSDF"
+    },
+    {
+      "source": "shader-fundamentals",
+      "target": "shader-colormap",
+      "type": "D",
+      "reason": "uniform+mixの発展としてのカラーマップ"
     }
   ]
 }

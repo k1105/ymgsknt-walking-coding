@@ -77,6 +77,8 @@ export default function NetworkClient() {
   const [researchNode, setResearchNode] = useState<GraphNode | null>(null);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const selectedNodeIdRef = useRef<string | null>(null);
+  const [showUnexplored, setShowUnexplored] = useState(false);
+  const showUnexploredRef = useRef(false);
   const applyStateRef = useRef<((id: string | null) => void) | null>(null);
 
   useEffect(() => {
@@ -313,23 +315,27 @@ export default function NetworkClient() {
           ])
         : null;
 
+      const showUX = showUnexploredRef.current;
+
       node.style("opacity", (d) => {
         if (focusSet) {
           if (d.id === selectedId) return 1;
           if (focusSet.has(d.id)) return 0.7;
-          if (d.type === "unexplored") return 0;
+          if (d.type === "unexplored") return showUX ? 0.3 : 0;
           return 0.3;
         }
-        return d.type === "unexplored" ? 0 : 1;
+        if (d.type === "unexplored") return showUX ? 0.4 : 0;
+        return 1;
       });
 
       node.style("pointer-events", (d) => {
         if (focusSet) {
           if (focusSet.has(d.id)) return "auto";
-          if (d.type === "unexplored") return "none";
+          if (d.type === "unexplored") return showUX ? "auto" : "none";
           return "auto";
         }
-        return d.type === "unexplored" ? "none" : "auto";
+        if (d.type === "unexplored") return showUX ? "auto" : "none";
+        return "auto";
       });
 
       link.attr("stroke-opacity", (e) => {
@@ -337,6 +343,7 @@ export default function NetworkClient() {
         const tgt = getId(e.target);
         const srcType = nodeTypeMap.get(src);
         const tgtType = nodeTypeMap.get(tgt);
+        const hasUnexplored = srcType === "unexplored" || tgtType === "unexplored";
 
         if (focusSet) {
           const isConnectedToSelected =
@@ -344,10 +351,10 @@ export default function NetworkClient() {
           if (isConnectedToSelected) {
             return Math.max(getEdgeStyle(e.type).opacity, 0.7);
           }
-          if (srcType === "unexplored" || tgtType === "unexplored") return 0;
+          if (hasUnexplored) return showUX ? 0.15 : 0;
           return getEdgeStyle(e.type).opacity * 0.2;
         }
-        if (srcType === "unexplored" || tgtType === "unexplored") return 0;
+        if (hasUnexplored) return showUX ? 0.2 : 0;
         return getEdgeStyle(e.type).opacity;
       });
 
@@ -415,6 +422,11 @@ export default function NetworkClient() {
       svg.on("click", null);
     };
   }, [graphData, router]);
+
+  useEffect(() => {
+    showUnexploredRef.current = showUnexplored;
+    applyStateRef.current?.(selectedNodeIdRef.current);
+  }, [showUnexplored]);
 
   useEffect(() => {
     selectedNodeIdRef.current = selectedNodeId;
@@ -555,6 +567,21 @@ export default function NetworkClient() {
       <div
         className="fixed bottom-8 right-8 text-xs z-50"
         style={{fontFamily: "var(--font-geist-mono), monospace"}}
+      >
+        <button
+          onClick={() => setShowUnexplored(!showUnexplored)}
+          className={`mb-3 px-2 py-1 rounded text-xs border transition-colors ${
+            showUnexplored
+              ? "border-black text-black"
+              : "border-gray-300 text-gray-400 hover:text-gray-600"
+          }`}
+        >
+          {showUnexplored ? "未踏を隠す" : "未踏を表示"}
+        </button>
+      </div>
+      <div
+        className="fixed bottom-8 right-8 text-xs z-50 mt-12"
+        style={{fontFamily: "var(--font-geist-mono), monospace", bottom: "4.5rem"}}
       >
         <div className="mb-3">
           <div className="flex items-center gap-2 mb-1">
