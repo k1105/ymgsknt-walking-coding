@@ -825,7 +825,8 @@
         "recursive"
       ],
       "label": "Domain Warping",
-      "research": "/research/domain-warping.md"
+      "research": "/research/domain-warping.md",
+      "code": "/research/code/domain-warping.js"
     },
     {
       "id": "delaunay",
@@ -873,7 +874,8 @@
         "simulation"
       ],
       "label": "Verlet Integration",
-      "research": "/research/verlet-integration.md"
+      "research": "/research/verlet-integration.md",
+      "code": "/research/code/verlet-integration.js"
     },
     {
       "id": "sdf-2d",
@@ -897,7 +899,8 @@
         "differential-eq"
       ],
       "label": "ストレンジアトラクター",
-      "research": "/research/strange-attractors.md"
+      "research": "/research/strange-attractors.md",
+      "code": "/research/code/strange-attractors.js"
     },
     {
       "id": "shader-post-process",
@@ -908,7 +911,8 @@
         "post-process",
         "vj"
       ],
-      "label": "シェーダーポストプロセス"
+      "label": "シェーダーポストプロセス",
+      "research": "/research/shader-post-process.md"
     },
     {
       "id": "voronoi-stippling",
@@ -1148,6 +1152,30 @@
         "motion"
       ],
       "label": "円充填の近傍探索+はみ出し"
+    },
+    {
+      "id": "parameter-neighborhood",
+      "type": "unexplored",
+      "tags": [
+        "parameter",
+        "bifurcation",
+        "nonlinear",
+        "perception"
+      ],
+      "label": "パラメータ近傍の質的差異",
+      "research": "/research/parameter-neighborhood.md"
+    },
+    {
+      "id": "pattern-with-motif",
+      "type": "unexplored",
+      "tags": [
+        "pattern",
+        "motif",
+        "tiling",
+        "textile"
+      ],
+      "label": "具象+パターン配置",
+      "research": "/research/pattern-with-motif.md"
     }
   ],
   "edges": [
@@ -1876,6 +1904,24 @@
       "target": "2026-05-10",
       "type": "C",
       "reason": "パラメータ近傍の質的差異という共通テーマ"
+    },
+    {
+      "source": "2026-05-09",
+      "target": "parameter-neighborhood",
+      "type": "D",
+      "reason": "パラメータ空間の密度と質的差異の探究"
+    },
+    {
+      "source": "2026-05-10",
+      "target": "parameter-neighborhood",
+      "type": "D",
+      "reason": "「ちょっとした違いで全然違う」の一般化"
+    },
+    {
+      "source": "2026-05-10",
+      "target": "pattern-with-motif",
+      "type": "D",
+      "reason": "資生堂ギャラリーでの「具象+パターン配置」の発見"
     }
   ]
 }
