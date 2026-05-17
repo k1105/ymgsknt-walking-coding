@@ -1191,6 +1191,19 @@
       "label": "Shader Fundamentals",
       "research": "/research/shader-fundamentals.md",
       "steps": "/research/steps/shader-fundamentals.json"
+    },
+    {
+      "id": "2026-05-15",
+      "type": "sketch",
+      "tags": [
+        "shader",
+        "glsl",
+        "fundamentals",
+        "uv",
+        "distance",
+        "smoothstep"
+      ],
+      "label": "shader-fundamentalsの写経"
     }
   ],
   "edges": [
@@ -1955,6 +1968,12 @@
       "target": "shader-colormap",
       "type": "D",
       "reason": "uniform+mixの発展としてのカラーマップ"
+    },
+    {
+      "source": "shader-fundamentals",
+      "target": "2026-05-15",
+      "type": "B",
+      "reason": "shader-fundamentals未踏ノードからの写経"
     }
   ]
 }
