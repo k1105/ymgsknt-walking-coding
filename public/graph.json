@@ -1196,14 +1196,14 @@
       "id": "2026-05-15",
       "type": "sketch",
       "tags": [
-        "shader",
-        "glsl",
-        "fundamentals",
-        "uv",
-        "distance",
-        "smoothstep"
+        "webgl",
+        "3d",
+        "camera",
+        "vibration",
+        "zoom",
+        "box"
       ],
-      "label": "shader-fundamentalsの写経"
+      "label": "カメラ振動+ズーム効果"
     }
   ],
   "edges": [
@@ -1974,6 +1974,12 @@
       "target": "2026-05-15",
       "type": "B",
       "reason": "shader-fundamentals未踏ノードからの写経"
+    },
+    {
+      "source": "2026-05-15",
+      "target": "cinematic-camera",
+      "type": "D",
+      "reason": "カメラ振動効果の体系化"
     }
   ]
 }
