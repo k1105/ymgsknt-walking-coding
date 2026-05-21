@@ -1,7 +1,7 @@
 "use client";
 
 import {useState, useRef, useEffect, useCallback, useMemo} from "react";
-import {useSearchParams} from "next/navigation";
+import {useSearchParams, useRouter} from "next/navigation";
 
 // Forward streaming alignment with whitespace-tolerant lookahead.
 // Whitespace runs don't count toward the lookahead budget, so indent/newline
@@ -189,6 +189,8 @@ export default function TraceClient() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [cursorPos, setCursorPos] = useState(0);
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const [navigatedToDiary, setNavigatedToDiary] = useState(false);
 
   // Step mode
   const [stepsData, setStepsData] = useState<StepsData | null>(null);
@@ -240,6 +242,21 @@ export default function TraceClient() {
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     };
   }, [typed, sketchDate, activeFile]);
+
+  // Flush save immediately (used at step transitions and on completion so the
+  // last phase always lands on disk before we navigate away).
+  const flushSave = useCallback(
+    (filename: string, content: string) => {
+      if (!sketchDate || !content || process.env.NODE_ENV !== "development") return;
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+      return fetch("/api/save-sketch", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({date: sketchDate, filename, content}),
+      }).catch(() => {});
+    },
+    [sketchDate],
+  );
 
   // Auto-load steps from URL query parameter
   useEffect(() => {
@@ -300,15 +317,17 @@ export default function TraceClient() {
 
   const goToStep = useCallback((stepIdx: number) => {
     if (!stepsData || stepIdx < 0 || stepIdx >= stepsData.steps.length) return;
-    // Save current file's typed content
+    // Save current file's typed content (memory) and flush to disk so the
+    // step we're leaving is durably recorded before originalCode swaps out.
     setFileContents(prev => ({...prev, [activeFile]: typed}));
+    flushSave(activeFile, typed);
     setCurrentStep(stepIdx);
     const files = stepsData.steps[stepIdx]?.files || {};
     const code = files[activeFile] || files[Object.keys(files)[0]] || "";
     setOriginalCode(code);
     // Keep typed text
     setTimeout(() => textareaRef.current?.focus(), 50);
-  }, [stepsData, activeFile, typed]);
+  }, [stepsData, activeFile, typed, flushSave]);
 
   const handleInput = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -381,6 +400,34 @@ export default function TraceClient() {
       ? Math.round((matchCount / originalCode.length) * 100)
       : 0;
 
+  // On completion of the final step, flush the save and slide into the diary.
+  useEffect(() => {
+    if (navigatedToDiary || !isTracing || !sketchDate) return;
+    if (originalCode.length === 0 || progress < 100) return;
+    const isLastStep =
+      !stepsData || currentStep === stepsData.steps.length - 1;
+    if (!isLastStep) return;
+
+    const timer = setTimeout(async () => {
+      setNavigatedToDiary(true);
+      await flushSave(activeFile, typed);
+      router.push(`/diary/${sketchDate}`);
+    }, 800);
+    return () => clearTimeout(timer);
+  }, [
+    progress,
+    isTracing,
+    sketchDate,
+    stepsData,
+    currentStep,
+    originalCode.length,
+    navigatedToDiary,
+    activeFile,
+    typed,
+    flushSave,
+    router,
+  ]);
+
   // Build the ghost layer using alignment result
   const buildGhostHtml = () => {
     const lines: string[] = [];
@@ -401,12 +448,12 @@ export default function TraceClient() {
         .replace(/>/g, "&gt;");
 
       if (alignment.matched[i]) {
-        currentLine += `<span style="color:rgba(100,200,100,0.5)">${escaped}</span>`;
+        currentLine += `<span style="color:rgba(120,220,120,0.55)">${escaped}</span>`;
       } else if (alignment.wrong[i]) {
-        currentLine += `<span style="color:rgba(150,150,150,0.15)">${escaped}</span>`;
+        currentLine += `<span style="color:rgba(200,200,200,0.45)">${escaped}</span>`;
       } else {
         // Not yet reached / not aligned to anything
-        currentLine += `<span style="color:rgba(150,150,150,0.25)">${escaped}</span>`;
+        currentLine += `<span style="color:rgba(210,210,210,0.7)">${escaped}</span>`;
       }
     }
     lines.push(currentLine);
