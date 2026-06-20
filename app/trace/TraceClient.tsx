@@ -201,6 +201,7 @@ export default function TraceClient() {
   // Multi-file support
   const [activeFile, setActiveFile] = useState("sketch.js");
   const [fileContents, setFileContents] = useState<Record<string, string>>({});
+  const [previewKey, setPreviewKey] = useState(0);
 
   // Get list of files for current step
   const currentFiles = useMemo(() => {
@@ -210,10 +211,29 @@ export default function TraceClient() {
     return ["sketch.js"];
   }, [stepsData, currentStep]);
 
+  // Flush save immediately (used at step transitions and on completion so the
+  // last phase always lands on disk before we navigate away).
+  const sketchDate = searchParams.get("date");
+  const flushSave = useCallback(
+    (filename: string, content: string) => {
+      if (!sketchDate || !content || process.env.NODE_ENV !== "development") return;
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+      return fetch("/api/save-sketch", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({date: sketchDate, filename, content}),
+      }).catch(() => {});
+    },
+    [sketchDate],
+  );
+
   // Switch active file: save current typed, restore new file's typed
   const switchFile = useCallback((filename: string) => {
-    // Save current
+    // Save current to memory and flush to disk so the file we're leaving is
+    // durably recorded — otherwise its latest content lives only in `typed`
+    // and gets overwritten when we restore the target's typed below.
     setFileContents(prev => ({...prev, [activeFile]: typed}));
+    flushSave(activeFile, typed);
     // Restore target
     const savedTyped = fileContents[filename] || "";
     setTyped(savedTyped);
@@ -224,10 +244,9 @@ export default function TraceClient() {
     setActiveFile(filename);
     setCursorPos(savedTyped.length);
     setTimeout(() => textareaRef.current?.focus(), 50);
-  }, [activeFile, typed, fileContents, stepsData, currentStep]);
+  }, [activeFile, typed, fileContents, stepsData, currentStep, flushSave]);
 
   // Auto-save (debounced, dev only)
-  const sketchDate = searchParams.get("date");
   useEffect(() => {
     if (!sketchDate || !typed || process.env.NODE_ENV !== "development") return;
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
@@ -243,40 +262,89 @@ export default function TraceClient() {
     };
   }, [typed, sketchDate, activeFile]);
 
-  // Flush save immediately (used at step transitions and on completion so the
-  // last phase always lands on disk before we navigate away).
-  const flushSave = useCallback(
-    (filename: string, content: string) => {
-      if (!sketchDate || !content || process.env.NODE_ENV !== "development") return;
-      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-      return fetch("/api/save-sketch", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({date: sketchDate, filename, content}),
-      }).catch(() => {});
-    },
-    [sketchDate],
-  );
+  // Multi-file preview: when preview is open, flush every known file to disk
+  // (so loadShader/loadFont can resolve relative paths), then bump previewKey
+  // to reload the iframe. Debounced so we don't thrash on every keystroke.
+  const multiFile = currentFiles.length > 1;
+  useEffect(() => {
+    if (!sketchDate || !showPreview || !multiFile) return;
+    if (process.env.NODE_ENV !== "development") return;
+    const t = setTimeout(async () => {
+      const snapshot: Record<string, string> = {...fileContents, [activeFile]: typed};
+      const stepFiles = stepsData?.steps[currentStep]?.files ?? {};
+      // For files the user hasn't touched yet, seed them from the step's
+      // expected content so the preview actually runs end-to-end.
+      for (const name of Object.keys(stepFiles)) {
+        if (!(name in snapshot) || snapshot[name] === "") {
+          snapshot[name] = stepFiles[name];
+        }
+      }
+      await Promise.all(
+        Object.entries(snapshot).map(([filename, content]) =>
+          flushSave(filename, content),
+        ),
+      );
+      setPreviewKey((k) => k + 1);
+    }, 800);
+    return () => clearTimeout(t);
+  }, [
+    typed,
+    fileContents,
+    activeFile,
+    sketchDate,
+    showPreview,
+    multiFile,
+    stepsData,
+    currentStep,
+    flushSave,
+  ]);
 
   // Auto-load steps from URL query parameter
   useEffect(() => {
     const stepsUrl = searchParams.get("steps");
+    const codeUrl = searchParams.get("code");
+    const dateParam = searchParams.get("date");
+
+    // Read previously-typed content from disk so reopening a half-finished
+    // trace picks up where the user left off instead of starting from scratch.
+    const restoreFromDisk = async (filenames: string[]) => {
+      if (!dateParam) return {} as Record<string, string>;
+      const restored: Record<string, string> = {};
+      await Promise.all(
+        filenames.map(async (filename) => {
+          try {
+            const r = await fetch(
+              `/sketches/${dateParam}/${filename}?_=${Date.now()}`,
+            );
+            if (r.ok) restored[filename] = await r.text();
+          } catch {}
+        }),
+      );
+      return restored;
+    };
+
     if (stepsUrl) {
       fetch(stepsUrl)
         .then((res) => {
           if (!res.ok) throw new Error(`fetch failed: ${res.status}`);
           return res.json();
         })
-        .then((data: StepsData) => {
+        .then(async (data: StepsData) => {
           setStepsData(data);
           setCurrentStep(0);
-          setFileContents({});
-          // Pick first file from first step
           const files = data.steps[0]?.files || {};
-          const firstFileName = Object.keys(files)[0] || "sketch.js";
-          setActiveFile(firstFileName);
+          const filenames = Object.keys(files);
+          const firstFileName = filenames[0] || "sketch.js";
           const firstCode = files[firstFileName] || "";
+
+          const restored = await restoreFromDisk(filenames);
+          setFileContents(restored);
+          setActiveFile(firstFileName);
           setOriginalCode(firstCode);
+          if (restored[firstFileName] != null) {
+            setTyped(restored[firstFileName]);
+            setCursorPos(restored[firstFileName].length);
+          }
           setTimeout(() => {
             setIsTracing(true);
             setTimeout(() => textareaRef.current?.focus(), 100);
@@ -286,17 +354,20 @@ export default function TraceClient() {
       return;
     }
 
-    const codeUrl = searchParams.get("code");
     if (codeUrl) {
       fetch(codeUrl)
         .then((res) => {
           if (!res.ok) throw new Error(`fetch failed: ${res.status}`);
           return res.text();
         })
-        .then((text) => {
+        .then(async (text) => {
           if (text && text.trim()) {
             setOriginalCode(text);
-            // Delay entering trace mode to ensure originalCode is set
+            const restored = await restoreFromDisk(["sketch.js"]);
+            if (restored["sketch.js"] != null) {
+              setTyped(restored["sketch.js"]);
+              setCursorPos(restored["sketch.js"].length);
+            }
             setTimeout(() => {
               setIsTracing(true);
               setTimeout(() => textareaRef.current?.focus(), 100);
@@ -565,6 +636,29 @@ export default function TraceClient() {
             >
               Reset
             </button>
+            {sketchDate && process.env.NODE_ENV === "development" && (
+              <button
+                onClick={async () => {
+                  if (!confirm(`${sketchDate} の写経を中断し、ファイルとネットワーク状態を元に戻します。よろしいですか？`)) return;
+                  if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+                  setNavigatedToDiary(true); // suppress completion auto-navigation
+                  const res = await fetch("/api/discard-sketch", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({date: sketchDate}),
+                  });
+                  if (res.ok) {
+                    router.push("/network");
+                  } else {
+                    const data = await res.json().catch(() => ({}));
+                    alert(data.error || "中断に失敗しました");
+                  }
+                }}
+                className="text-xs text-red-500 hover:text-red-400 transition-colors"
+              >
+                中断
+              </button>
+            )}
           </div>
         </div>
         {/* Step description */}
@@ -658,15 +752,24 @@ export default function TraceClient() {
       {/* Preview iframe */}
       {showPreview && (
         <div className="w-1/2 border-l border-[#30363d] bg-white">
-          <iframe
-            srcDoc={`<!DOCTYPE html>
+          {multiFile && sketchDate ? (
+            <iframe
+              key={previewKey}
+              src={`/sketches/${sketchDate}/index.html?k=${previewKey}`}
+              className="w-full h-full border-0"
+              sandbox="allow-scripts"
+            />
+          ) : (
+            <iframe
+              srcDoc={`<!DOCTYPE html>
 <html><head>
 <style>body{margin:0;overflow:hidden;}canvas{display:block;}</style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.3/p5.min.js"></script>
 </head><body><script>${typed}</script></body></html>`}
-            className="w-full h-full border-0"
-            sandbox="allow-scripts"
-          />
+              className="w-full h-full border-0"
+              sandbox="allow-scripts"
+            />
+          )}
         </div>
       )}
       </div>

@@ -1,0 +1,51 @@
+{
+  "id": "sdf-2d",
+  "title": "2D SDF — 距離関数で形を描く",
+  "steps": [
+    {
+      "title": "円のSDF: 内側=負、外側=正",
+      "description": "Signed Distance Function（符号付き距離関数）。点 p から形までの「距離」を返すが、内側なら負、外側なら正。\n\n円のSDFは length(p) - r。原点までの距離から半径を引くだけ。\n\nまずは座標変換。gl_FragCoord はピクセル単位なので、画面中心を原点に、画面の縦サイズで正規化する。これで p は -0.5〜0.5 くらいの範囲になり、扱いやすい。\n\n距離が負（内側）なら白、正（外側）なら黒。三項演算子で色分けする。",
+      "files": {
+        "sketch.js": "let sh;\n\nfunction preload() {\n  sh = loadShader('shader.vert', 'shader.frag');\n}\n\nfunction setup() {\n  createCanvas(windowWidth, windowHeight, WEBGL);\n  noStroke();\n}\n\nfunction draw() {\n  shader(sh);\n  sh.setUniform('u_time', millis() / 1000.0);\n  sh.setUniform('u_resolution', [width, height]);\n  rect(-width/2, -height/2, width, height);\n}",
+        "shader.vert": "attribute vec3 aPosition;\nattribute vec2 aTexCoord;\nvarying vec2 vTexCoord;\n\nvoid main() {\n  vTexCoord = aTexCoord;\n  vec4 positionVec4 = vec4(aPosition, 1.0);\n  positionVec4.xy = positionVec4.xy * 2.0 - 1.0;\n  gl_Position = positionVec4;\n}",
+        "shader.frag": "precision mediump float;\nuniform vec2 u_resolution;\n\nfloat sdCircle(vec2 p, float r) {\n  return length(p) - r;\n}\n\nvoid main() {\n  vec2 p = (gl_FragCoord.xy - u_resolution * 0.5) / u_resolution.y;\n  float d = sdCircle(p, 0.3);\n  vec3 col = (d < 0.0) ? vec3(1.0) : vec3(0.0);\n  gl_FragColor = vec4(col, 1.0);\n}"
+      }
+    },
+    {
+      "title": "smoothstepで縁を滑らかに",
+      "description": "step()で白黒に塗ると、画面の解像度のせいで縁がジャギジャギする。\n\nsmoothstep(edge0, edge1, x) は edge0 から edge1 の間で滑らかに 0→1 へ補間する。距離が ±数ピクセル分（=0.005くらい）の幅で白から黒にグラデーションさせると、縁が綺麗に消える。\n\n1.0 - smoothstep(...) で「内側=1, 外側=0」になるよう反転する。",
+      "files": {
+        "sketch.js": "let sh;\n\nfunction preload() {\n  sh = loadShader('shader.vert', 'shader.frag');\n}\n\nfunction setup() {\n  createCanvas(windowWidth, windowHeight, WEBGL);\n  noStroke();\n}\n\nfunction draw() {\n  shader(sh);\n  sh.setUniform('u_time', millis() / 1000.0);\n  sh.setUniform('u_resolution', [width, height]);\n  rect(-width/2, -height/2, width, height);\n}",
+        "shader.vert": "attribute vec3 aPosition;\nattribute vec2 aTexCoord;\nvarying vec2 vTexCoord;\n\nvoid main() {\n  vTexCoord = aTexCoord;\n  vec4 positionVec4 = vec4(aPosition, 1.0);\n  positionVec4.xy = positionVec4.xy * 2.0 - 1.0;\n  gl_Position = positionVec4;\n}",
+        "shader.frag": "precision mediump float;\nuniform vec2 u_resolution;\n\nfloat sdCircle(vec2 p, float r) {\n  return length(p) - r;\n}\n\nvoid main() {\n  vec2 p = (gl_FragCoord.xy - u_resolution * 0.5) / u_resolution.y;\n  float d = sdCircle(p, 0.3);\n  float shape = 1.0 - smoothstep(-0.005, 0.005, d);\n  gl_FragColor = vec4(vec3(shape), 1.0);\n}"
+      }
+    },
+    {
+      "title": "矩形のSDF: abs()で対称性を作る",
+      "description": "矩形のSDFは少し複雑。abs(p) で点を第一象限に折り畳むのがコツ。形が対称（縦軸・横軸で）なら、4つの象限を同じ式で扱える。\n\nabs(p) - b は「形の縁からの距離（の成分）」。外側成分だけ length() で合成すれば外側の距離。内側は max(d.x, d.y) の負の値が距離。\n\nこの形が IQ の sdBox。覚えなくていい、コピペでOK。重要なのは abs() の使い方の発想。",
+      "files": {
+        "sketch.js": "let sh;\n\nfunction preload() {\n  sh = loadShader('shader.vert', 'shader.frag');\n}\n\nfunction setup() {\n  createCanvas(windowWidth, windowHeight, WEBGL);\n  noStroke();\n}\n\nfunction draw() {\n  shader(sh);\n  sh.setUniform('u_time', millis() / 1000.0);\n  sh.setUniform('u_resolution', [width, height]);\n  rect(-width/2, -height/2, width, height);\n}",
+        "shader.vert": "attribute vec3 aPosition;\nattribute vec2 aTexCoord;\nvarying vec2 vTexCoord;\n\nvoid main() {\n  vTexCoord = aTexCoord;\n  vec4 positionVec4 = vec4(aPosition, 1.0);\n  positionVec4.xy = positionVec4.xy * 2.0 - 1.0;\n  gl_Position = positionVec4;\n}",
+        "shader.frag": "precision mediump float;\nuniform vec2 u_resolution;\n\nfloat sdBox(vec2 p, vec2 b) {\n  vec2 d = abs(p) - b;\n  return length(max(d, 0.0)) + min(max(d.x, d.y), 0.0);\n}\n\nvoid main() {\n  vec2 p = (gl_FragCoord.xy - u_resolution * 0.5) / u_resolution.y;\n  float d = sdBox(p, vec2(0.25, 0.15));\n  float shape = 1.0 - smoothstep(-0.005, 0.005, d);\n  gl_FragColor = vec4(vec3(shape), 1.0);\n}"
+      }
+    },
+    {
+      "title": "min()で和集合 — 形をくっつける",
+      "description": "SDFの強みはここから。複数の形は min/max で組み合わせるだけ。\n\nmin(d1, d2) は和集合（union）。各ピクセルで「どちらか近い方の距離」を取れば、両方の形が同時に存在することになる。\n\nここでは円と矩形を左右にずらして配置。p - vec2(-0.2, 0.0) で円を左へ、p - vec2(0.2, 0.0) で矩形を右へ。「形を動かす」というより「座標系を動かす」発想。",
+      "files": {
+        "sketch.js": "let sh;\n\nfunction preload() {\n  sh = loadShader('shader.vert', 'shader.frag');\n}\n\nfunction setup() {\n  createCanvas(windowWidth, windowHeight, WEBGL);\n  noStroke();\n}\n\nfunction draw() {\n  shader(sh);\n  sh.setUniform('u_time', millis() / 1000.0);\n  sh.setUniform('u_resolution', [width, height]);\n  rect(-width/2, -height/2, width, height);\n}",
+        "shader.vert": "attribute vec3 aPosition;\nattribute vec2 aTexCoord;\nvarying vec2 vTexCoord;\n\nvoid main() {\n  vTexCoord = aTexCoord;\n  vec4 positionVec4 = vec4(aPosition, 1.0);\n  positionVec4.xy = positionVec4.xy * 2.0 - 1.0;\n  gl_Position = positionVec4;\n}",
+        "shader.frag": "precision mediump float;\nuniform vec2 u_resolution;\n\nfloat sdCircle(vec2 p, float r) {\n  return length(p) - r;\n}\n\nfloat sdBox(vec2 p, vec2 b) {\n  vec2 d = abs(p) - b;\n  return length(max(d, 0.0)) + min(max(d.x, d.y), 0.0);\n}\n\nvoid main() {\n  vec2 p = (gl_FragCoord.xy - u_resolution * 0.5) / u_resolution.y;\n  float d1 = sdCircle(p - vec2(-0.2, 0.0), 0.25);\n  float d2 = sdBox(p - vec2(0.2, 0.0), vec2(0.2, 0.2));\n  float d = min(d1, d2);\n  float shape = 1.0 - smoothstep(-0.005, 0.005, d);\n  gl_FragColor = vec4(vec3(shape), 1.0);\n}"
+      }
+    },
+    {
+      "title": "smin()で滑らかに融合 — メタボール",
+      "description": "min() の代わりに smin()（smooth minimum）を使うと、形の境界が溶ける。メタボール的な合成。\n\nk が「溶け幅」。0 だと普通の min と同じ、大きくすると遠くから引き合うように溶ける。\n\nu_time で円を左右に動かしてみる。矩形に近づくと吸い込まれるように繋がり、離れると切れる。これが SDF の「数式だけで動く」面白さの一番わかりやすい例。\n\nここまでが SDF の基本要素。あとは IQ の SDF 集（円・矩形・線・三角形・星・ハート・卵…）から好きな形を持ってきて、min/max/smin で組み合わせれば、何でも作れる。",
+      "files": {
+        "sketch.js": "let sh;\n\nfunction preload() {\n  sh = loadShader('shader.vert', 'shader.frag');\n}\n\nfunction setup() {\n  createCanvas(windowWidth, windowHeight, WEBGL);\n  noStroke();\n}\n\nfunction draw() {\n  shader(sh);\n  sh.setUniform('u_time', millis() / 1000.0);\n  sh.setUniform('u_resolution', [width, height]);\n  rect(-width/2, -height/2, width, height);\n}",
+        "shader.vert": "attribute vec3 aPosition;\nattribute vec2 aTexCoord;\nvarying vec2 vTexCoord;\n\nvoid main() {\n  vTexCoord = aTexCoord;\n  vec4 positionVec4 = vec4(aPosition, 1.0);\n  positionVec4.xy = positionVec4.xy * 2.0 - 1.0;\n  gl_Position = positionVec4;\n}",
+        "shader.frag": "precision mediump float;\nuniform vec2 u_resolution;\nuniform float u_time;\n\nfloat sdCircle(vec2 p, float r) {\n  return length(p) - r;\n}\n\nfloat sdBox(vec2 p, vec2 b) {\n  vec2 d = abs(p) - b;\n  return length(max(d, 0.0)) + min(max(d.x, d.y), 0.0);\n}\n\nfloat smin(float a, float b, float k) {\n  float h = clamp(0.5 + 0.5 * (b - a) / k, 0.0, 1.0);\n  return mix(b, a, h) - k * h * (1.0 - h);\n}\n\nvoid main() {\n  vec2 p = (gl_FragCoord.xy - u_resolution * 0.5) / u_resolution.y;\n  float t = u_time * 0.8;\n  float d1 = sdCircle(p - vec2(sin(t) * 0.25, 0.0), 0.25);\n  float d2 = sdBox(p - vec2(0.2, 0.0), vec2(0.2, 0.2));\n  float d = smin(d1, d2, 0.15);\n  float shape = 1.0 - smoothstep(-0.005, 0.005, d);\n  gl_FragColor = vec4(vec3(shape), 1.0);\n}"
+      }
+    }
+  ]
+}

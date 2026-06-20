@@ -9,7 +9,7 @@ import remarkGfm from "remark-gfm";
 
 interface GraphNode extends d3.SimulationNodeDatum {
   id: string;
-  type: "sketch" | "unexplored";
+  type: "sketch" | "unexplored" | "explored";
   tags: string[];
   label: string;
   research?: string;
@@ -113,12 +113,49 @@ export default function NetworkClient() {
     svg.call(zoom);
 
     // Deep copy
-    const nodes: GraphNode[] = graphData.nodes.map((n) => ({...n}));
-    const edges: GraphEdge[] = graphData.edges.map((e) => ({...e}));
+    const rawNodes: GraphNode[] = graphData.nodes.map((n) => ({...n}));
+    const rawEdges: GraphEdge[] = graphData.edges.map((e) => ({...e}));
+
+    // Rewire explored nodes: replace them with their successor sketches.
+    // An "explored" node's role is taken over by the sketch(es) that traced it
+    // (linked via type-B edges). Edges that pointed to/from the explored node
+    // are redirected to its successor(s); the explored node itself is dropped.
+    const exploredIds = new Set(
+      rawNodes.filter((n) => n.type === "explored").map((n) => n.id),
+    );
+    const successors = new Map<string, string[]>();
+    for (const e of rawEdges) {
+      const src = getId(e.source);
+      const tgt = getId(e.target);
+      if (e.type === "B" && exploredIds.has(src) && !exploredIds.has(tgt)) {
+        if (!successors.has(src)) successors.set(src, []);
+        successors.get(src)!.push(tgt);
+      }
+    }
+    const nodes: GraphNode[] = rawNodes.filter((n) => n.type !== "explored");
+    const seenEdgeKeys = new Set<string>();
+    const edges: GraphEdge[] = [];
+    for (const e of rawEdges) {
+      const src = getId(e.source);
+      const tgt = getId(e.target);
+      // Drop the explored→successor B-edges themselves (replaced by rewiring)
+      if (e.type === "B" && exploredIds.has(src)) continue;
+      const srcList = exploredIds.has(src) ? successors.get(src) ?? [] : [src];
+      const tgtList = exploredIds.has(tgt) ? successors.get(tgt) ?? [] : [tgt];
+      for (const s of srcList) {
+        for (const t of tgtList) {
+          if (s === t) continue;
+          const key = `${s}->${t}|${e.type}`;
+          if (seenEdgeKeys.has(key)) continue;
+          seenEdgeKeys.add(key);
+          edges.push({...e, source: s, target: t});
+        }
+      }
+    }
 
     // Adjacency and type lookup
     const neighborMap = new Map<string, Set<string>>();
-    const nodeTypeMap = new Map<string, "sketch" | "unexplored">();
+    const nodeTypeMap = new Map<string, "sketch" | "unexplored" | "explored">();
     nodes.forEach((n) => nodeTypeMap.set(n.id, n.type));
     edges.forEach((e) => {
       const src = getId(e.source);

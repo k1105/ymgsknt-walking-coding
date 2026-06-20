@@ -79,13 +79,18 @@ export async function POST(req: NextRequest) {
       // Check if node already exists
       if (!graph.nodes.find((n: { id: string }) => n.id === today)) {
         // Add node
-        const sourceNode = graph.nodes.find((n: { id: string }) => n.id === sourceId);
+        const sourceNode = graph.nodes.find((n: { id: string; type?: string }) => n.id === sourceId);
         graph.nodes.push({
           id: today,
           type: "sketch",
           tags: sourceNode?.tags || [],
           label: fromUnexplored ? `${sourceId}の写経` : `${sourceId}の続き`,
         });
+
+        // Mark source unexplored node as explored
+        if (fromUnexplored && sourceNode && sourceNode.type === "unexplored") {
+          sourceNode.type = "explored";
+        }
 
         // Add edge
         graph.edges.push({
