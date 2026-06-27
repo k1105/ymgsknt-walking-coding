@@ -84,3 +84,10 @@ p {
   line-height: 1.625;
   user-select: none;
 }
+
+/* Editor trace (写経) — wobble for diverged characters */
+@keyframes cm-trace-wobble {
+  0%, 100% { transform: translateY(0); }
+  25% { transform: translateY(-2px); }
+  75% { transform: translateY(2px); }
+}

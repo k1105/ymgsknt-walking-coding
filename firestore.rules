@@ -1,0 +1,13 @@
+rules_version = '2';
+
+// Editor cloud store. Access is restricted to a single Google account — this
+// is the real access gate (client-side checks are only UX). Keep the email in
+// sync with ALLOWED_EMAIL in lib/editor/firebase.ts.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /sketches/{id} {
+      allow read, write: if request.auth != null
+        && request.auth.token.email == "kntymgs1105@gmail.com";
+    }
+  }
+}

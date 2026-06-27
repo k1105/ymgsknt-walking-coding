@@ -366,7 +366,10 @@ export default function DiaryFrame({children}: {children: ReactNode}) {
       <div
         className="fixed inset-0 z-[100] pointer-events-none"
         style={{
-          opacity: pathname.startsWith("/trace") ? 0 : (show ? 1 : 0) * uiOpacity,
+          opacity:
+            pathname.startsWith("/trace") || pathname.startsWith("/editor")
+              ? 0
+              : (show ? 1 : 0) * uiOpacity,
           transition: "opacity 150ms linear",
         }}
       >
@@ -390,7 +393,10 @@ export default function DiaryFrame({children}: {children: ReactNode}) {
           opacity: uiOpacity,
           pointerEvents: uiOpacity < 0.05 ? "none" : "auto",
           transition: "opacity 150ms linear",
-          display: pathname === "/trace" || pathname === "/network" ? "none" : undefined,
+          display:
+            pathname === "/trace" || pathname === "/network" || pathname === "/editor"
+              ? "none"
+              : undefined,
         }}
       >
         {isRoot && (
