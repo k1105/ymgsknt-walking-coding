@@ -37,6 +37,12 @@ export default function EditorClient() {
   const [traceMode, setTraceMode] = useState(false);
   const [traceTyped, setTraceTyped] = useState("");
 
+  // Diary panel. sketch.diary is written out as diary.md on publish.
+  const [showDiary, setShowDiary] = useState(false);
+  const updateDiary = useCallback((diary: string) => {
+    setSketch((prev) => ({...prev, diary}));
+  }, []);
+
   // Keep a ref of the latest savedAt so async cloud callbacks don't read a
   // stale closure when reconciling by timestamp.
   savedAtRef.current = savedAt;
@@ -120,23 +126,61 @@ export default function EditorClient() {
 
   const run = useCallback(() => setRunKey((k) => k + 1), []);
 
-  // Tier 1 persistence: restore the local draft on mount, then autosave every
-  // edit into IndexedDB (debounced). draftReady guards against the initial
-  // default-sketch save racing ahead of (and clobbering) the restore.
+  // Tier 1 persistence + seeding. On mount: if opened as /editor?source=<id>
+  // (from the network "+"), seed a fresh working draft from that published
+  // sketch; otherwise restore the local draft from IndexedDB. draftReady guards
+  // against the initial default-sketch save racing ahead of (and clobbering)
+  // the restore/seed.
   useEffect(() => {
     let cancelled = false;
-    loadDraft("draft")
-      .then((rec) => {
-        if (cancelled || !rec?.sketch?.files) return;
-        setSketch(rec.sketch);
-        setActiveFile((cur) =>
-          rec.sketch.files[cur] ? cur : rec.sketch.entry,
-        );
-        setSavedAt(rec.updatedAt);
-      })
-      .finally(() => {
-        if (!cancelled) draftReady.current = true;
+    const source =
+      typeof window !== "undefined"
+        ? new URLSearchParams(window.location.search).get("source")
+        : null;
+
+    const seedFromSource = async (id: string) => {
+      const res = await fetch(`/api/load-sketch?id=${encodeURIComponent(id)}`);
+      if (!res.ok) return false;
+      const data = await res.json();
+      if (!data?.files || cancelled) return false;
+      const files: Sketch["files"] = {};
+      for (const [name, f] of Object.entries(
+        data.files as Record<string, {content?: string; dataUrl?: string}>,
+      )) {
+        const vf = makeFile(name, f.content ?? "");
+        if (f.dataUrl) vf.dataUrl = f.dataUrl;
+        files[name] = vf;
+      }
+      const entry = files[data.entry] ? data.entry : Object.keys(files)[0];
+      setSketch({
+        id: "draft",
+        entry,
+        files,
+        libraries: [],
+        diary: data.diary ?? "",
+        parentId: id,
       });
+      // Prefer landing on a JS file to start editing/tracing.
+      const js = Object.keys(files).find((n) => n.endsWith(".js"));
+      setActiveFile(js ?? entry);
+      return true;
+    };
+
+    const init = async () => {
+      if (source) {
+        const ok = await seedFromSource(source).catch(() => false);
+        if (ok) return; // seeded — don't clobber with the old draft
+      }
+      const rec = await loadDraft("draft").catch(() => null);
+      if (cancelled || !rec?.sketch?.files) return;
+      setSketch(rec.sketch);
+      setActiveFile((cur) => (rec.sketch.files[cur] ? cur : rec.sketch.entry));
+      setSavedAt(rec.updatedAt);
+    };
+
+    init().finally(() => {
+      if (!cancelled) draftReady.current = true;
+    });
     return () => {
       cancelled = true;
     };
@@ -234,7 +278,11 @@ export default function EditorClient() {
       const res = await fetch("/api/publish-sketch", {
         method: "POST",
         headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({sketch}),
+        body: JSON.stringify({
+          sketch,
+          diary: sketch.diary ?? "",
+          parentId: sketch.parentId,
+        }),
       });
       const data = await res.json();
       setPublishMsg(res.ok ? `published → ${data.date}` : data.error || "failed");
@@ -277,6 +325,15 @@ export default function EditorClient() {
             title="写経モード"
           >
             写経
+          </button>
+          <button
+            onClick={() => setShowDiary((v) => !v)}
+            className={`text-xs transition-colors ${
+              showDiary ? "text-[#58a6ff]" : "text-gray-500 hover:text-gray-300"
+            }`}
+            title="日記を書く（Publish時に diary.md として保存）"
+          >
+            日記
           </button>
           <label className="flex items-center gap-1 text-xs text-gray-500">
             <input
@@ -327,24 +384,57 @@ export default function EditorClient() {
           indexHtml={sketch.files[sketch.entry]?.content ?? ""}
           onIndexHtmlChange={setIndexHtml}
         />
-        <div className="min-h-0 flex-1 overflow-hidden border-r border-[#30363d]">
-          {active &&
-            (traceMode ? (
-              <CodeEditor
-                key={`trace-${activeFile}`}
-                filename={activeFile}
-                value={traceTyped}
-                onChange={setTraceTyped}
-                traceOriginal={active.content}
+        <div className="flex min-h-0 flex-1 flex-col border-r border-[#30363d]">
+          <div className="min-h-0 flex-1 overflow-hidden">
+            {active &&
+              (traceMode ? (
+                <CodeEditor
+                  key={`trace-${activeFile}`}
+                  filename={activeFile}
+                  value={traceTyped}
+                  onChange={setTraceTyped}
+                  traceOriginal={active.content}
+                />
+              ) : (
+                <CodeEditor
+                  key={activeFile}
+                  filename={activeFile}
+                  value={active.content}
+                  onChange={updateActive}
+                />
+              ))}
+          </div>
+          {showDiary && (
+            <div className="flex h-2/5 min-h-0 flex-col border-t border-[#30363d]">
+              <div
+                className="flex items-center justify-between border-b border-[#30363d] px-3 py-1"
+                style={{fontFamily: "ui-monospace, monospace"}}
+              >
+                <span className="text-[10px] text-gray-500">
+                  diary.md{" "}
+                  {sketch.parentId && (
+                    <span className="text-gray-600">
+                      （{sketch.parentId} の続き）
+                    </span>
+                  )}
+                </span>
+                <button
+                  onClick={() => setShowDiary(false)}
+                  className="text-[10px] text-gray-600 hover:text-gray-300"
+                >
+                  ✕
+                </button>
+              </div>
+              <textarea
+                value={sketch.diary ?? ""}
+                onChange={(e) => updateDiary(e.target.value)}
+                placeholder="この日のスケッチについて（Markdown）…"
+                spellCheck={false}
+                className="min-h-0 flex-1 resize-none bg-[#0d1117] px-3 py-2 text-sm text-gray-300 outline-none placeholder:text-gray-700"
+                style={{fontFamily: "ui-monospace, monospace"}}
               />
-            ) : (
-              <CodeEditor
-                key={activeFile}
-                filename={activeFile}
-                value={active.content}
-                onChange={updateActive}
-              />
-            ))}
+            </div>
+          )}
         </div>
         <div className="min-h-0 w-[42%]">
           <Preview sketch={sketch} runKey={runKey} />

@@ -1207,27 +1207,10 @@
       "label": "shader-fundamentalsの写経"
     },
     {
-      "id": "2026-05-24",
+      "id": "2026-06-28",
       "type": "sketch",
-      "tags": [
-        "shader",
-        "math",
-        "shape",
-        "glsl"
-      ],
-      "label": "sdf-2dの写経"
-    },
-    {
-      "id": "2026-06-25",
-      "type": "sketch",
-      "tags": [
-        "webgl",
-        "3d",
-        "box",
-        "brightness",
-        "vj"
-      ],
-      "label": "2026-04-30の続き"
+      "tags": [],
+      "label": "2026-05-10の続き"
     }
   ],
   "edges": [
@@ -2000,16 +1983,10 @@
       "reason": "shader-fundamentals未踏ノードからの写経"
     },
     {
-      "source": "sdf-2d",
-      "target": "2026-05-24",
-      "type": "B",
-      "reason": "sdf-2d未踏ノードからの写経"
-    },
-    {
-      "source": "2026-04-30",
-      "target": "2026-06-25",
+      "source": "2026-05-10",
+      "target": "2026-06-28",
       "type": "A",
-      "reason": "2026-04-30からの続き"
+      "reason": "2026-05-10からの続き"
     }
   ]
 }

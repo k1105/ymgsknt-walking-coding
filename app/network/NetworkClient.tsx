@@ -510,12 +510,19 @@ export default function NetworkClient() {
             .attr("transform", `translate(${tx},${ty})`)
             .style("cursor", "pointer");
 
+          // Invisible hit area so the whole disc (not just the dashed ring) is clickable.
+          createGroup.append("circle")
+            .attr("r", 14)
+            .attr("fill", "transparent")
+            .attr("stroke", "none");
+
           createGroup.append("circle")
             .attr("r", 7)
-            .attr("fill", "none")
+            .attr("fill", "#fff")
             .attr("stroke", "#000")
             .attr("stroke-width", 1.5)
-            .attr("stroke-dasharray", "3,2");
+            .attr("stroke-dasharray", "3,2")
+            .style("pointer-events", "none");
 
           createGroup.append("text")
             .text("+")
@@ -526,24 +533,15 @@ export default function NetworkClient() {
             .attr("font-family", "var(--font-geist-mono), monospace")
             .style("pointer-events", "none");
 
-          createGroup.on("click", async () => {
-            const res = await fetch("/api/create-sketch", {
-              method: "POST",
-              headers: {"Content-Type": "application/json"},
-              body: JSON.stringify({sourceId: selectedNodeId, parentId: selectedNodeId}),
-            });
-            const data = await res.json();
-            if (res.ok) {
-              alert(`${data.date} のスケッチを作成しました（${selectedNodeId}からコピー）`);
-              window.location.reload();
-            } else {
-              alert(data.error === "Already exists" ? `${data.date} は既に存在します` : data.error);
-            }
+          // Open the editor seeded from the selected sketch. Authoring (code +
+          // diary) and publishing happen in /editor; this just hands off.
+          createGroup.on("click", () => {
+            router.push(`/editor?source=${encodeURIComponent(selectedNodeId)}`);
           });
         }
       }
     }
-  }, [selectedNodeId, graphData]);
+  }, [selectedNodeId, graphData, router]);
 
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-white">

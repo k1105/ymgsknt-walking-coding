@@ -19,6 +19,8 @@ export interface Sketch {
   entry: string; // usually "index.html"
   files: Record<string, VFile>;
   libraries?: string[]; // external CDN script URLs (also reflected in index.html)
+  diary?: string; // diary.md content, written out on publish
+  parentId?: string; // source sketch this was seeded from (wires the graph edge)
 }
 
 const EXT_LANG: Record<string, Lang> = {
@@ -122,5 +124,6 @@ export function defaultSketch(id: string): Sketch {
       "style.css": makeFile("style.css", DEFAULT_STYLE_CSS),
     },
     libraries: [],
+    diary: "",
   };
 }
