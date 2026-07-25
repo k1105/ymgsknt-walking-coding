@@ -533,10 +533,11 @@ export default function NetworkClient() {
             .attr("font-family", "var(--font-geist-mono), monospace")
             .style("pointer-events", "none");
 
-          // Open the editor seeded from the selected sketch. Authoring (code +
-          // diary) and publishing happen in /editor; this just hands off.
+          // Fork: open the editor with this sketch's content copied into
+          // today's new sketch (?source=<id> instead edits it in place).
+          // Authoring (code + diary) and publishing happen in /editor.
           createGroup.on("click", () => {
-            router.push(`/editor?source=${encodeURIComponent(selectedNodeId)}`);
+            router.push(`/editor?fork=${encodeURIComponent(selectedNodeId)}`);
           });
         }
       }

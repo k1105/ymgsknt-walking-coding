@@ -17,6 +17,13 @@ import {
   subscribeCloudSketch,
 } from "@/lib/editor/firebase";
 
+const DATE_ID = /^\d{4}-\d{2}-\d{2}$/;
+
+function todayId(): string {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+}
+
 export default function EditorClient() {
   const [sketch, setSketch] = useState<Sketch>(() => defaultSketch("draft"));
   const [activeFile, setActiveFile] = useState<string>("sketch.js");
@@ -126,23 +133,46 @@ export default function EditorClient() {
 
   const run = useCallback(() => setRunKey((k) => k + 1), []);
 
-  // Tier 1 persistence + seeding. On mount: if opened as /editor?source=<id>
-  // (from the network "+"), seed a fresh working draft from that published
-  // sketch; otherwise restore the local draft from IndexedDB. draftReady guards
-  // against the initial default-sketch save racing ahead of (and clobbering)
-  // the restore/seed.
+  // Thumbnail capture: Preview posts back a downscaled PNG data URL; it lives
+  // on the sketch so the draft layers persist it and publish writes it out.
+  const setThumbnail = useCallback((dataUrl: string) => {
+    setSketch((prev) => ({...prev, thumbnail: dataUrl}));
+  }, []);
+  const clearThumbnail = useCallback(() => {
+    // Drop the key entirely (not `undefined`) — Firestore rejects undefined
+    // field values when the draft syncs to the cloud.
+    setSketch((prev) => {
+      const {thumbnail: _omit, ...rest} = prev;
+      void _omit;
+      return rest;
+    });
+  }, []);
+
+  // Tier 1 persistence + seeding. Two URL modes, both keyed by sketch id so
+  // drafts live per sketch (saveDraft/Firestore already key on sketch.id):
+  //   ?source=<id> — update mode: edit the published sketch in place; publish
+  //     overwrites public/sketches/<id>/. A local WIP draft for that id wins
+  //     over the published files.
+  //   ?fork=<id>   — derive mode: copy the content into a fresh sketch with
+  //     today's id (parentId wires the graph edge on publish). Always re-seeds.
+  // No param: restore the free-standing "draft" slot as before. draftReady
+  // guards against the initial default-sketch save racing ahead of (and
+  // clobbering) the restore/seed.
+  const [booted, setBooted] = useState(false);
   useEffect(() => {
     let cancelled = false;
-    const source =
+    const params =
       typeof window !== "undefined"
-        ? new URLSearchParams(window.location.search).get("source")
+        ? new URLSearchParams(window.location.search)
         : null;
+    const source = params?.get("source");
+    const fork = params?.get("fork");
 
-    const seedFromSource = async (id: string) => {
+    const fetchPublished = async (id: string) => {
       const res = await fetch(`/api/load-sketch?id=${encodeURIComponent(id)}`);
-      if (!res.ok) return false;
+      if (!res.ok) return null;
       const data = await res.json();
-      if (!data?.files || cancelled) return false;
+      if (!data?.files) return null;
       const files: Sketch["files"] = {};
       for (const [name, f] of Object.entries(
         data.files as Record<string, {content?: string; dataUrl?: string}>,
@@ -152,24 +182,55 @@ export default function EditorClient() {
         files[name] = vf;
       }
       const entry = files[data.entry] ? data.entry : Object.keys(files)[0];
-      setSketch({
-        id: "draft",
-        entry,
-        files,
-        libraries: [],
-        diary: data.diary ?? "",
-        parentId: id,
-      });
-      // Prefer landing on a JS file to start editing/tracing.
-      const js = Object.keys(files).find((n) => n.endsWith(".js"));
-      setActiveFile(js ?? entry);
-      return true;
+      return {files, entry, diary: (data.diary as string) ?? ""};
+    };
+
+    // Land on a JS file to start editing/tracing.
+    const applySeed = (s: Sketch) => {
+      setSketch(s);
+      const js = Object.keys(s.files).find((n) => n.endsWith(".js"));
+      setActiveFile(js ?? s.entry);
+      // Stamp "current as of now" so an older cloud snapshot can't clobber
+      // the freshly seeded content once the subscription attaches.
+      setSavedAt(Date.now());
     };
 
     const init = async () => {
-      if (source) {
-        const ok = await seedFromSource(source).catch(() => false);
-        if (ok) return; // seeded — don't clobber with the old draft
+      if (fork && DATE_ID.test(fork)) {
+        const pub = await fetchPublished(fork).catch(() => null);
+        if (pub && !cancelled) {
+          applySeed({
+            id: todayId(),
+            entry: pub.entry,
+            files: pub.files,
+            libraries: [],
+            diary: pub.diary,
+            parentId: fork,
+          });
+          return;
+        }
+      } else if (source && DATE_ID.test(source)) {
+        const rec = await loadDraft(source).catch(() => null);
+        if (cancelled) return;
+        if (rec?.sketch?.files) {
+          setSketch(rec.sketch);
+          setActiveFile((cur) =>
+            rec.sketch.files[cur] ? cur : rec.sketch.entry,
+          );
+          setSavedAt(rec.updatedAt);
+          return;
+        }
+        const pub = await fetchPublished(source).catch(() => null);
+        if (pub && !cancelled) {
+          applySeed({
+            id: source,
+            entry: pub.entry,
+            files: pub.files,
+            libraries: [],
+            diary: pub.diary,
+          });
+          return;
+        }
       }
       const rec = await loadDraft("draft").catch(() => null);
       if (cancelled || !rec?.sketch?.files) return;
@@ -179,7 +240,10 @@ export default function EditorClient() {
     };
 
     init().finally(() => {
-      if (!cancelled) draftReady.current = true;
+      if (!cancelled) {
+        draftReady.current = true;
+        setBooted(true);
+      }
     });
     return () => {
       cancelled = true;
@@ -206,8 +270,11 @@ export default function EditorClient() {
 
   // Tier 2 persistence: when signed in as the allowed user, reconcile against
   // the cloud (newer updatedAt wins) and subscribe for cross-device updates.
+  // Keyed by sketch.id and gated on `booted` so the subscription follows the
+  // seeded sketch instead of racing it.
+  const sketchId = sketch.id;
   useEffect(() => {
-    if (!firebaseEnabled) return;
+    if (!firebaseEnabled || !booted) return;
     let unsubSnap = () => {};
     const unsubAuth = onAuthChange(async (u) => {
       const allowed = isAllowed(u);
@@ -218,7 +285,7 @@ export default function EditorClient() {
         unsubSnap = () => {};
         return;
       }
-      const cloud = await loadCloudSketch("draft").catch(() => null);
+      const cloud = await loadCloudSketch(sketchId).catch(() => null);
       if (
         cloud?.sketch?.files &&
         cloud.updatedAt > (savedAtRef.current ?? 0)
@@ -226,7 +293,7 @@ export default function EditorClient() {
         setSketch(cloud.sketch);
         setSavedAt(cloud.updatedAt);
       }
-      unsubSnap = subscribeCloudSketch("draft", (c) => {
+      unsubSnap = subscribeCloudSketch(sketchId, (c) => {
         if (c?.sketch?.files && c.updatedAt > (savedAtRef.current ?? 0)) {
           setSketch(c.sketch);
           setSavedAt(c.updatedAt);
@@ -237,7 +304,7 @@ export default function EditorClient() {
       unsubAuth();
       unsubSnap();
     };
-  }, []);
+  }, [booted, sketchId]);
 
   // Debounced auto-run on any file change. Skip the very first invocation —
   // the initial render already runs the sketch at runKey 0, and an immediate
@@ -280,8 +347,12 @@ export default function EditorClient() {
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify({
           sketch,
+          // Date-id sketches (update mode / fork) publish to their own
+          // directory; the free-standing "draft" slot falls back to today.
+          date: DATE_ID.test(sketch.id) ? sketch.id : undefined,
           diary: sketch.diary ?? "",
           parentId: sketch.parentId,
+          thumbnail: sketch.thumbnail,
         }),
       });
       const data = await res.json();
@@ -301,11 +372,35 @@ export default function EditorClient() {
       >
         <div className="flex items-center gap-3">
           <span className="text-xs text-gray-400">editor</span>
+          {sketch.id !== "draft" && (
+            <span className="text-[10px] text-[#58a6ff]">
+              {sketch.parentId
+                ? `${sketch.id}（${sketch.parentId} の続き）`
+                : `${sketch.id} を更新`}
+            </span>
+          )}
           {savedAt && (
             <span className="text-[10px] text-gray-600">draft saved</span>
           )}
         </div>
         <div className="flex items-center gap-3">
+          {sketch.thumbnail && (
+            <div className="flex items-center gap-1" title="キャプチャ済みサムネイル（Publish時に thumbnail.png として保存）">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={sketch.thumbnail}
+                alt="thumbnail"
+                className="h-6 w-6 rounded border border-[#30363d] object-cover"
+              />
+              <button
+                onClick={clearThumbnail}
+                className="text-[10px] text-gray-600 hover:text-gray-300"
+                title="サムネイルを削除"
+              >
+                ✕
+              </button>
+            </div>
+          )}
           {traceMode && (
             <div className="flex items-center gap-2">
               <span className="text-[10px] text-gray-500">{traceProgress}%</span>
@@ -437,7 +532,7 @@ export default function EditorClient() {
           )}
         </div>
         <div className="min-h-0 w-[42%]">
-          <Preview sketch={sketch} runKey={runKey} />
+          <Preview sketch={sketch} runKey={runKey} onCapture={setThumbnail} />
         </div>
       </div>
     </div>

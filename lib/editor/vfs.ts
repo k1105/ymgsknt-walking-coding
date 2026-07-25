@@ -21,6 +21,7 @@ export interface Sketch {
   libraries?: string[]; // external CDN script URLs (also reflected in index.html)
   diary?: string; // diary.md content, written out on publish
   parentId?: string; // source sketch this was seeded from (wires the graph edge)
+  thumbnail?: string; // captured canvas snapshot (PNG data URL), written out as thumbnail.png on publish
 }
 
 const EXT_LANG: Record<string, Lang> = {

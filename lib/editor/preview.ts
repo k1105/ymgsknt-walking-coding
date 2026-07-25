@@ -87,6 +87,25 @@ function buildPreamble(vfsJson: string): string {
     post({type: "error", text: "Unhandled rejection: " + ser(e.reason)});
   });
 
+  // --- thumbnail capture: the sandboxed iframe is cross-origin to the parent,
+  // so the parent asks us to snapshot the canvas and we post the PNG back.
+  // p5 keeps preserveDrawingBuffer=true by default, so toDataURL works in
+  // both 2D and WEBGL mode.
+  window.addEventListener("message", function (e) {
+    var d = e.data;
+    if (!d || d.__src !== "${PREVIEW_MESSAGE_SOURCE}" || d.type !== "capture") return;
+    var c = document.querySelector("canvas");
+    if (!c) {
+      post({type: "thumbnail-error", text: "capture: canvas が見つかりません"});
+      return;
+    }
+    try {
+      post({type: "thumbnail", dataUrl: c.toDataURL("image/png")});
+    } catch (err) {
+      post({type: "thumbnail-error", text: "capture failed: " + ser(err)});
+    }
+  });
+
   // --- fetch shim: resolve VFS paths ---
   var realFetch = window.fetch ? window.fetch.bind(window) : null;
   window.fetch = function (input, init) {

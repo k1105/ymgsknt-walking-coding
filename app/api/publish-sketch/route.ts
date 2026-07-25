@@ -22,11 +22,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({error: "Dev only"}, {status: 403});
   }
 
-  const {sketch, date: dateInput, diary, parentId} = (await req.json()) as {
+  const {sketch, date: dateInput, diary, parentId, thumbnail} = (await req.json()) as {
     sketch: Sketch;
     date?: string;
     diary?: string;
     parentId?: string;
+    thumbnail?: string; // PNG data URL captured in the editor
   };
 
   if (!sketch?.files || typeof sketch.files !== "object") {
@@ -78,6 +79,18 @@ export async function POST(req: NextRequest) {
   // can read the entry.
   fs.writeFileSync(path.join(dir, "diary.md"), diary ?? "", "utf-8");
 
+  // Thumbnail captured in the editor → thumbnail.png (the filename diary /
+  // network already look up via meta.thumbnail).
+  let hasThumbnail = false;
+  if (thumbnail) {
+    const m = /^data:image\/png;base64,(.*)$/.exec(thumbnail);
+    if (!m) {
+      return NextResponse.json({error: "Invalid thumbnail (expected PNG data URL)"}, {status: 400});
+    }
+    fs.writeFileSync(path.join(dir, "thumbnail.png"), Buffer.from(m[1], "base64"));
+    hasThumbnail = true;
+  }
+
   const metaPath = path.join(dir, "meta.json");
   let meta: Record<string, unknown> = {date, p5jsSketchId: "", tags};
   if (fs.existsSync(metaPath)) {
@@ -87,6 +100,7 @@ export async function POST(req: NextRequest) {
       // keep the fresh default on malformed meta
     }
   }
+  if (hasThumbnail) meta.thumbnail = "thumbnail.png";
   fs.writeFileSync(metaPath, JSON.stringify(meta, null, 2));
 
   // Wire the graph: add the node + an edge from the parent (idempotent).
