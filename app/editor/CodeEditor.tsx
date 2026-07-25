@@ -2,7 +2,9 @@
 
 import {useMemo} from "react";
 import CodeMirror from "@uiw/react-codemirror";
-import {EditorView} from "@codemirror/view";
+import {EditorView, keymap} from "@codemirror/view";
+import {Prec} from "@codemirror/state";
+import {acceptCompletion} from "@codemirror/autocomplete";
 import {languageExtension} from "@/lib/editor/languages";
 import {editorTheme} from "@/lib/editor/theme";
 import {traceExtension} from "@/lib/editor/trace";
@@ -25,7 +27,14 @@ export default function CodeEditor({
   traceOriginal,
 }: Props) {
   const extensions = useMemo(() => {
-    const exts = [...languageExtension(filename), EditorView.lineWrapping];
+    const exts = [
+      ...languageExtension(filename),
+      EditorView.lineWrapping,
+      // Tab accepts the selected completion while the popup is open;
+      // acceptCompletion returns false otherwise, so Tab falls through to
+      // the normal indent binding.
+      Prec.highest(keymap.of([{key: "Tab", run: acceptCompletion}])),
+    ];
     if (traceOriginal !== undefined) exts.push(traceExtension(traceOriginal));
     return exts;
   }, [filename, traceOriginal]);

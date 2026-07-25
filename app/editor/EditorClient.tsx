@@ -306,9 +306,12 @@ export default function EditorClient() {
     };
   }, [booted, sketchId]);
 
-  // Debounced auto-run on any file change. Skip the very first invocation —
-  // the initial render already runs the sketch at runKey 0, and an immediate
-  // reload would flash the preview and clear the console mid-stream.
+  // Debounced auto-run, keyed only on the parts of the sketch the preview
+  // actually renders (files/entry/libraries) — diary and thumbnail edits keep
+  // those references intact, so they don't reload the preview. Skip the very
+  // first invocation — the initial render already runs the sketch at runKey 0,
+  // and an immediate reload would flash the preview and clear the console
+  // mid-stream.
   useEffect(() => {
     if (!autoRun) return;
     if (firstRun.current) {
@@ -320,7 +323,7 @@ export default function EditorClient() {
     return () => {
       if (autoTimer.current) clearTimeout(autoTimer.current);
     };
-  }, [sketch, autoRun]);
+  }, [sketch.files, sketch.entry, sketch.libraries, autoRun]);
 
   // Trace progress (matched original chars / total).
   const traceProgress = useMemo(() => {
