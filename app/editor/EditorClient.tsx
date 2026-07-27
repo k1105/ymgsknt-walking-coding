@@ -475,7 +475,10 @@ export default function EditorClient() {
           files={filenames}
           activeFile={activeFile}
           entry={sketch.entry}
-          onSelect={setActiveFile}
+          onSelect={(name) => {
+            setActiveFile(name);
+            setShowDiary(false);
+          }}
           onAddFile={addFile}
           onRenameFile={renameFile}
           onDeleteFile={deleteFile}
@@ -483,27 +486,9 @@ export default function EditorClient() {
           onIndexHtmlChange={setIndexHtml}
         />
         <div className="flex min-h-0 flex-1 flex-col border-r border-[#30363d]">
-          <div className="min-h-0 flex-1 overflow-hidden">
-            {active &&
-              (traceMode ? (
-                <CodeEditor
-                  key={`trace-${activeFile}`}
-                  filename={activeFile}
-                  value={traceTyped}
-                  onChange={setTraceTyped}
-                  traceOriginal={active.content}
-                />
-              ) : (
-                <CodeEditor
-                  key={activeFile}
-                  filename={activeFile}
-                  value={active.content}
-                  onChange={updateActive}
-                />
-              ))}
-          </div>
-          {showDiary && (
-            <div className="flex h-2/5 min-h-0 flex-col border-t border-[#30363d]">
+          {/* 日記 ON はコードの代わりに日記を全面表示（ヘッダの「日記」で切替） */}
+          {showDiary ? (
+            <div className="flex min-h-0 flex-1 flex-col">
               <div
                 className="flex items-center justify-between border-b border-[#30363d] px-3 py-1"
                 style={{fontFamily: "ui-monospace, monospace"}}
@@ -531,6 +516,26 @@ export default function EditorClient() {
                 className="min-h-0 flex-1 resize-none bg-[#0d1117] px-3 py-2 text-sm text-gray-300 outline-none placeholder:text-gray-700"
                 style={{fontFamily: "ui-monospace, monospace"}}
               />
+            </div>
+          ) : (
+            <div className="min-h-0 flex-1 overflow-hidden">
+              {active &&
+                (traceMode ? (
+                  <CodeEditor
+                    key={`trace-${activeFile}`}
+                    filename={activeFile}
+                    value={traceTyped}
+                    onChange={setTraceTyped}
+                    traceOriginal={active.content}
+                  />
+                ) : (
+                  <CodeEditor
+                    key={activeFile}
+                    filename={activeFile}
+                    value={active.content}
+                    onChange={updateActive}
+                  />
+                ))}
             </div>
           )}
         </div>
