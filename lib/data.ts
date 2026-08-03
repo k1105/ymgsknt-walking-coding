@@ -3,7 +3,7 @@
 
 import fs from "fs";
 import path from "path";
-import {DiaryEntry} from "./types";
+import {DiaryEntry, SketchSnap} from "./types";
 
 // sketches/ は public/sketches/ に配置して静的配信する。
 // データ読み込みも静的配信も同じディレクトリ。
@@ -15,6 +15,7 @@ interface MetaJson {
   sketchType?: "p5js-editor" | "local";
   thumbnail?: string;
   notionPageId?: string;
+  snaps?: SketchSnap[];
 }
 
 function getSketchDirs(): string[] {
@@ -65,6 +66,15 @@ function loadEntry(dirName: string): DiaryEntry | null {
     const hasLocalSketch = fs.existsSync(path.join(dir, "index.html"));
     const sketchType = meta.sketchType || (hasLocalSketch ? "local" : "p5js-editor");
 
+    // Snaps: keep only entries whose directory actually exists, oldest first.
+    const snaps = (Array.isArray(meta.snaps) ? meta.snaps : [])
+      .filter(
+        (s): s is SketchSnap =>
+          typeof s?.id === "string" &&
+          fs.existsSync(path.join(dir, "snaps", s.id, "index.html"))
+      )
+      .sort((a, b) => (a.createdAt < b.createdAt ? -1 : 1));
+
     return {
       id: dirName, // use date as ID
       date: meta.date,
@@ -72,6 +82,7 @@ function loadEntry(dirName: string): DiaryEntry | null {
       sketchType,
       thumbnailUrl,
       rawContent: rewrittenContent,
+      ...(snaps.length > 0 ? {snaps} : {}),
     };
   } catch (e) {
     console.error(`Failed to load entry ${dirName}:`, e);
@@ -79,11 +90,14 @@ function loadEntry(dirName: string): DiaryEntry | null {
   }
 }
 
-// Cache
+// Cache (skipped in dev so freshly published/snapped sketches show up
+// without a server restart)
 let cachedEntries: DiaryEntry[] | null = null;
 
 export async function getAllEntries(): Promise<DiaryEntry[]> {
-  if (cachedEntries) return cachedEntries;
+  if (cachedEntries && process.env.NODE_ENV !== "development") {
+    return cachedEntries;
+  }
 
   const dirs = getSketchDirs();
   const entries = dirs

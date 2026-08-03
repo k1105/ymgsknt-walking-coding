@@ -2,6 +2,7 @@
 
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import CodeEditor from "./CodeEditor";
+import DiaryEditor from "./DiaryEditor";
 import Preview from "./Preview";
 import Sidebar from "./Sidebar";
 import {defaultSketch, langOf, makeFile, type Sketch} from "@/lib/editor/vfs";
@@ -342,6 +343,28 @@ export default function EditorClient() {
   }, []);
 
   const [publishMsg, setPublishMsg] = useState<string | null>(null);
+
+  // Snap: freeze the current state under sketches/<date>/snaps/<id>/ without
+  // touching the published files. Same date resolution as publish.
+  const snap = useCallback(async () => {
+    setPublishMsg("snapping…");
+    try {
+      const res = await fetch("/api/snap-sketch", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+          sketch,
+          date: DATE_ID.test(sketch.id) ? sketch.id : undefined,
+        }),
+      });
+      const data = await res.json();
+      setPublishMsg(res.ok ? `snap → ${data.id}` : data.error || "failed");
+    } catch {
+      setPublishMsg("failed");
+    }
+    setTimeout(() => setPublishMsg(null), 4000);
+  }, [sketch]);
+
   const publish = useCallback(async () => {
     setPublishMsg("publishing…");
     try {
@@ -448,12 +471,21 @@ export default function EditorClient() {
             ▶ Run
           </button>
           {process.env.NODE_ENV === "development" && (
-            <button
-              onClick={publish}
-              className="rounded-md border border-[#30363d] px-3 py-1 text-xs text-gray-300 hover:border-[#58a6ff]"
-            >
-              Publish
-            </button>
+            <>
+              <button
+                onClick={snap}
+                className="rounded-md border border-[#30363d] px-3 py-1 text-xs text-gray-300 hover:border-[#58a6ff]"
+                title="現在の状態をスナップとして保存（公開ファイルは変更しない）"
+              >
+                Snap
+              </button>
+              <button
+                onClick={publish}
+                className="rounded-md border border-[#30363d] px-3 py-1 text-xs text-gray-300 hover:border-[#58a6ff]"
+              >
+                Publish
+              </button>
+            </>
           )}
           {publishMsg && (
             <span className="text-[10px] text-gray-500">{publishMsg}</span>
@@ -508,13 +540,10 @@ export default function EditorClient() {
                   ✕
                 </button>
               </div>
-              <textarea
+              <DiaryEditor
                 value={sketch.diary ?? ""}
-                onChange={(e) => updateDiary(e.target.value)}
-                placeholder="この日のスケッチについて（Markdown）…"
-                spellCheck={false}
-                className="min-h-0 flex-1 resize-none bg-[#0d1117] px-3 py-2 text-sm text-gray-300 outline-none placeholder:text-gray-700"
-                style={{fontFamily: "ui-monospace, monospace"}}
+                onChange={updateDiary}
+                date={DATE_ID.test(sketch.id) ? sketch.id : todayId()}
               />
             </div>
           ) : (

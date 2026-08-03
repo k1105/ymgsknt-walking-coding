@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import dynamic from "next/dynamic";
+import {useRouter} from "next/navigation";
 import {useEffect, useRef, useState, useMemo, useCallback} from "react";
 import {DiaryEntry} from "@/lib/types";
 import {drawRoughCurve} from "@/lib/canvas";
@@ -418,6 +419,17 @@ interface HomeClientProps {
 export default function HomeClient({entries}: HomeClientProps) {
   const [viewMode, setViewMode] = useState<"expand" | "compact" | "list" | "network">("expand");
   const [showDateTexts, setShowDateTexts] = useState(false);
+  const router = useRouter();
+
+  // ローカル実行時のみ: Cmd+クリックで編集(?source)、Cmd+Shift+クリックでfork(?fork)へ
+  const handleSketchLinkClick = useCallback(
+    (id: string) => (e: React.MouseEvent) => {
+      if (process.env.NODE_ENV !== "development" || !e.metaKey) return;
+      e.preventDefault();
+      router.push(e.shiftKey ? `/editor?fork=${id}` : `/editor?source=${id}`);
+    },
+    [router],
+  );
 
   // Use Custom Hook logic
   const {entriesByMonth, nodes, networkHeight, calendarHeight} =
@@ -494,6 +506,7 @@ export default function HomeClient({entries}: HomeClientProps) {
             <Link
               key={entry.id}
               href={`/diary/${entry.id}`}
+              onClick={handleSketchLinkClick(entry.id)}
               className="block mb-8 group"
             >
               <div className="flex gap-4 items-start">
@@ -607,6 +620,7 @@ export default function HomeClient({entries}: HomeClientProps) {
             <Link
               key={node.id}
               href={`/diary/${node.id}`}
+              onClick={handleSketchLinkClick(node.id)}
               className="absolute group"
               style={{
                 left: 0,

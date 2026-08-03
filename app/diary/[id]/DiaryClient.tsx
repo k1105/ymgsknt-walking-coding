@@ -2,7 +2,7 @@
 "use client";
 
 import {useEffect, useRef, useState} from "react";
-import {DiaryEntry, getSketchEmbedUrl} from "@/lib/types";
+import {DiaryEntry, getSketchEmbedUrl, getSnapEmbedUrl} from "@/lib/types";
 import {useDiaryFrame} from "@/app/diary/DiaryFrame";
 import styles from "./DiaryClient.module.css";
 
@@ -32,8 +32,32 @@ export default function DiaryClient({
   const articleRef = useRef<HTMLElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
 
+  // Snap switching: null shows the current (latest) sketch, otherwise the
+  // frozen copy under sketches/<date>/snaps/<id>/. Reset when navigating to
+  // another entry (the component instance is reused across diary routes).
+  const [activeSnap, setActiveSnap] = useState<string | null>(null);
+  const [snapEntryId, setSnapEntryId] = useState(entry.id);
+  if (snapEntryId !== entry.id) {
+    setSnapEntryId(entry.id);
+    setActiveSnap(null);
+  }
+  const snaps = entry.sketchType === "local" ? entry.snaps ?? [] : [];
+
   const FADE_VIEWPORT_RATIO = 0.7;
   const READING_BUFFER_RATIO = 0.5;
+
+  // ?snap=N（@メンション @date_N のリンク先）で N 番目のスナップを開く。
+  // メンションは素の <a> なのでフルナビゲーションになり、マウント時の読み取りで足りる。
+  useEffect(() => {
+    const n = parseInt(
+      new URLSearchParams(window.location.search).get("snap") ?? "",
+      10
+    );
+    if (n >= 1 && n <= snaps.length) {
+      setActiveSnap(snaps[n - 1].id);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [entry.id]);
 
   useEffect(() => {
     setEntryData({
@@ -115,7 +139,11 @@ export default function DiaryClient({
       className="h-screen w-screen relative overflow-hidden"
     >
       <iframe
-        src={getSketchEmbedUrl(entry)}
+        src={
+          activeSnap
+            ? getSnapEmbedUrl(entry, activeSnap)
+            : getSketchEmbedUrl(entry)
+        }
         className={`absolute inset-0 w-full h-full border-0 transition-opacity duration-700 ease-out ${
           isContentVisible ? "opacity-100" : "opacity-0"
         }`}
@@ -145,6 +173,43 @@ export default function DiaryClient({
           <div aria-hidden style={{height: spacerHeight}} />
         </article>
       </div>
+
+      {/* Snap switcher — only when the sketch has frozen snaps */}
+      {snaps.length > 0 && (
+        <div
+          className="absolute bottom-4 right-4 z-10 flex items-center gap-2 font-mono text-xs"
+          style={{
+            opacity: uiOpacity,
+            pointerEvents: uiOpacity < 0.05 ? "none" : "auto",
+          }}
+        >
+          <span className="select-none text-gray-400">snap</span>
+          {snaps.map((s, i) => (
+            <button
+              key={s.id}
+              onClick={() => setActiveSnap(s.id)}
+              title={new Date(s.createdAt).toLocaleString()}
+              className={
+                activeSnap === s.id
+                  ? "text-black underline"
+                  : "text-gray-400 hover:text-black"
+              }
+            >
+              {i + 1}
+            </button>
+          ))}
+          <button
+            onClick={() => setActiveSnap(null)}
+            className={
+              activeSnap === null
+                ? "text-black underline"
+                : "text-gray-400 hover:text-black"
+            }
+          >
+            latest
+          </button>
+        </div>
+      )}
     </div>
   );
 }

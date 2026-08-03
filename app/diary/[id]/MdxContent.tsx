@@ -1,6 +1,13 @@
 // MdxContent.tsx — Server Component for MDX rendering
 import React from "react";
 import {MDXRemote} from "next-mdx-remote/rsc";
+import {remarkMentions} from "@/lib/diary/remark-mentions";
+
+// remark-mentions が生成するメンションリンク（@self / @YYYY-MM-DD /
+// @YYYY-MM-DD_N → /diary/… への内部リンク、className "mention"）かどうか
+function isMentionClass(className: unknown): boolean {
+  return typeof className === "string" && className.split(/\s+/).includes("mention");
+}
 
 /* --- Link Card Component --- */
 function LinkCard({url, text}: {url: string; text: string}) {
@@ -33,8 +40,14 @@ function getSoleLinkFromChildren(
 
   const child = childArray[0];
   if (
-    React.isValidElement<{href?: string; children?: React.ReactNode}>(child) &&
-    child.props?.href
+    React.isValidElement<{
+      href?: string;
+      className?: string;
+      children?: React.ReactNode;
+    }>(child) &&
+    child.props?.href &&
+    // メンションは LinkCard にせずチップのまま段落表示する
+    !isMentionClass(child.props.className)
   ) {
     const text =
       typeof child.props.children === "string"
@@ -65,14 +78,25 @@ const mdxComponents = {
   h3: (props: React.HTMLAttributes<HTMLHeadingElement>) => (
     <h3 className="mdx-line text-lg font-bold" {...props} />
   ),
-  a: (props: React.AnchorHTMLAttributes<HTMLAnchorElement>) => (
-    <a
-      target="_blank"
-      rel="noopener noreferrer"
-      className="underline cursor-pointer z-10 relative"
-      {...props}
-    />
-  ),
+  a: (props: React.AnchorHTMLAttributes<HTMLAnchorElement>) => {
+    // メンション（内部リンク）はチップ表示・同一タブ遷移
+    if (isMentionClass(props.className)) {
+      return (
+        <a
+          {...props}
+          className="mention z-10 relative inline-block rounded border border-current/40 px-1 font-mono text-[0.9em] no-underline hover:opacity-60 transition-opacity"
+        />
+      );
+    }
+    return (
+      <a
+        target="_blank"
+        rel="noopener noreferrer"
+        className="underline cursor-pointer z-10 relative"
+        {...props}
+      />
+    );
+  },
   ul: (props: React.HTMLAttributes<HTMLUListElement>) => (
     <ul className="mdx-line list-disc pl-6" {...props} />
   ),
@@ -117,12 +141,18 @@ const mdxComponents = {
 
 interface MdxContentProps {
   source: string;
+  // @self の解決先（このエントリの日付）
+  selfDate: string;
 }
 
-export default function MdxContent({source}: MdxContentProps) {
+export default function MdxContent({source, selfDate}: MdxContentProps) {
   return (
     <div className="mdx-content">
-      <MDXRemote source={source} components={mdxComponents} />
+      <MDXRemote
+        source={source}
+        components={mdxComponents}
+        options={{mdxOptions: {remarkPlugins: [[remarkMentions, {selfDate}]]}}}
+      />
     </div>
   );
 }

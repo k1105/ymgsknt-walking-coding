@@ -42,7 +42,7 @@ export default async function DiaryPage({params}: DiaryPageProps) {
       prevPrevEntry={prevPrevEntry}
       nextNextEntry={nextNextEntry}
     >
-      <MdxContent source={entry.rawContent} />
+      <MdxContent source={entry.rawContent} selfDate={entry.id} />
     </DiaryClient>
   );
 }
